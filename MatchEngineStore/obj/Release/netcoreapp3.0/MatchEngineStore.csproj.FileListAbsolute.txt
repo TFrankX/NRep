@@ -1,0 +1,7 @@
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\bin\Release\netcoreapp3.0\MatchEngineStore.deps.json
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\bin\Release\netcoreapp3.0\MatchEngineStore.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\bin\Release\netcoreapp3.0\MatchEngineStore.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\obj\Release\netcoreapp3.0\MatchEngineStore.AssemblyInfoInputs.cache
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\obj\Release\netcoreapp3.0\MatchEngineStore.AssemblyInfo.cs
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\obj\Release\netcoreapp3.0\MatchEngineStore.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\obj\Release\netcoreapp3.0\MatchEngineStore.pdb

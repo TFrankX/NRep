@@ -1,0 +1,15 @@
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\nlog.config
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\MessageQueue.deps.json
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\MessageQueue.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\MessageQueue.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\NATS.Client.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\NatsProcess.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\NatsProcess.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\NATS.Client.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\bin\Release\netcoreapp3.0\NATS.Client.xml
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\obj\Release\netcoreapp3.0\MessageQueue.csprojAssemblyReference.cache
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\obj\Release\netcoreapp3.0\MessageQueue.AssemblyInfoInputs.cache
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\obj\Release\netcoreapp3.0\MessageQueue.AssemblyInfo.cs
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\obj\Release\netcoreapp3.0\MessageQueue.csproj.CopyComplete
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\obj\Release\netcoreapp3.0\MessageQueue.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\MessageQueue\obj\Release\netcoreapp3.0\MessageQueue.pdb

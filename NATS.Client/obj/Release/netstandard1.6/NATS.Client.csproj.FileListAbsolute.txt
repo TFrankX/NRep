@@ -1,0 +1,8 @@
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\bin\Release\netstandard1.6\NATS.Client.xml
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\bin\Release\netstandard1.6\NATS.Client.deps.json
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\bin\Release\netstandard1.6\NATS.Client.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\bin\Release\netstandard1.6\NATS.Client.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\netstandard1.6\NATS.Client.AssemblyInfoInputs.cache
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\netstandard1.6\NATS.Client.AssemblyInfo.cs
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\netstandard1.6\NATS.Client.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\netstandard1.6\NATS.Client.pdb

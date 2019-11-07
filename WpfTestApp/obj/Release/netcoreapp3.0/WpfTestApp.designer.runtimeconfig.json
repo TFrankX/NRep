@@ -1,0 +1,16 @@
+{
+  "runtimeOptions": {
+    "tfm": "netcoreapp3.0",
+    "framework": {
+      "name": "Microsoft.WindowsDesktop.App",
+      "version": "3.0.0-preview8-28405-07"
+    },
+    "additionalProbingPaths": [
+      "C:\\Users\\Simin.V\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\Simin.V\\.nuget\\packages"
+    ],
+    "configProperties": {
+      "Microsoft.NETCore.DotNetHostPolicy.SetAppPaths": true
+    }
+  }
+}

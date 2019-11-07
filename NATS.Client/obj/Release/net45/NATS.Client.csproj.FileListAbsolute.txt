@@ -1,0 +1,8 @@
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\bin\Release\net45\NATS.Client.xml
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\bin\Release\net45\NATS.Client.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\bin\Release\net45\NATS.Client.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\net45\NATS.Client.AssemblyInfoInputs.cache
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\net45\NATS.Client.AssemblyInfo.cs
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\net45\NATS.Client.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\net45\NATS.Client.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Release\net45\NATS.Client.csprojAssemblyReference.cache

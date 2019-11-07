@@ -1,0 +1,16 @@
+D:\RepoGitLab\OMS\ExchangeEngine\QuintetLab.MatchingEngine\QuintetLab.Utils\QuintetLab.SQLiteHelper\bin\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.deps.json
+D:\RepoGitLab\OMS\ExchangeEngine\QuintetLab.MatchingEngine\QuintetLab.Utils\QuintetLab.SQLiteHelper\bin\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.dll
+D:\RepoGitLab\OMS\ExchangeEngine\QuintetLab.MatchingEngine\QuintetLab.Utils\QuintetLab.SQLiteHelper\bin\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.pdb
+D:\RepoGitLab\OMS\ExchangeEngine\QuintetLab.MatchingEngine\QuintetLab.Utils\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.AssemblyInfoInputs.cache
+D:\RepoGitLab\OMS\ExchangeEngine\QuintetLab.MatchingEngine\QuintetLab.Utils\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.AssemblyInfo.cs
+D:\RepoGitLab\OMS\ExchangeEngine\QuintetLab.MatchingEngine\QuintetLab.Utils\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.dll
+D:\RepoGitLab\OMS\ExchangeEngine\QuintetLab.MatchingEngine\QuintetLab.Utils\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.pdb
+D:\RepoGitLab\OMS\ExchangeEngine\QuintetLab.MatchingEngine\QuintetLab.Utils\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.csprojAssemblyReference.cache
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\QuintetLab.SQLiteHelper\bin\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.deps.json
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\QuintetLab.SQLiteHelper\bin\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.dll
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\QuintetLab.SQLiteHelper\bin\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.pdb
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.csprojAssemblyReference.cache
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.AssemblyInfoInputs.cache
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.AssemblyInfo.cs
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.dll
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\QuintetLab.SQLiteHelper\obj\Debug\netcoreapp3.0\QuintetLab.SQLiteHelper.pdb

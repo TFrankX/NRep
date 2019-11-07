@@ -1,0 +1,3 @@
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\Referee\obj\Debug\netcoreapp3.0\Referee.csprojAssemblyReference.cache
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\Referee\obj\Debug\netcoreapp3.0\Referee.AssemblyInfoInputs.cache
+d:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\Referee\obj\Debug\netcoreapp3.0\Referee.AssemblyInfo.cs

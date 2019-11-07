@@ -1,0 +1,501 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\WpfTestApp\\WpfTestApp.csproj": {}
+  },
+  "projects": {
+    "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MatchEngineStore\\MatchEngineStore.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MatchEngineStore\\MatchEngineStore.csproj",
+        "projectName": "MatchEngineStore",
+        "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MatchEngineStore\\MatchEngineStore.csproj",
+        "packagesPath": "C:\\Users\\Simin.V\\.nuget\\packages\\",
+        "outputPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MatchEngineStore\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Simin.V\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://192.168.116.12/guestAuth/app/nuget/v1/FeedService.svc/": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8.19405.7, 3.0.0-preview8.19405.7]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100-preview8-013656\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
+        }
+      }
+    },
+    "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MessageQueue\\MessageQueue.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MessageQueue\\MessageQueue.csproj",
+        "projectName": "MessageQueue",
+        "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MessageQueue\\MessageQueue.csproj",
+        "packagesPath": "C:\\Users\\Simin.V\\.nuget\\packages\\",
+        "outputPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MessageQueue\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Simin.V\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://192.168.116.12/guestAuth/app/nuget/v1/FeedService.svc/": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {
+              "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NatsProcess\\NatsProcess.csproj": {
+                "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NatsProcess\\NatsProcess.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "dependencies": {
+            "NLog": {
+              "target": "Package",
+              "version": "[4.6.7, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8.19405.7, 3.0.0-preview8.19405.7]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100-preview8-013656\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
+        }
+      }
+    },
+    "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NATS.Client\\NATS.Client.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NATS.Client\\NATS.Client.csproj",
+        "projectName": "NATS.Client",
+        "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NATS.Client\\NATS.Client.csproj",
+        "packagesPath": "C:\\Users\\Simin.V\\.nuget\\packages\\",
+        "outputPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NATS.Client\\obj\\",
+        "projectStyle": "PackageReference",
+        "crossTargeting": true,
+        "configFilePaths": [
+          "C:\\Users\\Simin.V\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net45",
+          "netstandard1.6"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://192.168.116.12/guestAuth/app/nuget/v1/FeedService.svc/": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "net45": {
+            "projectReferences": {}
+          },
+          "netstandard1.6": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net45": {
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100-preview8-013656\\RuntimeIdentifierGraph.json"
+        },
+        "netstandard1.6": {
+          "dependencies": {
+            "NETStandard.Library": {
+              "target": "Package",
+              "version": "[1.6.1, )",
+              "autoReferenced": true
+            },
+            "System.Net.Security": {
+              "target": "Package",
+              "version": "[4.3.2, )"
+            },
+            "System.Reflection.Extensions": {
+              "target": "Package",
+              "version": "[4.3.0, )"
+            },
+            "System.Runtime": {
+              "target": "Package",
+              "version": "[4.3.1, )"
+            },
+            "System.Runtime.Serialization.Json": {
+              "target": "Package",
+              "version": "[4.3.0, )"
+            },
+            "System.Runtime.Serialization.Primitives": {
+              "target": "Package",
+              "version": "[4.3.0, )"
+            },
+            "System.Threading.Thread": {
+              "target": "Package",
+              "version": "[4.3.0, )"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100-preview8-013656\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
+        }
+      }
+    },
+    "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NatsProcess\\NatsProcess.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NatsProcess\\NatsProcess.csproj",
+        "projectName": "NatsProcess",
+        "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NatsProcess\\NatsProcess.csproj",
+        "packagesPath": "C:\\Users\\Simin.V\\.nuget\\packages\\",
+        "outputPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NatsProcess\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Simin.V\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://192.168.116.12/guestAuth/app/nuget/v1/FeedService.svc/": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {
+              "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NATS.Client\\NATS.Client.csproj": {
+                "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\NATS.Client\\NATS.Client.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "dependencies": {
+            "NLog": {
+              "target": "Package",
+              "version": "[4.6.7, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8.19405.7, 3.0.0-preview8.19405.7]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100-preview8-013656\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
+        }
+      }
+    },
+    "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\ReplicationModule\\ReplicationModule.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\ReplicationModule\\ReplicationModule.csproj",
+        "projectName": "ReplicationModule",
+        "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\ReplicationModule\\ReplicationModule.csproj",
+        "packagesPath": "C:\\Users\\Simin.V\\.nuget\\packages\\",
+        "outputPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\ReplicationModule\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Simin.V\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://192.168.116.12/guestAuth/app/nuget/v1/FeedService.svc/": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {
+              "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MatchEngineStore\\MatchEngineStore.csproj": {
+                "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MatchEngineStore\\MatchEngineStore.csproj"
+              },
+              "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MessageQueue\\MessageQueue.csproj": {
+                "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MessageQueue\\MessageQueue.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8.19405.7, 3.0.0-preview8.19405.7]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100-preview8-013656\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
+        }
+      }
+    },
+    "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\WpfTestApp\\WpfTestApp.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\WpfTestApp\\WpfTestApp.csproj",
+        "projectName": "WpfTestApp",
+        "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\WpfTestApp\\WpfTestApp.csproj",
+        "packagesPath": "C:\\Users\\Simin.V\\.nuget\\packages\\",
+        "outputPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\WpfTestApp\\obj\\publish\\win-x64\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Simin.V\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://192.168.116.12/guestAuth/app/nuget/v1/FeedService.svc/": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {
+              "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MatchEngineStore\\MatchEngineStore.csproj": {
+                "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\MatchEngineStore\\MatchEngineStore.csproj"
+              },
+              "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\ReplicationModule\\ReplicationModule.csproj": {
+                "projectPath": "D:\\Repo\\ReplicationModel\\ReplicationModel\\ReplicationModel\\ReplicationModule\\ReplicationModule.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "dependencies": {
+            "NLog": {
+              "target": "Package",
+              "version": "[4.6.7, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8.19405.7, 3.0.0-preview8.19405.7]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[3.0.0-preview8-28405-07, 3.0.0-preview8-28405-07]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.WindowsDesktop.App.WPF": {
+              "privateAssets": "none"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100-preview8-013656\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
+        }
+      }
+    }
+  }
+}

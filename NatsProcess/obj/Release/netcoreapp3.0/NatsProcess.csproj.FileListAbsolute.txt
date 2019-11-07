@@ -1,0 +1,13 @@
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\bin\Release\netcoreapp3.0\nlog.config
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\bin\Release\netcoreapp3.0\NatsProcess.deps.json
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\bin\Release\netcoreapp3.0\NatsProcess.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\bin\Release\netcoreapp3.0\NatsProcess.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\bin\Release\netcoreapp3.0\NATS.Client.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\bin\Release\netcoreapp3.0\NATS.Client.pdb
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\bin\Release\netcoreapp3.0\NATS.Client.xml
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\obj\Release\netcoreapp3.0\NatsProcess.csprojAssemblyReference.cache
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\obj\Release\netcoreapp3.0\NatsProcess.AssemblyInfoInputs.cache
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\obj\Release\netcoreapp3.0\NatsProcess.AssemblyInfo.cs
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\obj\Release\netcoreapp3.0\NatsProcess.csproj.CopyComplete
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\obj\Release\netcoreapp3.0\NatsProcess.dll
+D:\Repo\ReplicationModel\ReplicationModel\ReplicationModel\NatsProcess\obj\Release\netcoreapp3.0\NatsProcess.pdb
