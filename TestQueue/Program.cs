@@ -5,7 +5,6 @@ using TestQueue;
 
 namespace TestQueue
 {
-//class
     class Program
     {
         public class Msg
@@ -39,8 +38,8 @@ namespace TestQueue
             Item = nQueue.PopItem();
             Console.WriteLine($"Preview Obj.IdMes={Item?.Id}, Obj.Id={Item?.obj.Id}, Obj.Mesg={Item?.obj.Mesg}");
 
-            SpamGenerator spam = new SpamGenerator();
-            Console.WriteLine(spam.RandomString(32));
+         //   SpamGenerator spam = new SpamGenerator();
+          //  Console.WriteLine(spam.RandomString(32));
 
             // Console.WriteLine($"Preview Obj.ID={nQueue.Preview().Id}, Obj.Message={nQueue.Preview().Mesg}");
         }

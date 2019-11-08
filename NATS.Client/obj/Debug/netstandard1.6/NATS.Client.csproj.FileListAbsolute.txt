@@ -30,3 +30,11 @@ c:\Users\User\Source\Repos\ReplicationModel\ReplicationModel\ReplicationModel\NA
 c:\Users\User\Source\Repos\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Debug\netstandard1.6\NATS.Client.AssemblyInfo.cs
 c:\Users\User\Source\Repos\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Debug\netstandard1.6\NATS.Client.dll
 c:\Users\User\Source\Repos\ReplicationModel\ReplicationModel\ReplicationModel\NATS.Client\obj\Debug\netstandard1.6\NATS.Client.pdb
+c:\Project\ReplicationModel\NATS.Client\bin\Debug\netstandard1.6\NATS.Client.deps.json
+c:\Project\ReplicationModel\NATS.Client\bin\Debug\netstandard1.6\NATS.Client.dll
+c:\Project\ReplicationModel\NATS.Client\bin\Debug\netstandard1.6\NATS.Client.pdb
+c:\Project\ReplicationModel\NATS.Client\obj\Debug\netstandard1.6\NATS.Client.csprojAssemblyReference.cache
+c:\Project\ReplicationModel\NATS.Client\obj\Debug\netstandard1.6\NATS.Client.AssemblyInfoInputs.cache
+c:\Project\ReplicationModel\NATS.Client\obj\Debug\netstandard1.6\NATS.Client.AssemblyInfo.cs
+c:\Project\ReplicationModel\NATS.Client\obj\Debug\netstandard1.6\NATS.Client.dll
+c:\Project\ReplicationModel\NATS.Client\obj\Debug\netstandard1.6\NATS.Client.pdb

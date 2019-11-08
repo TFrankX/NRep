@@ -30,3 +30,11 @@ c:\Users\User\Source\Repos\ReplicationModel\ReplicationModel\ReplicationModel\Ma
 c:\Users\User\Source\Repos\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\obj\Debug\netcoreapp3.0\MatchEngineStore.AssemblyInfo.cs
 c:\Users\User\Source\Repos\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\obj\Debug\netcoreapp3.0\MatchEngineStore.dll
 c:\Users\User\Source\Repos\ReplicationModel\ReplicationModel\ReplicationModel\MatchEngineStore\obj\Debug\netcoreapp3.0\MatchEngineStore.pdb
+c:\Project\ReplicationModel\MatchEngineStore\bin\Debug\netcoreapp3.0\MatchEngineStore.deps.json
+c:\Project\ReplicationModel\MatchEngineStore\bin\Debug\netcoreapp3.0\MatchEngineStore.dll
+c:\Project\ReplicationModel\MatchEngineStore\bin\Debug\netcoreapp3.0\MatchEngineStore.pdb
+c:\Project\ReplicationModel\MatchEngineStore\obj\Debug\netcoreapp3.0\MatchEngineStore.csprojAssemblyReference.cache
+c:\Project\ReplicationModel\MatchEngineStore\obj\Debug\netcoreapp3.0\MatchEngineStore.AssemblyInfoInputs.cache
+c:\Project\ReplicationModel\MatchEngineStore\obj\Debug\netcoreapp3.0\MatchEngineStore.AssemblyInfo.cs
+c:\Project\ReplicationModel\MatchEngineStore\obj\Debug\netcoreapp3.0\MatchEngineStore.dll
+c:\Project\ReplicationModel\MatchEngineStore\obj\Debug\netcoreapp3.0\MatchEngineStore.pdb
