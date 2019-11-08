@@ -5,6 +5,7 @@ using TestQueue;
 
 namespace TestQueue
 {
+//class
     class Program
     {
         public class Msg
