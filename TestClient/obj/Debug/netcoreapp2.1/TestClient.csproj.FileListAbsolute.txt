@@ -1,0 +1,5 @@
+C:\Users\User\Source\Repos\ShareCharge\TestClient\obj\Debug\netcoreapp2.1\TestClient.csproj.AssemblyReference.cache
+C:\Users\User\Source\Repos\ShareCharge\TestClient\obj\Debug\netcoreapp2.1\TestClient.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\Source\Repos\ShareCharge\TestClient\obj\Debug\netcoreapp2.1\TestClient.AssemblyInfoInputs.cache
+C:\Users\User\Source\Repos\ShareCharge\TestClient\obj\Debug\netcoreapp2.1\TestClient.AssemblyInfo.cs
+C:\Users\User\Source\Repos\ShareCharge\TestClient\obj\Debug\netcoreapp2.1\TestClient.csproj.CoreCompileInputs.cache

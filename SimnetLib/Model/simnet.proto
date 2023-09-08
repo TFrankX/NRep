@@ -1,0 +1,347 @@
+﻿syntax = "proto3";
+
+message CmdPushPowerBank { // Push powerbank
+    uint32 rl_slot = 1; // Slot number
+	uint32 rl_seq = 2; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message RplPushPowerBank { // Reply from device on command PushPowerBank 
+    uint32 rl_slot = 1; // Number of slot
+
+	uint64 rl_pbid = 2; // Power Bank SN, for example, the silkscreen of the Power Bank SN is RL1H12345678, the actual
+						// transmitted is as shown in example, The first four characters as parsed according to ASCII
+						//codes, and last eight characters are combined into four HEX data in pairs
+
+	uint32 rl_result = 3; // Result:
+						// 1: successful
+						// 0: failed
+						
+	uint32 rl_code = 4; // Error code:
+						// 0: normal
+						// 1: can read Power Bank ID
+						// 2: Pop-up timeout
+						// 3: in the pop-up
+						// 4: the reserved…
+	
+	uint32 rl_lock = 5;	// Lock level:
+						// 0: low level
+						// 1: high level
+
+	uint32 rl_bottom = 6; //Bottom switch level
+						  // 0: low level
+						  // 1: high level
+						  
+	uint32 rl_qoe = 7;	// Electricity of Power Bank
+	
+	uint32 rl_vol = 8;  // Voltage of Power Bank, mV
+	
+	uint32 rl_cur = 9;  // Current of Power Bank, mA
+	
+	uint32 rl_seq = 10; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+
+message CmdPushPowerBankForce { // Push powerbank Force
+    uint32 rl_slot = 1; // Slot number
+	uint32 rl_seq = 2; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message RplPushPowerBankForce { // Reply from device on command PushPowerBankForce
+    uint32 rl_slot = 1; // Number of slot
+
+	uint64 rl_pbid = 2; // Power Bank SN, for example, the silkscreen of the Power Bank SN is RL1H12345678, the actual
+						// transmitted is as shown in example, The first four characters as parsed according to ASCII
+						//codes, and last eight characters are combined into four HEX data in pairs
+
+	uint32 rl_result = 3; // Result:
+						// 1: successful
+						// 0: failed
+						
+	uint32 rl_code = 4; // Error code:
+						// 0: normal
+						// 1: can read Power Bank ID
+						// 2: Pop-up timeout
+						// 3: in the pop-up
+						// 4: the reserved…
+	
+	uint32 rl_lock = 5;	// Lock level:
+						// 0: low level
+						// 1: high level
+
+	uint32 rl_bottom = 6; //Bottom switch level
+						  // 0: low level
+						  // 1: high level
+						  
+	uint32 rl_qoe = 7;	// Electricity of Power Bank
+	
+	uint32 rl_vol = 8;  // Voltage of Power Bank, mV
+	
+	uint32 rl_cur = 9;  // Current of Power Bank, mA
+	
+	uint32 rl_seq = 10; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message CmdQueryNetworkInfo{
+	uint32 rl_seq = 1; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+
+
+message RplQueryNetworkInfo { // Reply from device on command QueryNetworkInfo
+	uint32 rl_type = 1; // Set the network connection mode
+						// 0: WIFI prefer
+						// 1: WIFI only
+						// 2: 4G prefer
+						// 3: 4G only
+
+
+
+
+	uint32 rl_mode = 2; // Only valid in 4G mode
+						//	0: Auto
+						//	1:3G Prefer
+						//	2:2G only
+						//	3:3G only
+						//	4:4G only
+
+	uint32 rl_status = 3; // Connect result
+						   //  0: successful
+						   //  Others...
+
+	uint32 rl_conn = 4; // Actual network connection mode:
+						 //	0: WIFI
+						 //	1: 2G
+						 //	2: 3G
+						 //	4: 4G
+
+
+	uint32 rl_csq = 5; // CSQ range 0 to 31. If WIFI is used, the value is 0
+
+	uint32 rl_rsrp = 6; // RSRP，range -140 to -22. If WIFI is used, the value is 0
+
+	uint32 rl_sinr = 7; // SINR，range -20 to 30. If WIFI is used, the value is 0
+
+	uint32 rl_wifi = 8; // WIFI RSSI，range -120 to -30. If 4G is used, the value is 0
+
+	uint32 rl_seq = 9; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+
+message CmdQueryTheInventory{
+	uint32 rl_seq = 1; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+
+message RplQueryTheInventoryOne { // Reply from device on command QueryTheInventory
+
+	uint32 rl_slot = 1; // Number of slot
+
+
+	uint32 rl_idok = 2; // Can read Power Bank ID or not
+
+
+	uint32 rl_lock = 3;	// Lock level:
+						// 0: low level
+						// 1: high level
+
+//	uint32 rl_bottom = 4; //Bottom switch level
+						  // 0: low level
+						  // 1: high level
+						  
+
+	uint32 rl_charge = 5; // Is charging or not
+						// 0: normal
+						// 1: charging
+						
+	uint64 rl_pbid = 6; // Power Bank SN, for example, the silkscreen of the Power Bank SN is RL1H12345678, the actual
+						// transmitted is as shown in example, The first four characters as parsed according to ASCII
+						//codes, and last eight characters are combined into four HEX data in pairs
+
+
+	uint32 rl_qoe = 7; // Electric quantity of Power Bank
+						// 0: 0%~20%
+						// 1: 20%~40%
+						// 2: 40%~60%
+						// 3: 60%~80%
+						// 4: 80%~100%
+						// 5: 100%
+
+//	uint16 rl_vol = 8;  // Voltage of Power Bank, mV
+	
+//	uint16 rl_cur = 9;  // Current of Power Bank, mA
+
+//	int32 rl_tmp = 10;  // Temperature of Powe Bank
+	
+//	uint32 rl_code = 11; // Error code:
+						// 0: normal
+						// 1: can read Power Bank ID
+						// 2: Pop-up timeout
+						// 3: in the pop-up
+						// 4: the reserved…
+	
+//	uint32 rl_revered = 12; // Reserved
+
+}
+
+message RplQueryTheInventory {
+	uint32 rl_num = 1; // Number of Power Bank that can be identified in the cabinet
+	repeated RplQueryTheInventoryOne rl_bank1 = 2; // Inventory of 1 slot
+	uint32 rl_seq = 3; // The serial number of each packet, starting at 1 and accumulating upwards
+
+}
+
+message CmdQueryServer{
+	uint32 rl_type = 1; // 1: master server
+						// 2: backup server
+	uint32 rl_seq = 2; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message RplQueryServer { // Reply from device on command QueryServer
+	uint32 rl_type = 1; // // 1: master server
+						// 2: backup server
+
+	string rl_add = 2; // Server address
+
+
+	string rl_port = 3; // Server port
+
+	uint32 rl_seq = 4; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message CmdQueryCabinetAPN{
+
+	uint32 rl_index = 1; // Index: Range 0 to 4
+
+	uint32 rl_seq = 2; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message RplQueryCabinetAPN { // Reply from device on command QueryCabinetAPN
+	uint32 rl_index = 1; // Index: Range 0 to 4
+						// 2: backup server
+
+	uint32 rl_valid = 2; // Availability:
+						 // 0: invalid
+						 // 1: valid
+
+	string rl_mccmnc = 3; // MCC and MNC
+
+ 	string rl_apn = 4; // APN
+	
+	string rl_un = 5; // Username can be NULL
+
+	string rl_pw = 6; // Password can be NULL
+
+	uint32 rl_seq = 7; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+
+message CmdQuerySIMCardICCID{
+	uint32 rl_seq = 1; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+
+message RplQuerySIMCardICCID { // Reply from device on command QuerySIMCardICCID
+	string rl_iccid = 1; // SIM card ICCID
+
+	string rl_imei = 2; // Module IME
+
+	uint32 rl_seq = 3; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message CmdResetCabinet{
+	uint32 rl_seq = 1; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message RplResetCabinet { // Reply from device on command ResetCabinet
+	uint32 rl_result = 1; // Reset result
+						  // 0: failed
+						  // 1: successful
+
+	uint32 rl_seq = 2; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+
+message RptReturnThePowerBank { // Report from device on event Return the Power Bank
+
+	uint32 rl_slot = 1; // Number of slot
+
+	uint32 rl_lock = 2;	// Lock level:
+						// 0: low level
+						// 1: high level
+
+	uint32 rl_bottom = 3; //Bottom switch level
+						  // 0: low level
+						  // 1: high level
+						  						
+	uint64 rl_pbid = 4; // Power Bank SN, for example, the silkscreen of the Power Bank SN is RL1H12345678, the actual
+						// transmitted is as shown in example, The first four characters as parsed according to ASCII
+						//codes, and last eight characters are combined into four HEX data in pairs
+
+	uint32 rl_qoe = 5; // Electric quantity of Power Bank
+						// 0: 0%~20%
+						// 1: 20%~40%
+						// 2: 40%~60%
+						// 3: 60%~80%
+						// 4: 80%~100%
+						// 5: 100%
+
+	uint32 rl_vol = 6;  // Voltage of Power Bank, mV
+	
+	uint32 rl_cur = 7;  // Current of Power Bank, mA
+
+	uint32 rl_tmp = 8;  // Temperature of Powe Bank
+	
+	uint32 rl_limited = 9; // Is charging or not
+						   // 0: normal
+						   // 1: charging
+
+	uint32 rl_code = 10;  // Power Bank status
+						 // 0: normal
+						 // 1: others
+	
+	uint32 rl_seq = 11; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message SrvReturnThePowerBank { // Server answer  on event Return the Power Bank
+
+	uint32 rl_slot = 1;	// Slot number
+
+
+	uint32 rl_result = 2; // Returned result
+						  // 0: failed, cabinet pop-up Power Bank
+						  // 1: successful, Voice broadcast returned successfully
+						  // 2: Repeat return,
+						  // 3: Reserved
+
+	uint32 rl_seq = 3; // The serial number of each packet, starting at 1 and accumulating upwards
+}
+
+message RptReportCabinetLogin { // Report from device on event Report Cabinet Login
+
+	uint32 rl_count = 1;	// Maximum number of Power Banks supported by a cabinet
+
+	uint32 rl_netmode = 2; // 1: Only supported 4G
+						   // 2: Only supported WIFI
+						   // 3: supported 4G and WIFI
+
+	uint32 rl_conn = 3; // 1: Actual network connection mode:
+						// 0: WIFI
+						// 1: 2G
+						// 2: 3G
+						// 4: 4G
+	uint32 rl_csq = 4; // CSQ range 0 to 31. If WIFI is used, the value is 0
+
+	uint32 rl_rsrp = 5; // RSRP，range -140 to -22. If WIFI is used, the value is 0
+
+	uint32 rl_sinr = 6; // SINR，range -20 to 30. If WIFI is used, the value is 0
+
+	uint32 rl_wifi = 7; // WIFI RSSI，range -120 to -30. If 4G is used, the value is 0
+
+	string rl_commsoftver = 8; //Communication board software version
+
+	string rl_commhardver = 9; //Communication board software version
+
+	string rl_iccid = 10; //SIM card ICCID
+
+	uint32 rl_seq = 11; // The serial number of each packet, starting at 1 and accumulating upwards
+}

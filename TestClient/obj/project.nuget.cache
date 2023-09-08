@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "Brvvd2neTRwzws9MuGz2Xa/hLPdg4tSrYZF/VogkW+j2ctHJJXqgtEooKapZTRCMlHA4hN9JtnaQsXQTdAJEeQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\TestClient\\TestClient.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Simin.V\\.nuget\\packages\\mqttnet\\4.2.1.781\\mqttnet.4.2.1.781.nupkg.sha512",
+    "C:\\Users\\Simin.V\\.nuget\\packages\\mqttnet.extensions.managedclient\\4.2.1.781\\mqttnet.extensions.managedclient.4.2.1.781.nupkg.sha512",
+    "C:\\Users\\Simin.V\\.nuget\\packages\\protobuf-net\\3.2.26\\protobuf-net.3.2.26.nupkg.sha512",
+    "C:\\Users\\Simin.V\\.nuget\\packages\\protobuf-net.core\\3.2.26\\protobuf-net.core.3.2.26.nupkg.sha512",
+    "C:\\Users\\Simin.V\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
+    "C:\\Users\\Simin.V\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

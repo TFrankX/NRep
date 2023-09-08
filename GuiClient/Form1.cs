@@ -1,0 +1,255 @@
+using System;
+using System.Net;
+using System.Threading;
+using System.Windows.Forms;
+using ProtoBuf.Meta;
+using SimnetLib;
+using SimnetLib.Model;
+using SimnetLib.Network;
+namespace GuiClient
+{
+    public partial class Form1 : Form
+    {
+
+        MQTTBus bus;
+        SimnetClient client;
+        string cmdPushPowerBank;
+        string rplPushPowerBank;
+        string rplPushPowerBankForce;
+        string rplQueryNetworkInfo;
+        string rplQueryTheInventory;
+        string rplhQueryServer;
+        string rplQueryCabinetAPN;
+        string rplQuerySIMCardICCID;
+        string rplResetCabinet;
+        string rptReturnThePowerBank;
+        string rptReportCabinetLogin;
+        Device device;
+        IniFile config;
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        public void addLog(string message)
+        {
+            string curTime = System.DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss.fff");
+            rtbLog.Invoke(() => rtbLog.AppendText($"{curTime}  {message}\r\n"));
+        }
+
+
+
+        private void DeviceConnect(string host, int port, string deviceName, string login, string pass)
+        {
+
+            config.Write("ServerHostName", tbServerAddress.Text, "Server");
+            config.Write("ServerPort", tbServerPort.Text, "Server");
+            config.Write("Login", tbLogin.Text, "Server");
+            config.Write("Password", tbPass.Text, "Server");
+            config.Write("DeviceName", tbDeviceName.Text, "Device");
+            device.Connect(host, port, deviceName, login, pass);
+        }
+
+
+
+        private void bConnect_Click(object sender, EventArgs e)
+        {
+
+            addLog($"Подключение к серверу...");
+            new Thread(() =>
+            {
+                DeviceConnect(tbServerAddress.Text, Convert.ToInt32(tbServerPort.Text), tbDeviceName.Text, tbLogin.Text, tbPass.Text); ;
+
+                Thread.Sleep(1000);
+
+                if (device.IsConnected())
+
+                {
+
+                    addLog($"Успешно подключено к серверу {tbServerAddress.Text}:{tbServerPort.Text}");
+
+                    device.EvPushPowerBank += Device_EvPushPowerBank;
+
+                    device.EvPushPowerBankForce += Device_EvPushPowerBankForce;
+
+                    device.EvQueryTheInventory += Device_EvQueryTheInventory;
+
+                    device.EvReportCabinetLogin += Device_EvReportCabinetLogin;
+
+                    device.EvReturnThePowerBank += Device_EvReturnThePowerBank;
+
+                    device.EvQueryNetworkInfo += Device_EvQueryNetworkInfo;
+
+                    device.EvQueryServer += Device_EvQueryServer;
+
+                    device.EvQuerySIMCardICCID += Device_EvQuerySIMCardICCID;
+
+                    device.EvResetCabinet += Device_EvResetCabinet;
+
+                }
+                else
+                {
+                    addLog($"Не удалось подключиться к серверу");
+                }
+
+            }).Start();
+        }
+
+        private void Device_EvPushPowerBankForce(RplPushPowerBankForce data)
+        {
+            addLog($"Ответ на запрос 'принудительно выдать повербанк'");
+        }
+
+        private void Device_EvResetCabinet(RplResetCabinet data)
+        {
+            addLog($"Ответ на запрос 'перезапуск устройства'");
+        }
+
+        private void Device_EvQuerySIMCardICCID(RplQuerySIMCardICCID data)
+        {
+            addLog($"Ответ на запрос информации SIM-карты");
+        }
+
+        private void Device_EvQueryServer(RplQueryServer data)
+        {
+            addLog($"Ответ на запрос информации сервера");
+            string serverType = data.RlType == 1 ? "Основной" : "Резервный";
+            addLog($"Тип сервера: {serverType}");
+            addLog($"Адрес сервера: {data.RlAdd}");
+            addLog($"Порт сервера: {data.RlPort}");
+        }
+
+        private void Device_EvQueryNetworkInfo(RplQueryNetworkInfo data)
+        {
+            addLog($"Ответ на запрос информации сети");
+        }
+
+        private void Device_EvReturnThePowerBank(RptReturnThePowerBank data)
+        {
+            addLog($"Зарегистрировано возвращение повербанка");
+            addLog($"Номер слота: {data.RlSlot}");
+            addLog($"Серийный номер: {data.RlPbid}");
+            addLog($"Напряжение: {data.RlVol}");
+            device.SrvReturnThePowerBank(data.RlSlot, 1);
+
+        }
+
+        private void Device_EvReportCabinetLogin(RptReportCabinetLogin data)
+        {
+            addLog($"Зарегистрировано устройство на сервере:");
+            addLog($"Версия ПО: {data.RlCommsoftver}");
+        }
+
+        private void Device_EvQueryTheInventory(RplQueryTheInventory data)
+        {
+            addLog($"Ответ на запрос инвентаризации");
+            foreach (var pbank in data.RlBank1s)
+            {
+                addLog($"--------- Повербанк номер {pbank.RlSlot.ToString()} ----------");
+                addLog($"S/N: {pbank.RlPbid}");
+                string readIDok = pbank.RlIdok == 1 ? "удачно" : "неудачно";
+                addLog($"readID прочитан {readIDok}");
+                string lockLevel = pbank.RlLock == 1 ? "высокий" : "низкий";
+                addLog($"уровень блокировки: {lockLevel}");
+                string charging = pbank.RlCharge == 1 ? "Да" : "Нет";
+                addLog($"Заряжается: {pbank.RlCharge}");
+                string chargeLevel;
+                switch (pbank.RlQoe)
+                {
+                    case 0:
+                        chargeLevel = "0%..20%";
+                        break;
+                    case 1:
+                        chargeLevel = "20%..40%";
+                        break;
+                    case 2:
+                        chargeLevel = "40%..60%";
+                        break;
+                    case 3:
+                        chargeLevel = "60%..80%";
+                        break;
+                    case 4:
+                        chargeLevel = "80%..100%";
+                        break;
+                    case 5:
+                        chargeLevel = "100%";
+                        break;
+                    default:
+                        chargeLevel = "fail";
+                        break;
+                }
+                addLog($"Процент заряда: {chargeLevel}");
+
+            }
+        }
+
+        private void Device_EvPushPowerBank(RplPushPowerBank data)
+        {
+            addLog($"Ответ на запрос выдачи повербанка");
+            addLog($"Номер слота: {data.RlSlot}");
+            addLog($"Серийный номер повербанка: {data.RlPbid}");
+            addLog($"Результат операции (0-неудачно, 1-удачно): {data.RlResult}");
+        }
+
+        private void bPushPowerBank_Click(object sender, EventArgs e)
+        {
+            addLog($"Команда: выдать повербанк");
+            device.CmdPushPowerBank((uint)cbSlotNumber.SelectedIndex + 1);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            addLog("Запуск клиента");
+            device = new Device();
+            config = new IniFile("config.ini");
+
+            tbServerAddress.Text = config.Read("ServerHostName", "Server");
+            tbServerPort.Text = config.Read("ServerPort", "Server");
+            tbLogin.Text = config.Read("Login", "Server");
+            tbPass.Text = config.Read("Password", "Server");
+            tbDeviceName.Text = config.Read("DeviceName", "Device");
+        }
+
+        private void bResetCabinet_Click(object sender, EventArgs e)
+        {
+            addLog($"Команда: сброс кабинета");
+            device.CmdResetCabinet();
+        }
+
+        private void bCabinetInfo_Click(object sender, EventArgs e)
+        {
+            addLog($"Команда: запрос информации кабинета");
+            device.CmdQueryNetworkInfo();
+        }
+
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            config.Write("ServerHostName", tbServerAddress.Text, "Server");
+            config.Write("ServerPort", tbServerPort.Text, "Server");
+            config.Write("Login", tbLogin.Text, "Server");
+            config.Write("Password", tbPass.Text, "Server");
+            config.Write("DeviceName", tbDeviceName.Text, "Device");
+        }
+
+        private void bServerInfo_Click(object sender, EventArgs e)
+        {
+
+            addLog($"Команда: запрос информации о сервере");
+            device.CmdQueryServer(1);
+        }
+
+        private void bInventory_Click(object sender, EventArgs e)
+        {
+            addLog($"Команда: запрос инвентаризации");
+            device.CmdQueryTheInventory();
+        }
+
+        private void rtbLog_TextChanged(object sender, EventArgs e)
+        {
+            rtbLog.SelectionStart = rtbLog.Text.Length;
+            // scroll it automatically
+            rtbLog.ScrollToCaret();
+        }
+    }
+}

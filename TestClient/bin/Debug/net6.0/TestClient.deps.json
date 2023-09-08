@@ -1,0 +1,137 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "TestClient/1.0.0": {
+        "dependencies": {
+          "SimnetLib": "1.0.0"
+        },
+        "runtime": {
+          "TestClient.dll": {}
+        }
+      },
+      "MQTTnet/4.2.1.781": {
+        "runtime": {
+          "lib/net6.0/MQTTnet.dll": {
+            "assemblyVersion": "4.2.1.781",
+            "fileVersion": "4.2.1.781"
+          }
+        }
+      },
+      "MQTTnet.Extensions.ManagedClient/4.2.1.781": {
+        "dependencies": {
+          "MQTTnet": "4.2.1.781"
+        },
+        "runtime": {
+          "lib/net6.0/MQTTnet.Extensions.ManagedClient.dll": {
+            "assemblyVersion": "4.2.1.781",
+            "fileVersion": "4.2.1.781"
+          }
+        }
+      },
+      "protobuf-net/3.2.26": {
+        "dependencies": {
+          "protobuf-net.Core": "3.2.26"
+        },
+        "runtime": {
+          "lib/net6.0/protobuf-net.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.2.26.38424"
+          }
+        }
+      },
+      "protobuf-net.Core/3.2.26": {
+        "dependencies": {
+          "System.Collections.Immutable": "7.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/protobuf-net.Core.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.2.26.38424"
+          }
+        }
+      },
+      "System.Collections.Immutable/7.0.0": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/System.Collections.Immutable.dll": {
+            "assemblyVersion": "7.0.0.0",
+            "fileVersion": "7.0.22.51805"
+          }
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
+      "SimnetLib/1.0.0": {
+        "dependencies": {
+          "MQTTnet": "4.2.1.781",
+          "MQTTnet.Extensions.ManagedClient": "4.2.1.781",
+          "protobuf-net": "3.2.26",
+          "protobuf-net.Core": "3.2.26"
+        },
+        "runtime": {
+          "SimnetLib.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TestClient/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MQTTnet/4.2.1.781": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oKPAoW1Ynukm6ws6P3NmmMlNb3xIlPVf/89WVCkoWOJdz1dYtAdGYRdqe876pVsPru4j0uyU/hKf7iL3NU1r6w==",
+      "path": "mqttnet/4.2.1.781",
+      "hashPath": "mqttnet.4.2.1.781.nupkg.sha512"
+    },
+    "MQTTnet.Extensions.ManagedClient/4.2.1.781": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JkW4/p9ZgfV/w33AO1Ug5liAnQCdcXoytKx4BVgU5LznaasMDv24skMKkGyOf+/XO24OdFbbpx8kr9u13HJ/7w==",
+      "path": "mqttnet.extensions.managedclient/4.2.1.781",
+      "hashPath": "mqttnet.extensions.managedclient.4.2.1.781.nupkg.sha512"
+    },
+    "protobuf-net/3.2.26": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zBzBiKs4yP+tzQOsRA5WbI/zayS6eFv8g0KIKNPI7/RUY1nk9Oe+STmtbUYkNUkO3T3SidEoZv+tF1nmgTSutQ==",
+      "path": "protobuf-net/3.2.26",
+      "hashPath": "protobuf-net.3.2.26.nupkg.sha512"
+    },
+    "protobuf-net.Core/3.2.26": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-s8oJW9dBVxix4p8uqMbeG++DIGjgzOFAKoP2i5wayeeFOKBqG+cCBO2S/CAC4MAFlb5m1Os2m/miLcqRCgqJ7Q==",
+      "path": "protobuf-net.core/3.2.26",
+      "hashPath": "protobuf-net.core.3.2.26.nupkg.sha512"
+    },
+    "System.Collections.Immutable/7.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dQPcs0U1IKnBdRDBkrCTi1FoajSTBzLcVTpjO4MBCMC7f4pDOIPzgBoX8JjG7X6uZRJ8EBxsi8+DR1JuwjnzOQ==",
+      "path": "system.collections.immutable/7.0.0",
+      "hashPath": "system.collections.immutable.7.0.0.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg==",
+      "path": "system.runtime.compilerservices.unsafe/6.0.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+    },
+    "SimnetLib/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
