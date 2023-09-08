@@ -98,6 +98,10 @@ namespace GuiClient
         private void Device_EvPushPowerBankForce(RplPushPowerBankForce data)
         {
             addLog($"Ответ на запрос 'принудительно выдать повербанк'");
+            addLog($"Номер слота: {data.RlSlot}");
+            addLog($"Серийный номер повербанка: {data.RlPbid}");
+            addLog($"Результат операции (0-неудачно, 1-удачно): {data.RlResult}");
+            
         }
 
         private void Device_EvResetCabinet(RplResetCabinet data)
@@ -126,10 +130,40 @@ namespace GuiClient
 
         private void Device_EvReturnThePowerBank(RptReturnThePowerBank data)
         {
-            addLog($"Зарегистрировано возвращение повербанка");
-            addLog($"Номер слота: {data.RlSlot}");
+            addLog($"Зарегистрировано возвращение повербанка в слот: {data.RlSlot}");
             addLog($"Серийный номер: {data.RlPbid}");
-            addLog($"Напряжение: {data.RlVol}");
+            string serverType = data.RlLock == 1 ? "Да" : "Нет";
+            addLog($"Заблокирован: {data.RlLock}");
+            string charging = data.RlLimited == 1 ? "Да" : "Нет";
+            addLog($"Заряжается: {charging}");
+            string chargeLevel;
+            switch (data.RlQoe)
+            {
+                case 0:
+                    chargeLevel = "0%..20%";
+                    break;
+                case 1:
+                    chargeLevel = "20%..40%";
+                    break;
+                case 2:
+                    chargeLevel = "40%..60%";
+                    break;
+                case 3:
+                    chargeLevel = "60%..80%";
+                    break;
+                case 4:
+                    chargeLevel = "80%..100%";
+                    break;
+                case 5:
+                    chargeLevel = "100%";
+                    break;
+                default:
+                    chargeLevel = "сбой получения данных о заряде";
+                    break;
+            }
+            addLog($"Процент заряда: {chargeLevel}");
+            string status = data.RlCode == 0 ? "Работоспособен" : "Неисправен";
+            addLog($"Статус: {data.RlCode}");
             device.SrvReturnThePowerBank(data.RlSlot, 1);
 
         }
@@ -137,7 +171,53 @@ namespace GuiClient
         private void Device_EvReportCabinetLogin(RptReportCabinetLogin data)
         {
             addLog($"Зарегистрировано устройство на сервере:");
+            addLog($"Поддерживаемое количество повербанков: {data.RlCount}");
+
+            string networks;
+            switch (data.RlNetmode)
+            {
+                 case 1:
+                    networks = "только 4G";
+                    break;
+                case 2:
+                    networks = "только WiFi";
+                    break;
+                case 3:
+                    networks = "4G и WiFi";
+                    break;
+                default:
+                    networks = "неизвестно";
+                    break;
+            }
+            addLog($"Поддерживаемые сети: {networks}");
+
+            string networkMode;
+            switch (data.RlNetmode)
+            {
+                case 0:
+                    networkMode = "WiFi";
+                    break;
+                case 1:
+                    networkMode = "2G";
+                    break;
+                case 2:
+                    networkMode = "3G";
+                    break;
+                case 3:
+                    networkMode = "4G";
+                    break;
+                default:
+                    networkMode = "неизвестно";
+                    break;
+            }
+            addLog($"Режим работы сети: {networkMode}");
+            addLog($"Качество сигнала мобильной сети CSQ 0..31 (для WiFi=0): {data.RlCsq}");
+            addLog($"Сила сигнала мобильной сети RSRP -140..-22 (для WiFi=0): {data.RlRsrp}");
+            addLog($"Соотношение сигнал/шум для мобильной сети SINR -20..30 (для WiFi=0): {data.RlSinr}");
+            addLog($"Сила сигнала WiFi RSSI (для мобильной сети=0): {data.RlWifi}");
             addLog($"Версия ПО: {data.RlCommsoftver}");
+            addLog($"Версия железа: {data.RlCommhardver}"); 
+            addLog($"ICCID SIM-карты: {data.RlIccid}");
         }
 
         private void Device_EvQueryTheInventory(RplQueryTheInventory data)
@@ -149,10 +229,10 @@ namespace GuiClient
                 addLog($"S/N: {pbank.RlPbid}");
                 string readIDok = pbank.RlIdok == 1 ? "удачно" : "неудачно";
                 addLog($"readID прочитан {readIDok}");
-                string lockLevel = pbank.RlLock == 1 ? "высокий" : "низкий";
-                addLog($"уровень блокировки: {lockLevel}");
+                string lockLevel = pbank.RlLock == 1 ? "Да" : "Нет";
+                addLog($"Заблокирован: {lockLevel}");
                 string charging = pbank.RlCharge == 1 ? "Да" : "Нет";
-                addLog($"Заряжается: {pbank.RlCharge}");
+                addLog($"Заряжается: {charging}");
                 string chargeLevel;
                 switch (pbank.RlQoe)
                 {
@@ -175,10 +255,12 @@ namespace GuiClient
                         chargeLevel = "100%";
                         break;
                     default:
-                        chargeLevel = "fail";
+                        chargeLevel = "сбой получения данных о заряде";
                         break;
                 }
                 addLog($"Процент заряда: {chargeLevel}");
+
+
 
             }
         }
