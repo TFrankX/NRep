@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\GuiClient\\GuiClient.csproj": {}
+    "C:\\Users\\User\\source\\repos\\ShareCharging\\GuiClient\\GuiClient.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\GuiClient\\GuiClient.csproj": {
+    "C:\\Users\\User\\source\\repos\\ShareCharging\\GuiClient\\GuiClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\GuiClient\\GuiClient.csproj",
+        "projectUniqueName": "C:\\Users\\User\\source\\repos\\ShareCharging\\GuiClient\\GuiClient.csproj",
         "projectName": "GuiClient",
-        "projectPath": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\GuiClient\\GuiClient.csproj",
-        "packagesPath": "C:\\Users\\Simin.V\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\GuiClient\\obj\\",
+        "projectPath": "C:\\Users\\User\\source\\repos\\ShareCharging\\GuiClient\\GuiClient.csproj",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\User\\source\\repos\\ShareCharging\\GuiClient\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Simin.V\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -32,8 +32,8 @@
           "net6.0-windows7.0": {
             "targetAlias": "net6.0-windows",
             "projectReferences": {
-              "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\SimnetLib\\SimnetLib.csproj": {
-                "projectPath": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\SimnetLib\\SimnetLib.csproj"
+              "C:\\Users\\User\\source\\repos\\ShareCharging\\SimnetLib\\SimnetLib.csproj": {
+                "projectPath": "C:\\Users\\User\\source\\repos\\ShareCharging\\SimnetLib\\SimnetLib.csproj"
               }
             }
           }
@@ -66,24 +66,24 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\SimnetLib\\SimnetLib.csproj": {
+    "C:\\Users\\User\\source\\repos\\ShareCharging\\SimnetLib\\SimnetLib.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\SimnetLib\\SimnetLib.csproj",
+        "projectUniqueName": "C:\\Users\\User\\source\\repos\\ShareCharging\\SimnetLib\\SimnetLib.csproj",
         "projectName": "SimnetLib",
-        "projectPath": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\SimnetLib\\SimnetLib.csproj",
-        "packagesPath": "C:\\Users\\Simin.V\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\SimnetLib\\obj\\",
+        "projectPath": "C:\\Users\\User\\source\\repos\\ShareCharging\\SimnetLib\\SimnetLib.csproj",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\User\\source\\repos\\ShareCharging\\SimnetLib\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Simin.V\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -143,7 +143,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }

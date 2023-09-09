@@ -1,15 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "NkjSN23eRba0uelaIDuobkNWCKBgkzfTaH0iLF4soCFp7NQKtShEJchZcGNevr6t5fF3RfMM77RedusfTKoC8w==",
+  "dgSpecHash": "wJux53NY4XUVzoQ+ZvaG0A6BKeMSo6UNwSns5Uq1UiV6UCu7XRfNZX4Vn4o3t7jV9rt0U+QdUkFqY/L3bYKQsA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Simin.V\\wrk\\repository\\ShareCharging\\GuiClient\\GuiClient.csproj",
+  "projectFilePath": "C:\\Users\\User\\source\\repos\\ShareCharging\\GuiClient\\GuiClient.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Simin.V\\.nuget\\packages\\mqttnet\\4.2.1.781\\mqttnet.4.2.1.781.nupkg.sha512",
-    "C:\\Users\\Simin.V\\.nuget\\packages\\mqttnet.extensions.managedclient\\4.2.1.781\\mqttnet.extensions.managedclient.4.2.1.781.nupkg.sha512",
-    "C:\\Users\\Simin.V\\.nuget\\packages\\protobuf-net\\3.2.26\\protobuf-net.3.2.26.nupkg.sha512",
-    "C:\\Users\\Simin.V\\.nuget\\packages\\protobuf-net.core\\3.2.26\\protobuf-net.core.3.2.26.nupkg.sha512",
-    "C:\\Users\\Simin.V\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
-    "C:\\Users\\Simin.V\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+    "C:\\Users\\User\\.nuget\\packages\\mqttnet\\4.2.1.781\\mqttnet.4.2.1.781.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\mqttnet.extensions.managedclient\\4.2.1.781\\mqttnet.extensions.managedclient.4.2.1.781.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\protobuf-net\\3.2.26\\protobuf-net.3.2.26.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\protobuf-net.core\\3.2.26\\protobuf-net.core.3.2.26.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
   ],
   "logs": []
 }
