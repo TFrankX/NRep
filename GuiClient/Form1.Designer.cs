@@ -37,7 +37,7 @@
             bServerInfo = new Button();
             bSIMInfo = new Button();
             bAPNInfo = new Button();
-            bCabinetInfo = new Button();
+            bNetworkInfo = new Button();
             bPushPowerBank = new Button();
             bPushPowerBankForce = new Button();
             bResetCabinet = new Button();
@@ -132,15 +132,15 @@
             bAPNInfo.Text = "APN инфо";
             bAPNInfo.UseVisualStyleBackColor = true;
             // 
-            // bCabinetInfo
+            // bNetworkInfo
             // 
-            bCabinetInfo.Location = new Point(358, 99);
-            bCabinetInfo.Name = "bCabinetInfo";
-            bCabinetInfo.Size = new Size(102, 23);
-            bCabinetInfo.TabIndex = 10;
-            bCabinetInfo.Text = "Сеть инфо";
-            bCabinetInfo.UseVisualStyleBackColor = true;
-            bCabinetInfo.Click += bCabinetInfo_Click;
+            bNetworkInfo.Location = new Point(358, 99);
+            bNetworkInfo.Name = "bNetworkInfo";
+            bNetworkInfo.Size = new Size(102, 23);
+            bNetworkInfo.TabIndex = 10;
+            bNetworkInfo.Text = "Сеть инфо";
+            bNetworkInfo.UseVisualStyleBackColor = true;
+            bNetworkInfo.Click += bNetworkInfo_Click;
             // 
             // bPushPowerBank
             // 
@@ -264,7 +264,7 @@
             Controls.Add(bResetCabinet);
             Controls.Add(bPushPowerBankForce);
             Controls.Add(bPushPowerBank);
-            Controls.Add(bCabinetInfo);
+            Controls.Add(bNetworkInfo);
             Controls.Add(bAPNInfo);
             Controls.Add(bSIMInfo);
             Controls.Add(bServerInfo);
@@ -293,7 +293,7 @@
         private Button bServerInfo;
         private Button bSIMInfo;
         private Button bAPNInfo;
-        private Button bCabinetInfo;
+        private Button bNetworkInfo;
         private Button bPushPowerBank;
         private Button bPushPowerBankForce;
         private Button bResetCabinet;

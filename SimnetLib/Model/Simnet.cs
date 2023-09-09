@@ -146,16 +146,16 @@ public partial class RplQueryNetworkInfo : global::ProtoBuf.IExtensible
     public uint RlConn { get; set; }
 
     [global::ProtoBuf.ProtoMember(5, Name = @"rl_csq")]
-    public uint RlCsq { get; set; }
+    public int RlCsq { get; set; }
 
     [global::ProtoBuf.ProtoMember(6, Name = @"rl_rsrp")]
-    public uint RlRsrp { get; set; }
+    public int RlRsrp { get; set; }
 
     [global::ProtoBuf.ProtoMember(7, Name = @"rl_sinr")]
-    public uint RlSinr { get; set; }
+    public int RlSinr { get; set; }
 
     [global::ProtoBuf.ProtoMember(8, Name = @"rl_wifi")]
-    public uint RlWifi { get; set; }
+    public int RlWifi { get; set; }
 
     [global::ProtoBuf.ProtoMember(9, Name = @"rl_seq")]
     public uint RlSeq { get; set; }
@@ -442,16 +442,16 @@ public partial class RptReportCabinetLogin : global::ProtoBuf.IExtensible
     public uint RlConn { get; set; }
 
     [global::ProtoBuf.ProtoMember(4, Name = @"rl_csq")]
-    public uint RlCsq { get; set; }
+    public int RlCsq { get; set; }
 
     [global::ProtoBuf.ProtoMember(5, Name = @"rl_rsrp")]
-    public uint RlRsrp { get; set; }
+    public int RlRsrp { get; set; }
 
     [global::ProtoBuf.ProtoMember(6, Name = @"rl_sinr")]
-    public uint RlSinr { get; set; }
+    public int RlSinr { get; set; }
 
     [global::ProtoBuf.ProtoMember(7, Name = @"rl_wifi")]
-    public uint RlWifi { get; set; }
+    public int RlWifi { get; set; }
 
     [global::ProtoBuf.ProtoMember(8, Name = @"rl_commsoftver")]
     [global::System.ComponentModel.DefaultValue("")]

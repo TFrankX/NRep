@@ -100,8 +100,9 @@ namespace GuiClient
             addLog($"Ответ на запрос 'принудительно выдать повербанк'");
             addLog($"Номер слота: {data.RlSlot}");
             addLog($"Серийный номер повербанка: {data.RlPbid}");
-            addLog($"Результат операции (0-неудачно, 1-удачно): {data.RlResult}");
-            
+            string resultsucces = data.RlResult == 1 ? "удачно" : "неудачно";
+            addLog($"Результат операции: {resultsucces}");
+
         }
 
         private void Device_EvResetCabinet(RplResetCabinet data)
@@ -126,6 +127,78 @@ namespace GuiClient
         private void Device_EvQueryNetworkInfo(RplQueryNetworkInfo data)
         {
             addLog($"Ответ на запрос информации сети");
+
+
+
+            string networks;
+            switch (data.RlType)
+            {
+                case 1:
+                    networks = "предпочтительно WiFi";
+                    break;
+                case 2:
+                    networks = "только WiFi";
+                    break;
+                case 3:
+                    networks = "Предпочтительно 4G";
+                    break;
+                default:
+                    networks = "только 4G";
+                    break;
+            }
+            addLog($"Предпочтительный режим работы сети: {networks}");
+
+            string networkMode;
+            switch (data.RlMode)
+            {
+                case 0:
+                    networkMode = "auto";
+                    break;
+                case 1:
+                    networkMode = "предпочтительно 3G";
+                    break;
+                case 2:
+                    networkMode = "только 2G";
+                    break;
+                case 3:
+                    networkMode = "только 3G";
+                    break;
+                case 4:
+                    networkMode = "только 4G";
+                    break;
+                default:
+                    networkMode = "неизвестно";
+                    break;
+            }
+            addLog($"Режим работы мобильной сети: {networkMode}");
+            string connectstatus = data.RlStatus == 0 ? "успешно" : "нет подключения";
+            addLog($"Результат подключения: {connectstatus}");
+
+
+            string currentMode;
+            switch (data.RlConn)
+            {
+                case 0:
+                    currentMode = "WiFi";
+                    break;
+                case 1:
+                    currentMode = "2G";
+                    break;
+                case 2:
+                    currentMode = "3G";
+                    break;
+                case 3:
+                    currentMode = "4G";
+                    break;
+                default:
+                    currentMode = "неизвестно";
+                    break;
+            }
+            addLog($"Текущий режим подключения: {currentMode}");
+            addLog($"Качество сигнала мобильной сети CSQ 0..31 (для WiFi=0): {data.RlCsq}");
+            addLog($"Сила сигнала мобильной сети RSRP -140..-22 (для WiFi=0): {data.RlRsrp}");
+            addLog($"Соотношение сигнал/шум для мобильной сети SINR -20..30 (для WiFi=0): {data.RlSinr}");
+            addLog($"Сила сигнала WiFi RSSI (для мобильной сети=0): {data.RlWifi}");
         }
 
         private void Device_EvReturnThePowerBank(RptReturnThePowerBank data)
@@ -176,7 +249,7 @@ namespace GuiClient
             string networks;
             switch (data.RlNetmode)
             {
-                 case 1:
+                case 1:
                     networks = "только 4G";
                     break;
                 case 2:
@@ -216,7 +289,7 @@ namespace GuiClient
             addLog($"Соотношение сигнал/шум для мобильной сети SINR -20..30 (для WiFi=0): {data.RlSinr}");
             addLog($"Сила сигнала WiFi RSSI (для мобильной сети=0): {data.RlWifi}");
             addLog($"Версия ПО: {data.RlCommsoftver}");
-            addLog($"Версия железа: {data.RlCommhardver}"); 
+            addLog($"Версия железа: {data.RlCommhardver}");
             addLog($"ICCID SIM-карты: {data.RlIccid}");
         }
 
@@ -226,39 +299,50 @@ namespace GuiClient
             foreach (var pbank in data.RlBank1s)
             {
                 addLog($"--------- Повербанк номер {pbank.RlSlot.ToString()} ----------");
-                addLog($"S/N: {pbank.RlPbid}");
-                string readIDok = pbank.RlIdok == 1 ? "удачно" : "неудачно";
-                addLog($"readID прочитан {readIDok}");
-                string lockLevel = pbank.RlLock == 1 ? "Да" : "Нет";
-                addLog($"Заблокирован: {lockLevel}");
-                string charging = pbank.RlCharge == 1 ? "Да" : "Нет";
-                addLog($"Заряжается: {charging}");
-                string chargeLevel;
-                switch (pbank.RlQoe)
+                
+                if (pbank.RlIdok == 1)
                 {
-                    case 0:
-                        chargeLevel = "0%..20%";
-                        break;
-                    case 1:
-                        chargeLevel = "20%..40%";
-                        break;
-                    case 2:
-                        chargeLevel = "40%..60%";
-                        break;
-                    case 3:
-                        chargeLevel = "60%..80%";
-                        break;
-                    case 4:
-                        chargeLevel = "80%..100%";
-                        break;
-                    case 5:
-                        chargeLevel = "100%";
-                        break;
-                    default:
-                        chargeLevel = "сбой получения данных о заряде";
-                        break;
+
+                    addLog($"S/N: {pbank.RlPbid}");
+                    string readIDok = pbank.RlIdok == 1 ? "удачно" : "неудачно";
+                    addLog($"readID прочитан {readIDok}");
+                    string lockLevel = pbank.RlLock == 1 ? "Да" : "Нет";
+                    addLog($"Заблокирован: {lockLevel}");
+                    string charging = pbank.RlCharge == 1 ? "Да" : "Нет";
+                    addLog($"Заряжается: {charging}");
+                    string chargeLevel;
+                    switch (pbank.RlQoe)
+                    {
+                        case 0:
+                            chargeLevel = "0%..20%";
+                            break;
+                        case 1:
+                            chargeLevel = "20%..40%";
+                            break;
+                        case 2:
+                            chargeLevel = "40%..60%";
+                            break;
+                        case 3:
+                            chargeLevel = "60%..80%";
+                            break;
+                        case 4:
+                            chargeLevel = "80%..100%";
+                            break;
+                        case 5:
+                            chargeLevel = "100%";
+                            break;
+                        default:
+                            chargeLevel = "сбой получения данных о заряде";
+                            break;
+                    }
+                    addLog($"Процент заряда: {chargeLevel}");
+
+                } 
+                else
+                {
+                    addLog($"*** Отсутствует ***");
                 }
-                addLog($"Процент заряда: {chargeLevel}");
+
 
 
 
@@ -270,7 +354,8 @@ namespace GuiClient
             addLog($"Ответ на запрос выдачи повербанка");
             addLog($"Номер слота: {data.RlSlot}");
             addLog($"Серийный номер повербанка: {data.RlPbid}");
-            addLog($"Результат операции (0-неудачно, 1-удачно): {data.RlResult}");
+            string resultsucces = data.RlResult == 1 ? "удачно" : "неудачно";
+            addLog($"Результат операции: {resultsucces}");
         }
 
         private void bPushPowerBank_Click(object sender, EventArgs e)
@@ -297,13 +382,6 @@ namespace GuiClient
             addLog($"Команда: сброс кабинета");
             device.CmdResetCabinet();
         }
-
-        private void bCabinetInfo_Click(object sender, EventArgs e)
-        {
-            addLog($"Команда: запрос информации кабинета");
-            device.CmdQueryNetworkInfo();
-        }
-
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -332,6 +410,12 @@ namespace GuiClient
             rtbLog.SelectionStart = rtbLog.Text.Length;
             // scroll it automatically
             rtbLog.ScrollToCaret();
+        }
+
+        private void bNetworkInfo_Click(object sender, EventArgs e)
+        {
+            addLog($"Команда: запрос информации сети устройства");
+            device.CmdQueryNetworkInfo();
         }
     }
 }

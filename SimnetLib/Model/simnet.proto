@@ -115,13 +115,13 @@ message RplQueryNetworkInfo { // Reply from device on command QueryNetworkInfo
 						 //	4: 4G
 
 
-	uint32 rl_csq = 5; // CSQ range 0 to 31. If WIFI is used, the value is 0
+	int32 rl_csq = 5; // CSQ range 0 to 31. If WIFI is used, the value is 0
 
-	uint32 rl_rsrp = 6; // RSRP，range -140 to -22. If WIFI is used, the value is 0
+	int32 rl_rsrp = 6; // RSRP，range -140 to -22. If WIFI is used, the value is 0
 
-	uint32 rl_sinr = 7; // SINR，range -20 to 30. If WIFI is used, the value is 0
+	int32 rl_sinr = 7; // SINR，range -20 to 30. If WIFI is used, the value is 0
 
-	uint32 rl_wifi = 8; // WIFI RSSI，range -120 to -30. If 4G is used, the value is 0
+	int32 rl_wifi = 8; // WIFI RSSI，range -120 to -30. If 4G is used, the value is 0
 
 	uint32 rl_seq = 9; // The serial number of each packet, starting at 1 and accumulating upwards
 }
@@ -329,13 +329,13 @@ message RptReportCabinetLogin { // Report from device on event Report Cabinet Lo
 						// 1: 2G
 						// 2: 3G
 						// 4: 4G
-	uint32 rl_csq = 4; // CSQ range 0 to 31. If WIFI is used, the value is 0
+	int32 rl_csq = 4; // CSQ range 0 to 31. If WIFI is used, the value is 0
 
-	uint32 rl_rsrp = 5; // RSRP，range -140 to -22. If WIFI is used, the value is 0
+	int32 rl_rsrp = 5; // RSRP，range -140 to -22. If WIFI is used, the value is 0
 
-	uint32 rl_sinr = 6; // SINR，range -20 to 30. If WIFI is used, the value is 0
+	int32 rl_sinr = 6; // SINR，range -20 to 30. If WIFI is used, the value is 0
 
-	uint32 rl_wifi = 7; // WIFI RSSI，range -120 to -30. If 4G is used, the value is 0
+	int32 rl_wifi = 7; // WIFI RSSI，range -120 to -30. If 4G is used, the value is 0
 
 	string rl_commsoftver = 8; //Communication board software version
 
