@@ -27,8 +27,4 @@
     <ProjectReference Include="..\SimnetLib\SimnetLib.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Device\" />
-  </ItemGroup>
-
 </Project>

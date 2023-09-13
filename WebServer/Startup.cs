@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebServer.Models.Identity;
+using WebServer.Models.Device;
 namespace WebServer
 {
     public class Startup
@@ -24,14 +25,9 @@ namespace WebServer
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddDbContextPool<MonSectionsContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteWebDockMon")));
+            services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
             services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
             services.AddSingleton<IAlertService, AlertService>();
-            services.AddSingleton<IReddyNotifier, ReddyNotifier>();
-            services.AddSingleton<IDockerDataCache, DockerDataCache>();
-            services.AddSingleton<IFilesManagement, FilesManagement>();
-            services.AddSingleton<IUserSettingsCache, UserSettingsCache>();
-            services.AddSingleton<IServerStatisticsCache, ServerStatisticsCache>();
             services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppIdentityContext>();
@@ -100,7 +96,7 @@ namespace WebServer
                 //endpoints.MapControllerRoute(
                 //    name: "default",
                 //    pattern: "{controller=WebDocSection}/{action=GetChartData}");
-                endpoints.MapHub<DockMonHub>("/dockmonhub");
+                //endpoints.MapHub<DockMonHub>("/dockmonhub");
                 endpoints.MapRazorPages();
 
                 //endpoints.MapGet("/", async context =>
