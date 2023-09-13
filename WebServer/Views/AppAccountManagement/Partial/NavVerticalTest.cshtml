@@ -1,0 +1,75 @@
+﻿@model IEnumerable<AppUser>
+
+@inject RoleManager<IdentityRole> RoleManager;
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+    <div class="" id="accordion">
+        <a class="btn btn-dark btn-block" asp-controller="AppAccountManagement" asp-action="AppCreateAccount">Create Account</a>
+        
+        
+        <a id="chevrone1" class="btn btn-dark btn-block text-light" data-toggle="collapse" data-parent="#accordion" onclick='panelButtonPress("1")' href="#collapse1">
+            Users
+            <span><em id="icon1" class="fa fa-chevron-down"></em></span>
+        </a>
+        <div id="collapse1" class="collapse">
+            @if (@Model.Any())
+            {
+                
+                @foreach (var user in Model)
+                {
+                    <form method="get" asp-controller="AppAccountManagement" asp-action="AppAccounts">
+                        <input type="hidden" name="Id" value="@user.Id" />
+                        <input class="btn btn-light btn-block" type="submit" value=@user.UserName />
+                    </form>
+
+                }
+            }
+            else
+            {
+                <h2>No user found</h2>
+            }
+        </div>
+        <a id="chevrone2" class="btn btn-dark btn-block text-light" data-toggle="collapse" data-parent="#accordion" onclick='panelButtonPress("2")' href="#collapse2">
+            Roles
+            <span><em id="icon2" class="fa fa-chevron-down"></em></span>
+        </a>
+        <div id="collapse2" class="collapse">
+
+
+            @foreach (var role in RoleManager.Roles)
+            {
+                @if (role != null)
+                {
+                    <form method="get" asp-controller="AppAccountManagement" asp-action="AppEditAccountPass">
+                        <input type="hidden" name="Id" value="@role.Id" />
+                        <input class="btn btn-light btn-block" type="submit" value=@role.Name />
+                    </form>
+                }
+                else
+                {
+                    <h2>No user found</h2>
+                    break;
+                }
+            }
+
+
+        </div>
+    </div>
+
+<script>
+
+    function panelButtonPress(panelNumber) {
+        var panelId = "#chevrone" + panelNumber;
+        var iconId = "icon" + panelNumber;
+        if (document.getElementById(iconId).className === "fa fa-chevron-down") {
+            $(panelId + " i").removeClass("fa fa-chevron-down").addClass("fa fa-chevron-right");
+            $(panelId).button('refresh');
+
+        } else {
+            $(panelId + " i").removeClass("fa fa-chevron-right").addClass("fa fa-chevron-down").button('refresh');
+            $(panelId).button('refresh');
+
+        }
+    }
+</script>

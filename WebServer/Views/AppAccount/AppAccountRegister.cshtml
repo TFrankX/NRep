@@ -1,0 +1,27 @@
+﻿@model AppAccountsRegister
+
+<h2>Registration</h2>
+
+<form asp-action="AppAccountRegister" asp-controller="AppAccount">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <div>
+            <label asp-for="UserName">UserName</label><br />
+            <input type="text" asp-for="UserName" />
+            <span asp-validation-for="UserName"></span>
+        </div>
+        <div>
+            <label asp-for="Password">Password</label><br />
+            <input asp-for="Password" />
+            <span asp-validation-for="Password"></span>
+        </div>
+        <div>
+            <label asp-for="PasswordConfirm">Confirm password</label><br />
+            <input asp-for="PasswordConfirm" />
+            <span asp-validation-for="PasswordConfirm"></span>
+        </div>
+        <div>
+            <input type="submit" value="Registration" />
+        </div>
+    </div>
+</form>

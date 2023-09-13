@@ -1,0 +1,20 @@
+﻿@model AppAccountsLogin
+<h2>Docker-monitor authorization</h2>
+
+<form method="post" asp-controller="AppAccount" asp-action="AppAccountLogin"
+      asp-route-returnUrl="@Model.ReturnUrl">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <label asp-for="UserName"></label><br />
+        <input asp-for="UserName" />
+        <span asp-validation-for="UserName"></span>
+    </div>
+    <div>
+        <label asp-for="Password"></label><br />
+        <input asp-for="Password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+    <div>
+        <input class="btn btn-dark my-3" type="submit" value="Log in" />
+    </div>
+</form>

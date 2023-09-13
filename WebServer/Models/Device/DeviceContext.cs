@@ -13,7 +13,7 @@ namespace WebServer.Models.Device
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Device>().HasIndex(u => u.UpdateTime);
+            modelBuilder.Entity<Device>().HasIndex(u => u.Id);
             //modelBuilder.Entity<StressProfile>().HasIndex(u => new { u.NameSettings, u.NumberOfUsers, u.NumberOfInstrument, u.NumberOfOrdersFromUserPerSec }).IsUnique();
         }
     }

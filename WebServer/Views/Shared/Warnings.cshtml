@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Warnings";
+}
+
+<div class="text-center">
+    <div class ="h2 text-center text-danger">@ViewBag.Text</div>
+</div>
+<br><br>
+<div class="text-center">
+    <div class="btn-group" role="group">
+        <button class="btn btn-dark mr-2" type="submit" onclick="location.href = '@ViewBag.Referer'">Try again</button>
+        <button class="btn btn-dark" type="submit" onclick="location.href = '@Url.Action("Administration", "Administration")'">Cancel</button>
+    </div>
+</div>

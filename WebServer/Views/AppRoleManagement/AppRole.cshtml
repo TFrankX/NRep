@@ -1,0 +1,51 @@
+﻿@model IEnumerable<IdentityRole>
+
+@{
+    ViewBag.Title = "Settings";
+}
+
+<div class="row">
+    <div class="col-md-2">
+        <div class="position-fixed">
+            <br><br>
+            @Html.Partial("NavVertical")
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        
+        <div class="text-center"><h2>Role Management</h2></div>
+
+        <table class="table table-striped table-bordered table-hover">
+            <caption>Role Management</caption>
+            @if (@Model.Any())
+            {
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col" class="col-md-10 text-center">Role name</th>
+                        <th scope="col" class="col-md-2 text-center">Action</th>
+                    </tr>
+                </thead>
+                 @foreach (var role in Model)
+                 {
+                     <tr>
+                         <td>@role.Name</td>
+                         <td class="text-center">
+                             <div class="btn-group btn-group-lg" role="group">
+                                 <form method="get" asp-controller="AppRoleManagement" asp-action="EditRole">
+                                     <input type="hidden" name="idRole" value="@role.Id" />
+                                     <input class="btn btn-dark mr-2" type="submit" value="Edit" />
+                                 </form>
+                             </div>
+                         </td>
+                     </tr>
+                 }
+            }
+            else
+            {
+                @:"No account added"
+            }
+        </table>
+    </div>
+</div>
+

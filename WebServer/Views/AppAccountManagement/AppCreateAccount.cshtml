@@ -1,0 +1,43 @@
+﻿@model AppAccountsRegister
+
+@{
+    ViewBag.Title = "Create account";
+}
+
+<div class="row">
+    <div class="col-md-2">
+        <div class="position-fixed">
+            <br><br>
+            @Html.Partial("NavVertical")
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <div class="text-center"><h2>Create account</h2></div>
+
+        <form asp-action="AppCreateAccount" asp-controller="AppAccountManagement">
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="form-group">
+                <label asp-for="UserName">UserName</label><br />
+                <input type="text" asp-for="UserName" class="form-control" />
+                <span asp-validation-for="UserName"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password">Password</label><br />
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PasswordConfirm">Confirm password</label><br />
+                <input asp-for="PasswordConfirm" class="form-control" />
+                <span asp-validation-for="PasswordConfirm"></span>
+            </div>
+            <div class="text-center">
+                <div class="btn-group" role="group">
+                    <input class="btn btn-dark mr-2" type="submit" Value="Create">
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark" role="button">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

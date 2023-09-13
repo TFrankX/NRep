@@ -1,0 +1,23 @@
+﻿@model AppAccountDataEdit
+@{
+    ViewBag.Title = "Edit data account";
+}
+
+<div class="text-center"><h2>Edit data account</h2></div>
+
+<form asp-action="AppEditAccountData" asp-controller="AppAccountManagement">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="form-group">
+        <input type="hidden" asp-for="Id" />
+    </div>
+    <div class="form-group">
+        <label asp-for="UserName" class="control-label">User name</label>
+        <input type="text" asp-for="UserName" class="form-control" />
+    </div>
+    <div class="text-center">
+        <div class="btn-group" role="group">
+            <input class="btn btn-dark mr-2" type="submit" Value="Edit">
+            <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark" role="button">Cancel</a>
+        </div>
+    </div>
+</form>

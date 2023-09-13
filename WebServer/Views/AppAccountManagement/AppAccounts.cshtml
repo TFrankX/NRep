@@ -1,0 +1,219 @@
+﻿<script src="~/jqwidgets/jqxbuttons.js"></script>
+<script src="~/jqwidgets/jqxscrollbar.js"></script>
+<script src="~/jqwidgets/jqxgrid.js"></script>
+<script src="~/jqwidgets/jqxgrid.edit.js"></script>
+<script src="~/jqwidgets/jqxgrid.columnsresize.js"></script>
+<script src="~/jqwidgets/jqxgrid.filter.js"></script>
+<script src="~/jqwidgets/jqxgrid.selection.js"></script>
+<script src="~/jqwidgets/jqxgrid.sort.js"></script>
+<script src="~/jqwidgets/jqxgrid.pager.js"></script>
+<script src="~/jqwidgets/jqxgrid.aggregates.js"></script>
+<script src="~/jqwidgets/jqxgrid.grouping.js"></script>
+<script src="~/jqwidgets/jqxmenu.js"></script>
+<script src="~/jqwidgets/jqxlistbox.js"></script>
+<script src="~/jqwidgets/jqxdropdownlist.js"></script>
+<script src="~/jqwidgets/jqxcheckbox.js"></script>
+
+@model AppUsers
+
+@{
+    ViewBag.Title = "Settings";
+}
+
+
+@section scripts
+{
+    <script type="text/javascript">
+
+
+        var source =
+        {
+            datatype: "json",
+            datafields: [
+                { name: 'UserName', type: 'string' }
+            ],
+            localdata:
+                @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model, Newtonsoft.Json.Formatting.Indented))
+        };
+
+        var dataAdapter = new $.jqx.dataAdapter(source);
+
+        function cellsrenderer(row, column, value) {
+            var UserId = source.localdata[row].Id;
+
+            var backcolor = "#FFFFFF";
+            var text = value;
+
+            if (column === 'UserName') {
+                // MergerColspan(row, column);
+                return "<div style='height: 100%; width: 100%; background: " +
+                    backcolor +
+                    ";'>" +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            }
+            if (column === 'UserManagement') {
+                return "<div class='btn-group btn-group-lg' role='group'>" +
+                    "<form method='get' action='\/AppAccountManagement\/AppEditAccountData'>" +
+                    "<input type='hidden' name='Id' value='" + UserId +"' />" +
+                    "<input class='btn btn-dark mr-2' type='submit' value='Edit Data' />" +
+                    "</form>" +
+                    "<form method='get' action='\/AppAccountManagement\/AppEditAccountPass'>" +
+                    "<input type='hidden' name='Id' value='" + UserId + "' />" +
+                    "<input class='btn btn-dark mr-2' type='submit' value='Edit Password' />" +
+                    "</form>" +
+                    "<form method='post' action='\/AppAccountManagement\/Delete'>" +
+                    "<input type='hidden' name='Id' value='" + UserId +"' />" +
+                    "<input class='btn btn-danger' type='submit' onclick='return confirm(\"Are you sure you want to delete the user?\");' value='Delete' />" +
+                    "</form>" +
+                    "</div>";
+            }
+
+            return "<div style='height: 100%; width: 100%; background: " +
+                backcolor +
+                ";'>" +
+                "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                value +
+                "</span>" +
+                "</div>";
+        }
+
+
+        var initRowDetails = function(index, parentElement, gridElement, record) {
+            var jsonmod = source.localdata[index].AppRoles;
+            var id = record.uid.toString();
+            var grid = $($(parentElement).children()[0]);
+            $(grid).attr('id', 'ngrid_' + id);
+
+            var data = jsonmod;
+
+            var src = {
+                datafields: [
+                    { name: 'UserId', type: 'string' },
+                    { name: 'RoleName', type: 'string' },
+                    { name: 'RoleId', type: 'string' },
+                    { name: 'IsInRole', type: 'bool' }
+                ],
+                localdata: data
+            }
+
+            var nestedGridAdapter = new $.jqx.dataAdapter(src);
+            if (grid != null) {
+                grid.jqxGrid({
+                    source: nestedGridAdapter,
+                    width: 780,
+                    height: 200,
+                    editable: true,
+                    columns: [
+                        { text: 'Role Name', dataField: 'RoleName', editable: false, width: 200 },
+                        {
+                            text: 'Active',
+                            cellsAlign: 'right',
+                            dataField: 'IsInRole',
+                            columntype: "checkbox",
+                            width: 200
+                        },
+                        {
+                            text: 'UserId',
+                            cellsAlign: 'right',
+                            dataField: 'UserId',
+                            editable: false,
+                            hidden: true,
+                            width: 200
+                        },
+                        {
+                            text: 'RoleId',
+                            cellsAlign: 'right',
+                            dataField: 'RoleId',
+                            editable: false,
+                            hidden: true,
+                            width: 200
+                        }
+                    ]
+                });
+
+            }
+        }
+
+
+        $(document).ready(function() {
+
+            $("#jqxgrid").jqxGrid(
+                {
+                    width: '100%',
+                    source: dataAdapter,
+                    //theme: 'energyblue',
+                    sortable: true,
+                    filterable: true,
+                    //showfilterrow: true,
+                    //autorowheight: true,
+                    rowsheight: 40,
+                    autoheight: true,
+                    //autowidth: true,
+                    //height: 720,
+                    columnsresize: true,
+                    altrows: true,
+                    rowdetails: true,
+                    rowdetailstemplate: function(index) {
+                        var details = {
+                            rowdetails: "<div style=\"margin: 10px;\"></div>",
+                            rowdetailsheight: 220,
+                            rowdetailshidden: true
+                        };
+                        return details;
+                    },
+                    initrowdetails: initRowDetails,
+                    columns: [
+                        { text: "User name", datafield: "UserName", width: "70%", cellsrenderer: cellsrenderer },
+                        { text: "User Management", datafield: "UserManagement", width: "30%", cellsrenderer: cellsrenderer },
+                    ]
+                });
+        });
+
+
+        $('#jqxgrid').on('cellvaluechanged',
+            function(event) {
+                var args = event.args;
+                var datafield = event.args.datafield;
+                if (datafield === 'IsInRole') {
+                    var rowBoundIndex = args.rowindex;
+                    var rowData = $("#" + event.target.id).jqxGrid('getrowdata', rowBoundIndex);
+                    //alert(rowData.UserId);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("ManageUsersRole", "AppRoleManagement")',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            UserId: rowData.UserId,
+                            RoleId: rowData.RoleId,
+                            IsInRole: args.value
+                        })
+                    });
+                }
+            });
+
+
+    </script>
+
+}
+
+
+<style>
+    .jqx-grid-column-header {
+        font-size:12px;
+        font-weight:bold;
+    }
+</style>
+
+<div class="text-center"><h2>Account Management</h2></div>
+
+<div id="jqxgrid"></div>
+
+<div style="margin-top: 30px;">
+    <a class="btn btn-dark btn-block" asp-controller="AppAccountManagement" asp-action="AppCreateAccount">Create Account</a>
+</div>
+
+
+

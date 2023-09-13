@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebServer.Models.Identity;
 using WebServer.Models.Device;
+using WebServer.Workers;
+using Microsoft.Extensions.Hosting;
+
 namespace WebServer
 {
     public class Startup
@@ -27,10 +30,10 @@ namespace WebServer
 
             services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
             services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
-            services.AddSingleton<IAlertService, AlertService>();
+           // services.AddSingleton<IAlertService, AlertService>();
             services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
-            services.AddIdentity<AppUser, IdentityRole>()
-                .AddEntityFrameworkStores<AppIdentityContext>();
+            services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityContext>();
+            services.AddHostedService<ScanDevices>();
             services.Configure<IdentityOptions>(options =>
             {
                 // Default SignIn settings.
