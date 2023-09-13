@@ -206,7 +206,8 @@ namespace GuiClient
             addLog($"Зарегистрировано возвращение повербанка в слот: {data.RlSlot}");
             addLog($"Серийный номер: {data.RlPbid}");
             string serverType = data.RlLock == 1 ? "Да" : "Нет";
-            addLog($"Заблокирован: {data.RlLock}");
+            string lockLevel = data.RlLock == 1 ? "Да" : "Нет";
+            addLog($"Заблокирован: {lockLevel}");
             string charging = data.RlLimited == 1 ? "Да" : "Нет";
             addLog($"Заряжается: {charging}");
             string chargeLevel;
