@@ -21,6 +21,19 @@ namespace SimnetLib.Network
         {
             var factory = new MqttFactory();
             _mqttClient = factory.CreateMqttClient();
+            _mqttClient.ConnectedAsync += e =>
+            {
+                Connected?.Invoke(this);
+                return Task.CompletedTask;
+            };
+
+            _mqttClient.DisconnectedAsync += e =>
+            {
+                Disconnected?.Invoke(this);
+                return Task.CompletedTask;
+            };
+
+
         }
 
         public async void Connect(IPAddress host, int port, string clientId, string username = "", string password = "")
@@ -46,9 +59,12 @@ namespace SimnetLib.Network
 
             var result = await _mqttClient.ConnectAsync(options, CancellationToken.None);
 
+
+
             if (result.ResultCode == MqttClientConnectResultCode.Success)
             {
                 Console.WriteLine("mqtt: connected!");
+
                 _mqttClient.ApplicationMessageReceivedAsync += e =>
                 {
                     MessageReceived?.Invoke(this,
@@ -99,5 +115,8 @@ namespace SimnetLib.Network
         }
 
         public event MessageReceivedEventHandler MessageReceived;
+        public event ConnectedEventHandler Connected;
+        public event DisconnectedEventHandler Disconnected;
+
     }
 }

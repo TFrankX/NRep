@@ -3,6 +3,7 @@ using SimnetLib.Model;
 using SimnetLib.Network;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -20,6 +21,8 @@ namespace SimnetLib
     public delegate void dResetCabinet(RplResetCabinet data);
     public delegate void dReturnThePowerBank(RptReturnThePowerBank data);
     public delegate void dReportCabinetLogin(RptReportCabinetLogin data);
+    public delegate void dConnected();
+    public delegate void dDisconnected();
 
 
     public class Device
@@ -54,7 +57,7 @@ namespace SimnetLib
 
         public string Host { get { return host; } set { host = value; } }
         public int Port { get { return port; } set { port = value; } }
-        public string DeviceName { get { return deviceName; } set { deviceName = value; } }
+        //public string DeviceName { get { return deviceName; } set { deviceName = value; } }
         public string Login { get { return login; } set { login = value; } }
         public string Pass { get { return pass; } set { pass = value; } }
         public string ClientName { get { return clientName; } set { clientName = value; } }
@@ -70,19 +73,24 @@ namespace SimnetLib
         public event dResetCabinet EvResetCabinet;
         public event dReturnThePowerBank EvReturnThePowerBank;
         public event dReportCabinetLogin EvReportCabinetLogin;
-
+        public event dConnected EvConnected;
+        public event dDisconnected EvDisConnected;
 
         public Device()
         {
             bus = new MQTTBus();
             client = new SimnetClient(bus, clientName);
+            client.EvConnected += Connected;
         }
+
+
+
         public Device(string clientName):this()
         {
             this.clientName = clientName;
         }
 
-        public Device(string clientName, string host, int port, string deviceName) : this(clientName)
+        public Device(string clientName, string host, int port) : this(clientName)
         {
             this.clientName = clientName;
             this.host = host;
@@ -90,7 +98,7 @@ namespace SimnetLib
             this.deviceName =deviceName;
         }
 
-        public Device(string clientName, string host, int port, string deviceName, string login, string pass) : this(clientName, host,port,deviceName)
+        public Device(string clientName, string host, int port, string login, string pass) : this(clientName, host,port)
         {
             this.login = login;
             this.pass = pass;
@@ -98,16 +106,28 @@ namespace SimnetLib
 
         public void Connect()
         {
-            cmdPushPowerBank = $"cabinet/{deviceName}/cmd/{MessageTypes.PushPowerBank}";
-            cmdPushPowerBankForce = $"cabinet/{deviceName}/cmd/{MessageTypes.PushPowerBankForce}";
-            cmdQueryNetworkInfo = $"cabinet/{deviceName}/cmd/{MessageTypes.QueryNetworkInfo}";
-            cmdQueryTheInventory = $"cabinet/{deviceName}/cmd/{MessageTypes.QueryTheInventory}";
-            cmdQueryServer = $"cabinet/{deviceName}/cmd/{MessageTypes.QueryServer}";
-            cmdQueryCabinetAPN = $"cabinet/{deviceName}/cmd/{MessageTypes.QueryCabinetAPN}";
-            cmdQuerySIMCardICCID = $"cabinet/{deviceName}/cmd/{MessageTypes.QuerySIMCardICCID}";
-            cmdResetCabinet = $"cabinet/{deviceName}/cmd/{MessageTypes.ResetCabinet}";
-            srvReturnThePowerBank = $"cabinet/{deviceName}/cmd/{MessageTypes.ReturnThePowerBank}";
+            client.Connect(this.host, this.port, this.login, this.pass);
+            Thread.Sleep(1000);        
 
+        }
+
+        public void Connect(string host, int port)
+        {
+            this.host = host;
+            this.port = port;
+            Connect();
+        }
+
+        public  void Connect(string host, int port,string login, string pass)
+        {
+            this.login = login;
+            this.pass = pass;
+            Connect( host,  port);
+        }
+
+
+        public void Subcribe(string deviceName)
+        {
 
             rplPushPowerBank = $"cabinet/{deviceName}/reply/{MessageTypes.PushPowerBank}";
             rplPushPowerBankForce = $"cabinet/{deviceName}/reply/{MessageTypes.PushPowerBankForce}";
@@ -119,12 +139,6 @@ namespace SimnetLib
             rplResetCabinet = $"cabinet/{deviceName}/reply/{MessageTypes.ResetCabinet}";
             rptReturnThePowerBank = $"cabinet/{deviceName}/report/{MessageTypes.ReturnThePowerBank}";
             rptReportCabinetLogin = $"cabinet/{deviceName}/report/{MessageTypes.ReportCabinetLogin}";
-
-
-            client.Connect(this.host, this.port, this.login, this.pass);
-
-
-            Thread.Sleep(1000);
 
             if (client.IsConnected())
             {
@@ -178,31 +192,9 @@ namespace SimnetLib
                     EvReportCabinetLogin(message);
                 });
 
-
             }
 
-            
-
-
-
-
         }
-
-        public void Connect(string host, int port, string deviceName)
-        {
-            this.host = host;
-            this.port = port;
-            this.deviceName = deviceName;
-            Connect();
-        }
-
-        public  void Connect(string host, int port, string deviceName,string login, string pass)
-        {
-            this.login = login;
-            this.pass = pass;
-            Connect( host,  port,  deviceName);
-        }
-
 
         //bool SendMessage(string topic, CmdPushPowerBank data)
         //{
@@ -214,8 +206,17 @@ namespace SimnetLib
         //    else return false; 
         //}
 
-        public bool CmdPushPowerBank(uint slotNumber) 
+        public void Connected()
         {
+            //Subcribe(deviceName);
+            EvConnected();
+        }
+
+
+
+        public bool CmdPushPowerBank(uint slotNumber, string deviceName) 
+        {
+            cmdPushPowerBank = $"cabinet/{deviceName}/cmd/{MessageTypes.PushPowerBank}";
             var sCmdPushPowerBank = new CmdPushPowerBank
             {
                 RlSlot = slotNumber,
@@ -230,8 +231,9 @@ namespace SimnetLib
 
             //return SendMessage(cmdPushPowerBank, sCmdPushPowerBank);
         }
-        public bool CmdPushPowerBankForce(uint slotNumber)
+        public bool CmdPushPowerBankForce(uint slotNumber, string deviceName)
         {
+            cmdPushPowerBankForce = $"cabinet/{deviceName}/cmd/{MessageTypes.PushPowerBankForce}";
             var sCmdPushPowerBankForce = new CmdPushPowerBankForce
             {
                 RlSlot = slotNumber,
@@ -245,8 +247,9 @@ namespace SimnetLib
             else return false;
             //return SendMessage(cmdPushPowerBankForce, sCmdPushPowerBankForce);
         }
-        public bool CmdQueryNetworkInfo() 
+        public bool CmdQueryNetworkInfo(string deviceName) 
         {
+            cmdQueryNetworkInfo = $"cabinet/{deviceName}/cmd/{MessageTypes.QueryNetworkInfo}";
             var sCmdQueryNetworkInfo = new CmdQueryNetworkInfo
             {
                 RlSeq = 1
@@ -262,9 +265,10 @@ namespace SimnetLib
             //return SendMessage(cmdQueryNetworkInfo, sCmdQueryNetworkInfo);
         }
 
-        public  bool CmdQueryTheInventory()
+        public  bool CmdQueryTheInventory(string deviceName)
          {
-             var sCmdQueryTheInventory = new CmdQueryTheInventory
+            cmdQueryTheInventory = $"cabinet/{deviceName}/cmd/{MessageTypes.QueryTheInventory}";
+            var sCmdQueryTheInventory = new CmdQueryTheInventory
              {
                  RlSeq = 1
              };
@@ -277,8 +281,9 @@ namespace SimnetLib
 
              //return SendMessage(cmdQueryTheInventory, sQueryTheInventory);
          }
-        public bool CmdQueryServer(uint serverType)
+        public bool CmdQueryServer(uint serverType, string deviceName)
         {
+            cmdQueryServer = $"cabinet/{deviceName}/cmd/{MessageTypes.QueryServer}";
             var sCmdQueryServer = new CmdQueryServer
             {
                 RlType = serverType,
@@ -296,8 +301,9 @@ namespace SimnetLib
 
         }
 
-        public bool CmdQueryCabinetAPN()
+        public bool CmdQueryCabinetAPN(string deviceName)
         {
+            cmdQueryCabinetAPN = $"cabinet/{deviceName}/cmd/{MessageTypes.QueryCabinetAPN}";
             var sCmdQueryCabinetAPN = new CmdQueryCabinetAPN
             {
                 RlSeq = 1
@@ -312,9 +318,10 @@ namespace SimnetLib
         }
  
         
-        public bool CmdQuerySIMCardICCID()
+        public bool CmdQuerySIMCardICCID(string deviceName)
         {
-             var sCmdQuerySIMCardICCID = new CmdQuerySIMCardICCID
+            cmdQuerySIMCardICCID = $"cabinet/{deviceName}/cmd/{MessageTypes.QuerySIMCardICCID}";
+            var sCmdQuerySIMCardICCID = new CmdQuerySIMCardICCID
              {
                  RlSeq = 1
              };
@@ -326,9 +333,10 @@ namespace SimnetLib
             else return false;
             //     return SendMessage(cmdQuerySIMCardICCID, sQuerySIMCardICCID);
         }
-        public bool CmdResetCabinet()
+        public bool CmdResetCabinet(string deviceName)
         {
-             var sCmdResetCabinet = new CmdResetCabinet
+            cmdResetCabinet = $"cabinet/{deviceName}/cmd/{MessageTypes.ResetCabinet}";
+            var sCmdResetCabinet = new CmdResetCabinet
              {
                  RlSeq = 1
              };
@@ -343,8 +351,9 @@ namespace SimnetLib
         }
 
 
-        public bool SrvReturnThePowerBank(uint slot,uint result) 
+        public bool SrvReturnThePowerBank(uint slot,uint result,string deviceName) 
         {
+            srvReturnThePowerBank = $"cabinet/{deviceName}/cmd/{MessageTypes.ReturnThePowerBank}";
             var sSrvReturnThePowerBank = new SrvReturnThePowerBank
             {
                 RlSlot = slot,

@@ -9,11 +9,15 @@ using SimnetLib.Network;
 namespace SimnetLib
 {
     public delegate void MessageEventHandler<T>(object sender, string topic, T message);
+    public delegate void ConnectedEventHandler();
+    public delegate void DisconnectedEventHandler();
 
     public class SimnetClient
     {
         private INetworkBus _networkBus;
         private Dictionary<string, Subscription> _subscriptions;
+        public event ConnectedEventHandler EvConnected;
+        public event DisconnectedEventHandler EvDisConnected;
 
         public string ClientId { get; private set; }
 
@@ -22,6 +26,8 @@ namespace SimnetLib
             _networkBus = networkBus;
             _subscriptions = new Dictionary<string, Subscription>();
             ClientId = clientId;
+            _networkBus.Connected += NetworkBusOnConnected;
+            _networkBus.Disconnected += NetworkBusOnDisconnected;
         }
 
 
@@ -72,6 +78,17 @@ namespace SimnetLib
             }
 
             _networkBus.Publish(topic, data);
+        }
+
+        private void NetworkBusOnConnected(object sender)
+        {
+            //handler?.DynamicInvoke
+
+            EvConnected.Invoke();
+        }
+        private void NetworkBusOnDisconnected(object sender)
+        {
+            EvDisConnected.Invoke();
         }
 
         private void NetworkBusOnMessageReceived(object sender, string topic, byte[] payload)

@@ -4,7 +4,8 @@ using System.Net;
 namespace SimnetLib.Network
 {
     public delegate void MessageReceivedEventHandler(object sender, string topic, byte[] payload);
-
+    public delegate void ConnectedEventHandler(object sender);
+    public delegate void DisconnectedEventHandler(object sender);
     public interface INetworkBus
     {
         // todo: add more connect possibilities (with pw / cert usw.)
@@ -18,5 +19,7 @@ namespace SimnetLib.Network
         void Subscribe(string topic);
 
         event MessageReceivedEventHandler MessageReceived;
+        event ConnectedEventHandler Connected;
+        event DisconnectedEventHandler Disconnected;
     }
 }

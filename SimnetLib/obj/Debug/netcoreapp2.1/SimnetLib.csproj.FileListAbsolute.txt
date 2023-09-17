@@ -1,8 +1,0 @@
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\bin\Debug\netcoreapp2.1\SimnetLib.deps.json
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\bin\Debug\netcoreapp2.1\SimnetLib.runtimeconfig.json
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\bin\Debug\netcoreapp2.1\SimnetLib.runtimeconfig.dev.json
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\bin\Debug\netcoreapp2.1\SimnetLib.dll
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\netcoreapp2.1\SimnetLib.csprojAssemblyReference.cache
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\netcoreapp2.1\SimnetLib.csproj.CoreCompileInputs.cache
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\netcoreapp2.1\SimnetLib.AssemblyInfoInputs.cache
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\netcoreapp2.1\SimnetLib.AssemblyInfo.cs

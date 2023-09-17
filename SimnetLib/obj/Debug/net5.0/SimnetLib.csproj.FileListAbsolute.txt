@@ -1,5 +1,0 @@
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\net5.0\SimnetLib.csproj.AssemblyReference.cache
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\net5.0\SimnetLib.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\net5.0\SimnetLib.AssemblyInfoInputs.cache
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\net5.0\SimnetLib.AssemblyInfo.cs
-C:\Users\User\Source\Repos\ShareCharge\SimnetLib\obj\Debug\net5.0\SimnetLib.csproj.CoreCompileInputs.cache
