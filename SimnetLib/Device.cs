@@ -21,8 +21,10 @@ namespace SimnetLib
     public delegate void dResetCabinet(RplResetCabinet data);
     public delegate void dReturnThePowerBank(RptReturnThePowerBank data);
     public delegate void dReportCabinetLogin(RptReportCabinetLogin data);
-    public delegate void dConnected();
-    public delegate void dDisconnected();
+    public delegate void dConnected(object sender);
+    public delegate void dDisconnected(object sender);
+    public delegate void dConnectError(object sender,string error);
+
 
 
     public class Device
@@ -75,12 +77,15 @@ namespace SimnetLib
         public event dReportCabinetLogin EvReportCabinetLogin;
         public event dConnected EvConnected;
         public event dDisconnected EvDisconnected;
+        public event dConnectError EvConnectError;
 
         public Device()
         {
             bus = new MQTTBus();
             client = new SimnetClient(bus, clientName);
             client.EvConnected += Connected;
+            client.EvDisconnected += Disconnected;
+            client.EvConnectError += ConnectError;
         }
 
 
@@ -206,13 +211,21 @@ namespace SimnetLib
         //    else return false; 
         //}
 
-        public void Connected()
+        public void Connected(object sender)
         {
             //Subcribe(deviceName);
-            EvConnected?.Invoke();
+            EvConnected?.Invoke(this);
         }
-
-
+        public void Disconnected(object sender)
+        {
+            //Subcribe(deviceName);
+            EvDisconnected?.Invoke(this);
+        }
+        public void ConnectError(object sender,string error)
+        {
+            //Subcribe(deviceName);
+            EvConnectError?.Invoke(this,error);
+        }
 
         public bool CmdPushPowerBank(uint slotNumber, string deviceName) 
         {

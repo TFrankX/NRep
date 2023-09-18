@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using ProtoBuf.Meta;
+using SimnetLib;
 using System;
 using System.Data;
 using WebServer.Models.Device;
@@ -13,6 +15,9 @@ namespace WebServer.Workers
         public List<Server> servers;
         public readonly IServiceScopeFactory ScopeFactory;
         private readonly ILogger<ScanDevices> Logger;
+        IServiceScope scope;
+       // DeviceContext dbDevice;
+
         //  public ScanDevices(List<Server> Servers, ILogger<ScanDevices> logger, IServiceScopeFactory scopeFactory)
         public ScanDevices(ILogger<ScanDevices> logger, IServiceScopeFactory scopeFactory)
         {
@@ -69,8 +74,8 @@ namespace WebServer.Workers
         {
 
             //var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
-            var scope = ScopeFactory.CreateScope();
-            var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+             scope = ScopeFactory.CreateScope();
+             //dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>();
 
 
 
@@ -81,84 +86,146 @@ namespace WebServer.Workers
             //            powerBanks[2] = new PowerBank { Id = 3 };
             //            powerBanks[3] = new PowerBank { Id = 4 };
             Server server = new Server("yaup.ru", 8884, "devclient", "Potato345!", 30);
-            Device device = new Device(123, 156, false, 3, DateTime.Now, DateTime.Now, "10.0.0.1", "yaup.ru", "hhh.hh");
+            Models.Device.Device device = new Models.Device.Device(123, 156, false, 3, DateTime.Now, DateTime.Now, "10.0.0.1", "yaup.ru", "hhh.hh");
 
             try
             {
-                dbDevice.Server.Add(server);
-                dbDevice.SaveChanges();
+                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+                {
+                    if (dbDevice.Server.Any(o => o.Id != server.Id))
+                    {
+                        dbDevice.Server.Add(server);
+                        dbDevice.SaveChanges();
+                    }
+                }
             }
             catch (Exception ex)
             {
+               //dbDevice.Entry(server).State = EntityState.Detached;
                 HandleDbException(ex);
             }
 
             try
             {
-                dbDevice.Device.Add(device);
-                dbDevice.SaveChanges();
+
+                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+                {
+                    if (dbDevice.Device.Any(o => o.Id != device.Id))
+                    {
+                        dbDevice.Device.Add(device);
+                        dbDevice.SaveChanges();
+                    }
+                }
+
             }
             catch (Exception ex)
             {
+                //dbDevice.Entry(device).State = EntityState.Detached;
                 HandleDbException(ex);
             }
 
             servers = new List<Server>();
             ulong tmpId;
-            foreach (var srv in dbDevice.Server)
+
+            InitServers();
+
+            while (!stoppingToken.IsCancellationRequested)
             {
-                if (!srv.Init)
-                {
-                    // servers.Add(new(srv.Host, srv.Port, srv.Login,srv.Password,srv.ReconnectTime)); ;
-                    servers.Add(srv);
-                    //srv.Init = true;
-                    srv.EvConnected += Srv_EvConnected;
-                    srv.EvDisconnected += Srv_EvDisconnected;
-                    srv.Connect();
-
-
-                }
-                foreach (var dev in dbDevice.Device)
-                {
-                    tmpId = dev.Id;
-                }
-
-                while (!stoppingToken.IsCancellationRequested)
-                {
-
-                    //if (servers == null)
-                    //{
-                    //    servers = new List<Server>();
-                    //    servers.Add(new Server());
-                    //}
-
-
-                    using (scope)
-                    {
-                        //   var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
-                        //    foreach (var pendingTask in db.Tasks.Where(t => !t.IsCompleted && t.DueDate < DateTime.Now))
-                        //    {
-                        //        pendingTask.ActionDate = DateTime.Now;
-                        //        pendingTask.IsCompleted = true;
-                        //    }
-                        //    db.SaveChanges();
-                    }
-                    await Task.Delay(TimeSpan.FromSeconds(10));
-                }
+                ReconnectServers();               
+                await Task.Delay(TimeSpan.FromSeconds(10));
             }
-
-
-
 
         }
 
+        private void InitServers()
+        {
+
+            using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+            {
+                foreach (var srv in dbDevice.Server)
+                {
+                    if (!srv.Init)
+                    {
+                        // servers.Add(new(srv.Host, srv.Port, srv.Login,srv.Password,srv.ReconnectTime)); ;
+                        servers.Add(srv);
+                        //srv.Init = true;
+                        //srv.EvConnected += Srv_EvConnected;
+                        //srv.EvDisconnected += Srv_EvDisconnected;
+                        //srv.Connect();
+                    }
+                }
+            }
+        }
+
+        private void ReconnectServers()
+        {
+            foreach (var srv in servers)
+            {
+                if ((srv!=null))
+                {
+                    if (!srv.Connected)
+                    {
+                        srv.EvConnected += Srv_EvConnected;
+                        srv.EvConnectError += Srv_EvConnectError;
+                        srv.EvDisconnected += Srv_EvDisconnected;
+                        srv.Connect();
+                    }
+
+
+                }
+
+            }
+
+        }
         private void Srv_EvConnected(object sender)
         {
+            ((Server)sender).ConnectTime = DateTime.Now;
+            try
+            {
+                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+                {
+                    dbDevice.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleDbException(ex);
+            }
             Logger.LogInformation($"Connected to Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
         }
         private void Srv_EvDisconnected(object sender)
         {
+
+            ((Server)sender).DisconnectTime = DateTime.Now;
+            try
+            {
+                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+                {
+                    dbDevice.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleDbException(ex);
+            }
             Logger.LogInformation($"Disconnected from Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
+        }
+        private void Srv_EvConnectError(object sender,string error)
+        {
+            ((Server)sender).Error= error;
+            ((Server)sender).ConnectTime = DateTime.Now;
+            try
+            {
+                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+                {
+                    dbDevice.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleDbException(ex);
+            }
+            Logger.LogInformation($"Error in connect to {((Server)sender).Host}:{((Server)sender).Port} : {error}\n");
         }
     }
 

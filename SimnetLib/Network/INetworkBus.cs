@@ -6,6 +6,7 @@ namespace SimnetLib.Network
     public delegate void MessageReceivedEventHandler(object sender, string topic, byte[] payload);
     public delegate void ConnectedEventHandler(object sender);
     public delegate void DisconnectedEventHandler(object sender);
+    public delegate void ConnectErrorEventHandler(object sender,string error);
     public interface INetworkBus
     {
         // todo: add more connect possibilities (with pw / cert usw.)
@@ -21,5 +22,6 @@ namespace SimnetLib.Network
         event MessageReceivedEventHandler MessageReceived;
         event ConnectedEventHandler Connected;
         event DisconnectedEventHandler Disconnected;
+        event ConnectErrorEventHandler ConnectError;
     }
 }

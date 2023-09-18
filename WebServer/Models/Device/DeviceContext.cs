@@ -11,7 +11,8 @@ namespace WebServer.Models.Device
         : base(options)
             {
                 Database.EnsureCreated();
-            }
+            
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -20,5 +21,20 @@ namespace WebServer.Models.Device
             modelBuilder.Entity<PowerBank>().HasIndex(u => u.Id);
             //modelBuilder.Entity<StressProfile>().HasIndex(u => new { u.NameSettings, u.NumberOfUsers, u.NumberOfInstrument, u.NumberOfOrdersFromUserPerSec }).IsUnique();
         }
+
+        //public override int SaveChanges()
+        //{
+        //    ChangeTracker.DetectChanges();
+        //    foreach (var enty in ChangeTracker.Entries())
+        //    {
+        //        if (enty.State == EntityState.Added
+        //            || enty.State == EntityState.Modified)
+        //        {
+        //            enty.Property("LastUpdate").CurrentValue = DateTime.UtcNow;
+        //        }
+        //    }
+
+        //    return base.SaveChanges();
+        //}
     }
 }

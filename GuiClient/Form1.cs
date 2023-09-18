@@ -60,12 +60,12 @@ namespace GuiClient
             {
                 DeviceConnect(tbServerAddress.Text, Convert.ToUInt32(tbServerPort.Text), tbLogin.Text, tbPass.Text); ;
 
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
 
-                if (!device.IsConnected())
-                {
-                        addLog($"Не удалось подключиться к серверу");
-                }
+                //if (!device.IsConnected())
+                //{
+                //        addLog($"Не удалось подключиться к серверу");
+                //}
 
 
                 //if (device.IsConnected())
@@ -100,7 +100,13 @@ namespace GuiClient
 
             }).Start();
         }
-        private void Connected()
+
+        private void ConnectError(object sender,string error)
+        {
+            //MessageBox.Show($"Ошибка подключения к серверу: {error}");
+            addLog($"Ошибка подключения к серверу: {error}");
+        }
+        private void Connected(object sender)
         {
             if (device.IsConnected())
             {
@@ -120,7 +126,7 @@ namespace GuiClient
             }
         }
 
-        private void Disconnected()
+        private void Disconnected(object sender)
         {
             addLog($"Потеряна связь с сервером {tbServerAddress.Text}:{tbServerPort.Text}");
         }
@@ -400,6 +406,8 @@ namespace GuiClient
             device = new Device();
             device.EvConnected += Connected;
             device.EvDisconnected += Disconnected;
+            device.EvConnectError += ConnectError;
+
 
             config = new IniFile("config.ini");
 

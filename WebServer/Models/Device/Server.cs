@@ -8,10 +8,12 @@ namespace WebServer.Models.Device
 {
     public delegate void dConnected(object sender);
     public delegate void dDisconnected(object sender);
+    public delegate void dConnectError(object sender,string error);
     public class Server
     {
         public event dConnected EvConnected;
         public event dDisconnected EvDisconnected;
+        public event dConnectError EvConnectError;
 
         public Server(string host, uint port,string login,string password, uint reconnectTime)
         {
@@ -26,6 +28,7 @@ namespace WebServer.Models.Device
             Init = false;
             Connected = false;
             device = new SimnetLib.Device();
+            Error = "";
             //Connect();
         }
         public ulong Id { get; set; }
@@ -33,9 +36,11 @@ namespace WebServer.Models.Device
         public uint Port { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
-
+        public string Error { get; set; }
         public uint ReconnectTime { get; set; }
         //public List<Device> Devices { get; set; }
+        public DateTime ConnectTime { get; set; }
+        public DateTime DisconnectTime { get; set; }
         public  DateTime LastUpdate { get; private set; }
         [NotMapped]
         public bool Connected { get; set; }
@@ -62,19 +67,26 @@ namespace WebServer.Models.Device
         {
             device.EvConnected += Device_EvConnected;
             device.EvDisconnected += Device_EvDisconnected;
+            device.EvConnectError += Device_EvConnectError;
             device.Connect(this.Host, this.Port, this.Login, this.Password);
         }
 
-        private void Device_EvDisconnected()
+        private void Device_EvDisconnected(object sender)
         {
             EvDisconnected?.Invoke(this);
             this.Connected = false;
         }
 
-        private void Device_EvConnected()
+        private void Device_EvConnected(object sender)
         {
             EvConnected?.Invoke(this);
             this.Connected = true;
+        }
+
+        private void Device_EvConnectError(object sender,string error)
+        {
+            EvConnectError?.Invoke(this,error);
+            this.Connected = false;
         }
     }
 

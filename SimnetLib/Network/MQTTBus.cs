@@ -32,8 +32,7 @@ namespace SimnetLib.Network
                 Disconnected?.Invoke(this);
                 return Task.CompletedTask;
             };
-
-
+           
         }
 
         public async void Connect(IPAddress host, int port, string clientId, string username = "", string password = "")
@@ -52,18 +51,24 @@ namespace SimnetLib.Network
                .WithTcpServer(host.ToString(), port)
                .WithClientId(clientId)
                .WithCredentials(username, password)
-
                .Build();
 
             }
-
-            var result = await _mqttClient.ConnectAsync(options, CancellationToken.None);
-
-
-
-            if (result.ResultCode == MqttClientConnectResultCode.Success)
+            MqttClientConnectResultCode resultCode;
+            try
             {
-                Console.WriteLine("mqtt: connected!");
+                var result = await _mqttClient.ConnectAsync(options, CancellationToken.None);
+                resultCode = result.ResultCode;
+            } 
+            catch (Exception ex)
+            {
+                resultCode = MqttClientConnectResultCode.ServerUnavailable;
+                ConnectError.Invoke(this, ex.Message);
+            }
+
+            if (resultCode == MqttClientConnectResultCode.Success)
+            {
+              //  Console.WriteLine("mqtt: connected!");
 
                 _mqttClient.ApplicationMessageReceivedAsync += e =>
                 {
@@ -117,6 +122,7 @@ namespace SimnetLib.Network
         public event MessageReceivedEventHandler MessageReceived;
         public event ConnectedEventHandler Connected;
         public event DisconnectedEventHandler Disconnected;
+        public event ConnectErrorEventHandler ConnectError;
 
     }
 }
