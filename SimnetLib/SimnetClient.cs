@@ -36,12 +36,12 @@ namespace SimnetLib
             return _networkBus.IsConnected();
         }
 
-        public void Connect(string hostname, int port, string username = "", string password = "")
+        public void Connect(string hostname, uint port, string username = "", string password = "")
         {
 
             _networkBus.MessageReceived += NetworkBusOnMessageReceived;
             IPAddress host = Dns.GetHostAddresses(hostname)[0];
-            _networkBus.Connect(host, port, ClientId, username, password);
+            _networkBus.Connect(host, (int)(port), ClientId, username, password);
         }
 
 
@@ -84,11 +84,11 @@ namespace SimnetLib
         {
             //handler?.DynamicInvoke
 
-            EvConnected.Invoke();
+            EvConnected?.Invoke();
         }
         private void NetworkBusOnDisconnected(object sender)
         {
-            EvDisConnected.Invoke();
+            EvDisConnected?.Invoke();
         }
 
         private void NetworkBusOnMessageReceived(object sender, string topic, byte[] payload)

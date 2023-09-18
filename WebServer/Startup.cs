@@ -27,16 +27,16 @@ namespace WebServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            IServiceScopeFactory scopeFactory;
+            //IServiceScopeFactory scopeFactory;
 
             services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
             services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
            // services.AddSingleton<IAlertService, AlertService>();
             services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
             services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityContext>();
-            
-            services.AddHostedService<ScanDevices>(serviceProvider =>
-                    new ScanDevices(Servers, serviceProvider.GetService<IServiceScopeFactory>()));
+            //services.AddHostedService<ScanDevices>(serviceProvider =>
+            //        new ScanDevices(Servers, serviceProvider.GetService<IServiceScopeFactory>()));
+            services.AddHostedService<ScanDevices>();
             services.Configure<IdentityOptions>(options =>
             {
                 // Default SignIn settings.

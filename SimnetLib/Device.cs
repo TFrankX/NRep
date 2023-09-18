@@ -49,14 +49,14 @@ namespace SimnetLib
         private string rptReturnThePowerBank;
         private string rptReportCabinetLogin;
         private string host;
-        private int port;
+        private uint port;
         private string deviceName;
         private string login;
         private string pass;
         private string clientName="DeviceLibrary";
 
         public string Host { get { return host; } set { host = value; } }
-        public int Port { get { return port; } set { port = value; } }
+        public uint Port { get { return port; } set { port = value; } }
         //public string DeviceName { get { return deviceName; } set { deviceName = value; } }
         public string Login { get { return login; } set { login = value; } }
         public string Pass { get { return pass; } set { pass = value; } }
@@ -74,7 +74,7 @@ namespace SimnetLib
         public event dReturnThePowerBank EvReturnThePowerBank;
         public event dReportCabinetLogin EvReportCabinetLogin;
         public event dConnected EvConnected;
-        public event dDisconnected EvDisConnected;
+        public event dDisconnected EvDisconnected;
 
         public Device()
         {
@@ -90,15 +90,15 @@ namespace SimnetLib
             this.clientName = clientName;
         }
 
-        public Device(string clientName, string host, int port) : this(clientName)
+        public Device(string clientName, string host, uint port) : this(clientName)
         {
             this.clientName = clientName;
             this.host = host;
             this.port = port;
-            this.deviceName =deviceName;
+            //this.deviceName =deviceName;
         }
 
-        public Device(string clientName, string host, int port, string login, string pass) : this(clientName, host,port)
+        public Device(string clientName, string host, uint port, string login, string pass) : this(clientName, host,port)
         {
             this.login = login;
             this.pass = pass;
@@ -111,14 +111,14 @@ namespace SimnetLib
 
         }
 
-        public void Connect(string host, int port)
+        public void Connect(string host, uint port)
         {
             this.host = host;
             this.port = port;
             Connect();
         }
 
-        public  void Connect(string host, int port,string login, string pass)
+        public  void Connect(string host, uint port,string login, string pass)
         {
             this.login = login;
             this.pass = pass;
@@ -144,52 +144,52 @@ namespace SimnetLib
             {
                 client.Subscribe<RplPushPowerBank>(rplPushPowerBank, (sender, topic, message) =>
                 {
-                    EvPushPowerBank(message);
+                    EvPushPowerBank?.Invoke(message);
                 });
 
                 client.Subscribe<RplPushPowerBankForce>(rplPushPowerBankForce, (sender, topic, message) =>
                 {
-                    EvPushPowerBankForce(message);
+                    EvPushPowerBankForce?.Invoke(message);
                 });
 
                 client.Subscribe<RplQueryNetworkInfo>(rplQueryNetworkInfo, (sender, topic, message) =>
                 {
-                    EvQueryNetworkInfo(message);
+                    EvQueryNetworkInfo?.Invoke(message);
                 });
 
                 client.Subscribe<RplQueryTheInventory>(rplQueryTheInventory, (sender, topic, message) =>
                 {
-                    EvQueryTheInventory(message);
+                    EvQueryTheInventory?.Invoke(message);
                 });
 
                 client.Subscribe<RplQueryServer>(rplQueryServer, (sender, topic, message) =>
                 {
-                    EvQueryServer(message);
+                    EvQueryServer?.Invoke(message);
                 });
 
                 client.Subscribe<RplQueryCabinetAPN>(rplQueryCabinetAPN, (sender, topic, message) =>
                 {
-                    EvQueryCabinetAPN(message);
+                    EvQueryCabinetAPN?.Invoke(message);
                 });
 
                 client.Subscribe<RplQuerySIMCardICCID>(rplQuerySIMCardICCID, (sender, topic, message) =>
                 {
-                    EvQuerySIMCardICCID(message);
+                    EvQuerySIMCardICCID?.Invoke(message);
                 });
 
                 client.Subscribe<RplResetCabinet>(rplResetCabinet, (sender, topic, message) =>
                 {
-                    EvResetCabinet(message);
+                    EvResetCabinet?.Invoke(message);
                 });
 
                 client.Subscribe<RptReturnThePowerBank>(rptReturnThePowerBank, (sender, topic, message) =>
                 {
-                    EvReturnThePowerBank(message);
+                    EvReturnThePowerBank?.Invoke(message);
                 });
 
                 client.Subscribe<RptReportCabinetLogin>(rptReportCabinetLogin, (sender, topic, message) =>
                 {
-                    EvReportCabinetLogin(message);
+                    EvReportCabinetLogin?.Invoke(message);
                 });
 
             }
@@ -209,7 +209,7 @@ namespace SimnetLib
         public void Connected()
         {
             //Subcribe(deviceName);
-            EvConnected();
+            EvConnected?.Invoke();
         }
 
 

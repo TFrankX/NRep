@@ -8,6 +8,8 @@ using WebServer.Models.Identity;
 using WebServer.Controllers.Identity;
 using System.Net;
 using WebServer;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 internal class Program
 {
@@ -45,6 +47,7 @@ internal class Program
         }
         catch (Exception exception)
         {
+
             //NLog: catch setup errors
             logger.Error(exception, "Stopped program because of exception");
             throw;

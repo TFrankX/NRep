@@ -39,7 +39,7 @@ namespace GuiClient
 
 
 
-        private void DeviceConnect(string host, int port, string login, string pass)
+        private void DeviceConnect(string host, uint port, string login, string pass)
         {
 
             config.Write("ServerHostName", tbServerAddress.Text, "Server");
@@ -58,7 +58,7 @@ namespace GuiClient
             addLog($"Подключение к серверу...");
             new Thread(() =>
             {
-                DeviceConnect(tbServerAddress.Text, Convert.ToInt32(tbServerPort.Text), tbLogin.Text, tbPass.Text); ;
+                DeviceConnect(tbServerAddress.Text, Convert.ToUInt32(tbServerPort.Text), tbLogin.Text, tbPass.Text); ;
 
                 Thread.Sleep(1000);
 
@@ -399,7 +399,7 @@ namespace GuiClient
             addLog("Запуск клиента");
             device = new Device();
             device.EvConnected += Connected;
-            device.EvDisConnected += Disconnected;
+            device.EvDisconnected += Disconnected;
 
             config = new IniFile("config.ini");
 

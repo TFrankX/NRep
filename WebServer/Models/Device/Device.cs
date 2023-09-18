@@ -8,9 +8,10 @@ namespace WebServer.Models.Device
 
         public Device() { }
 
-        public Device(ulong id, bool online, uint error, DateTime lastOnlineTime, DateTime firstOnlineTime, string ip, string devMainServer, string devResServer, PowerBank[] powerBanks)
+        public Device(ulong id, ulong hostDeviceId, bool online, uint error, DateTime lastOnlineTime, DateTime firstOnlineTime, string ip, string devMainServer, string devResServer)
         {
             Id = id;
+            HostDeviceId = hostDeviceId;
             Online = online;
             Error = error;
             LastOnlineTime = lastOnlineTime;
@@ -18,13 +19,14 @@ namespace WebServer.Models.Device
             IP = ip;
             DevMainServer = devMainServer;
             DevResServer = devResServer;
-            PowerBanks = powerBanks;
+            //PowerBanks = powerBanks;
             LastUpdate = DateTime.Now;
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public ulong Id { get; set; }
+        public ulong HostDeviceId { get; set; }
         public bool Online { get; set; }
         public uint Error { get; set; }
         public DateTime LastOnlineTime { get; set; }
@@ -32,7 +34,7 @@ namespace WebServer.Models.Device
         public string IP { get; set; }
         public string DevMainServer { get; set; }
         public string DevResServer { get; set; }
-        public PowerBank[] PowerBanks { get; set; }
+        //public PowerBank[] PowerBanks { get; set; }
         public DateTime LastUpdate { get; private set; }
 
     }

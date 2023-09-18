@@ -3,6 +3,7 @@
     public class PowerBank
     {
         public ulong Id { get; set; }
+        public ulong HostDeviceId { get; set; }
         public bool Locked { get; set; }
         public bool Plugged { get; set; }
         public bool Charging { get; set; }
@@ -11,6 +12,8 @@
         public DateTime LastPutTime { get; set; }        
         public DateTimeOffset ClientTime { get; set; }
         public float Price { get; set; }
+        public DateTime LastUpdate { get; set; }
+
 
     }
 }
