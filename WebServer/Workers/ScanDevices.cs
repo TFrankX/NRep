@@ -168,6 +168,7 @@ namespace WebServer.Workers
                         srv.EvConnected += Srv_EvConnected;
                         srv.EvConnectError += Srv_EvConnectError;
                         srv.EvDisconnected += Srv_EvDisconnected;
+                        srv.EvSubSniffer += Srv_EvSniffer;
                         srv.Connect();
                     }
 
@@ -177,6 +178,29 @@ namespace WebServer.Workers
             }
 
         }
+        private void Srv_EvSniffer(object sender,string topic)
+        {
+            try
+            {
+
+                string dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
+                ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
+                ((Server)(sender)).CmdQueryTheInventory(dev);
+                Logger.LogInformation($"New device - {dev} , try to add \n");
+            }
+            catch
+            {
+                Logger.LogInformation($"Get invalid device with topic: {topic}; Waiting somthing like - cabinet/<name of device>/...\n");
+            }
+            
+          //  ((Server)(sender)).CmdQueryTheInventory(topic.IndexOf("Dev"));
+        }
+
+        private void Srv_EvQueryTheInventory(object sender, RplQueryTheInventory data)
+        {
+            
+        }
+
         private void Srv_EvConnected(object sender)
         {
             ((Server)sender).ConnectTime = DateTime.Now;
@@ -191,7 +215,9 @@ namespace WebServer.Workers
             {
                 HandleDbException(ex);
             }
+
             Logger.LogInformation($"Connected to Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
+            ((Server)sender).SubSniffer();
         }
         private void Srv_EvDisconnected(object sender)
         {

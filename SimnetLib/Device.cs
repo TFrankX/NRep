@@ -24,7 +24,7 @@ namespace SimnetLib
     public delegate void dConnected(object sender);
     public delegate void dDisconnected(object sender);
     public delegate void dConnectError(object sender,string error);
-    public delegate void dSubSniffer(object sender, string topic);
+    public delegate void dSubSniffer(string topic);
 
 
 
@@ -135,8 +135,12 @@ namespace SimnetLib
 
         public void SubSniffer()
         {
-            client.Subscribe<object>("cabinet/#", (sender, topic, message) => EvSubSniffer?.Invoke(self,topic));
+            client.Subscribe<object>("cabinet/#", (sender, topic, message) =>
+            {
+                EvSubSniffer?.Invoke(topic);
+            });
         }
+
 
         public void Subcribe(string deviceName)
         {
@@ -154,6 +158,7 @@ namespace SimnetLib
 
             if (client.IsConnected())
             {
+
                 client.Subscribe<RplPushPowerBank>(rplPushPowerBank, (sender, topic, message) =>
                 {
                     EvPushPowerBank?.Invoke(message);

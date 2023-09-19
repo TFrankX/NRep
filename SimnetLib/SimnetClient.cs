@@ -101,9 +101,43 @@ namespace SimnetLib
 
         private void NetworkBusOnMessageReceived(object sender, string topic, byte[] payload)
         {
-            if (!_subscriptions.ContainsKey(topic)) return;
+            //bool maskOk=false;
+            string mask = "";
+            foreach (var key in _subscriptions)
+            {
+                if (key.ToString().Contains('#'))
+                {
+                    mask = key.ToString().Substring(1, key.ToString().IndexOf('#')-1);
+                    if (topic.Contains(mask))
+                    {
+                        var subscriptionmask = _subscriptions[$"{mask}#"];
+                        var handlermask = subscriptionmask.Delegate;
+                        // example, later use protobuf for serialisation
+                        object valuemask = null;
+                        if (subscriptionmask.Type == typeof(string))
+                        {
+                            valuemask = Encoding.UTF8.GetString(payload);
+                        }
+                        else if (subscriptionmask.Type.IsProto())
+                        {
+                            // protobuf message
+                            using (var stream = new MemoryStream(payload))
+                            {
+                                valuemask = Serializer.Deserialize(stream, Activator.CreateInstance(subscriptionmask.Type));
+                            }
+                        }
 
+                        handlermask?.DynamicInvoke(this, topic, valuemask);
+
+                        break;
+                    };
+                }
+            }
+
+            if ((!_subscriptions.ContainsKey(topic))) return;
+            
             var subscription = _subscriptions[topic];
+           
             var handler = subscription.Delegate;
 
             // example, later use protobuf for serialisation

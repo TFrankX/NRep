@@ -28,278 +28,270 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.rtbLog = new System.Windows.Forms.RichTextBox();
-            this.tbServerAddress = new System.Windows.Forms.TextBox();
-            this.tbServerPort = new System.Windows.Forms.TextBox();
-            this.bConnect = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.bServerInfo = new System.Windows.Forms.Button();
-            this.bSIMInfo = new System.Windows.Forms.Button();
-            this.bAPNInfo = new System.Windows.Forms.Button();
-            this.bNetworkInfo = new System.Windows.Forms.Button();
-            this.bPushPowerBank = new System.Windows.Forms.Button();
-            this.bPushPowerBankForce = new System.Windows.Forms.Button();
-            this.bResetCabinet = new System.Windows.Forms.Button();
-            this.cbSlotNumber = new System.Windows.Forms.ComboBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.tbDeviceName = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.tbPass = new System.Windows.Forms.TextBox();
-            this.tbLogin = new System.Windows.Forms.TextBox();
-            this.bInventory = new System.Windows.Forms.Button();
-            this.bSniffer = new System.Windows.Forms.Button();
-            this.rtbSnif = new System.Windows.Forms.RichTextBox();
-            this.SuspendLayout();
+            rtbLog = new RichTextBox();
+            tbServerAddress = new TextBox();
+            tbServerPort = new TextBox();
+            bConnect = new Button();
+            label1 = new Label();
+            label2 = new Label();
+            bServerInfo = new Button();
+            bSIMInfo = new Button();
+            bAPNInfo = new Button();
+            bNetworkInfo = new Button();
+            bPushPowerBank = new Button();
+            bPushPowerBankForce = new Button();
+            bResetCabinet = new Button();
+            cbSlotNumber = new ComboBox();
+            label3 = new Label();
+            label4 = new Label();
+            tbDeviceName = new TextBox();
+            label5 = new Label();
+            label6 = new Label();
+            tbPass = new TextBox();
+            tbLogin = new TextBox();
+            bInventory = new Button();
+            bSniffer = new Button();
+            SuspendLayout();
             // 
             // rtbLog
             // 
-            this.rtbLog.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.rtbLog.Location = new System.Drawing.Point(12, 162);
-            this.rtbLog.Name = "rtbLog";
-            this.rtbLog.Size = new System.Drawing.Size(776, 276);
-            this.rtbLog.TabIndex = 0;
-            this.rtbLog.Text = "";
+            rtbLog.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            rtbLog.Location = new Point(12, 162);
+            rtbLog.Name = "rtbLog";
+            rtbLog.Size = new Size(776, 276);
+            rtbLog.TabIndex = 0;
+            rtbLog.Text = "";
+            rtbLog.TextChanged += rtbLog_TextChanged;
             // 
             // tbServerAddress
             // 
-            this.tbServerAddress.Location = new System.Drawing.Point(12, 34);
-            this.tbServerAddress.Name = "tbServerAddress";
-            this.tbServerAddress.Size = new System.Drawing.Size(171, 23);
-            this.tbServerAddress.TabIndex = 1;
+            tbServerAddress.Location = new Point(12, 34);
+            tbServerAddress.Name = "tbServerAddress";
+            tbServerAddress.Size = new Size(171, 23);
+            tbServerAddress.TabIndex = 1;
             // 
             // tbServerPort
             // 
-            this.tbServerPort.Location = new System.Drawing.Point(12, 82);
-            this.tbServerPort.Name = "tbServerPort";
-            this.tbServerPort.Size = new System.Drawing.Size(171, 23);
-            this.tbServerPort.TabIndex = 2;
+            tbServerPort.Location = new Point(12, 82);
+            tbServerPort.Name = "tbServerPort";
+            tbServerPort.Size = new Size(171, 23);
+            tbServerPort.TabIndex = 2;
             // 
             // bConnect
             // 
-            this.bConnect.Location = new System.Drawing.Point(202, 115);
-            this.bConnect.Name = "bConnect";
-            this.bConnect.Size = new System.Drawing.Size(143, 41);
-            this.bConnect.TabIndex = 6;
-            this.bConnect.Text = "Коннект!";
-            this.bConnect.UseVisualStyleBackColor = true;
+            bConnect.Location = new Point(202, 115);
+            bConnect.Name = "bConnect";
+            bConnect.Size = new Size(143, 41);
+            bConnect.TabIndex = 6;
+            bConnect.Text = "Коннект!";
+            bConnect.UseVisualStyleBackColor = true;
+            bConnect.Click += bConnect_Click;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 16);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(87, 15);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Адрес сервера";
+            label1.AutoSize = true;
+            label1.Location = new Point(12, 16);
+            label1.Name = "label1";
+            label1.Size = new Size(87, 15);
+            label1.TabIndex = 4;
+            label1.Text = "Адрес сервера";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 64);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(35, 15);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Порт";
+            label2.AutoSize = true;
+            label2.Location = new Point(12, 64);
+            label2.Name = "label2";
+            label2.Size = new Size(35, 15);
+            label2.TabIndex = 5;
+            label2.Text = "Порт";
             // 
             // bServerInfo
             // 
-            this.bServerInfo.Location = new System.Drawing.Point(358, 12);
-            this.bServerInfo.Name = "bServerInfo";
-            this.bServerInfo.Size = new System.Drawing.Size(102, 23);
-            this.bServerInfo.TabIndex = 7;
-            this.bServerInfo.Text = "Сервер инфо";
-            this.bServerInfo.UseVisualStyleBackColor = true;
+            bServerInfo.Location = new Point(358, 12);
+            bServerInfo.Name = "bServerInfo";
+            bServerInfo.Size = new Size(102, 23);
+            bServerInfo.TabIndex = 7;
+            bServerInfo.Text = "Сервер инфо";
+            bServerInfo.UseVisualStyleBackColor = true;
+            bServerInfo.Click += bServerInfo_Click;
             // 
             // bSIMInfo
             // 
-            this.bSIMInfo.Location = new System.Drawing.Point(358, 41);
-            this.bSIMInfo.Name = "bSIMInfo";
-            this.bSIMInfo.Size = new System.Drawing.Size(102, 23);
-            this.bSIMInfo.TabIndex = 8;
-            this.bSIMInfo.Text = "SIM-card инфо";
-            this.bSIMInfo.UseVisualStyleBackColor = true;
+            bSIMInfo.Location = new Point(358, 41);
+            bSIMInfo.Name = "bSIMInfo";
+            bSIMInfo.Size = new Size(102, 23);
+            bSIMInfo.TabIndex = 8;
+            bSIMInfo.Text = "SIM-card инфо";
+            bSIMInfo.UseVisualStyleBackColor = true;
             // 
             // bAPNInfo
             // 
-            this.bAPNInfo.Location = new System.Drawing.Point(358, 70);
-            this.bAPNInfo.Name = "bAPNInfo";
-            this.bAPNInfo.Size = new System.Drawing.Size(102, 23);
-            this.bAPNInfo.TabIndex = 9;
-            this.bAPNInfo.Text = "APN инфо";
-            this.bAPNInfo.UseVisualStyleBackColor = true;
+            bAPNInfo.Location = new Point(358, 70);
+            bAPNInfo.Name = "bAPNInfo";
+            bAPNInfo.Size = new Size(102, 23);
+            bAPNInfo.TabIndex = 9;
+            bAPNInfo.Text = "APN инфо";
+            bAPNInfo.UseVisualStyleBackColor = true;
             // 
             // bNetworkInfo
             // 
-            this.bNetworkInfo.Location = new System.Drawing.Point(358, 99);
-            this.bNetworkInfo.Name = "bNetworkInfo";
-            this.bNetworkInfo.Size = new System.Drawing.Size(102, 23);
-            this.bNetworkInfo.TabIndex = 10;
-            this.bNetworkInfo.Text = "Сеть инфо";
-            this.bNetworkInfo.UseVisualStyleBackColor = true;
+            bNetworkInfo.Location = new Point(358, 99);
+            bNetworkInfo.Name = "bNetworkInfo";
+            bNetworkInfo.Size = new Size(102, 23);
+            bNetworkInfo.TabIndex = 10;
+            bNetworkInfo.Text = "Сеть инфо";
+            bNetworkInfo.UseVisualStyleBackColor = true;
+            bNetworkInfo.Click += bNetworkInfo_Click;
             // 
             // bPushPowerBank
             // 
-            this.bPushPowerBank.Location = new System.Drawing.Point(485, 12);
-            this.bPushPowerBank.Name = "bPushPowerBank";
-            this.bPushPowerBank.Size = new System.Drawing.Size(143, 23);
-            this.bPushPowerBank.TabIndex = 11;
-            this.bPushPowerBank.Text = "Выдать повербанк";
-            this.bPushPowerBank.UseVisualStyleBackColor = true;
+            bPushPowerBank.Location = new Point(485, 12);
+            bPushPowerBank.Name = "bPushPowerBank";
+            bPushPowerBank.Size = new Size(143, 23);
+            bPushPowerBank.TabIndex = 11;
+            bPushPowerBank.Text = "Выдать повербанк";
+            bPushPowerBank.UseVisualStyleBackColor = true;
+            bPushPowerBank.Click += bPushPowerBank_Click;
             // 
             // bPushPowerBankForce
             // 
-            this.bPushPowerBankForce.Location = new System.Drawing.Point(485, 41);
-            this.bPushPowerBankForce.Name = "bPushPowerBankForce";
-            this.bPushPowerBankForce.Size = new System.Drawing.Size(143, 23);
-            this.bPushPowerBankForce.TabIndex = 12;
-            this.bPushPowerBankForce.Text = "Принудительно выдать";
-            this.bPushPowerBankForce.UseVisualStyleBackColor = true;
+            bPushPowerBankForce.Location = new Point(485, 41);
+            bPushPowerBankForce.Name = "bPushPowerBankForce";
+            bPushPowerBankForce.Size = new Size(143, 23);
+            bPushPowerBankForce.TabIndex = 12;
+            bPushPowerBankForce.Text = "Принудительно выдать";
+            bPushPowerBankForce.UseVisualStyleBackColor = true;
             // 
             // bResetCabinet
             // 
-            this.bResetCabinet.Location = new System.Drawing.Point(485, 70);
-            this.bResetCabinet.Name = "bResetCabinet";
-            this.bResetCabinet.Size = new System.Drawing.Size(143, 23);
-            this.bResetCabinet.TabIndex = 13;
-            this.bResetCabinet.Text = "Сброс кабинета";
-            this.bResetCabinet.UseVisualStyleBackColor = true;
+            bResetCabinet.Location = new Point(485, 70);
+            bResetCabinet.Name = "bResetCabinet";
+            bResetCabinet.Size = new Size(143, 23);
+            bResetCabinet.TabIndex = 13;
+            bResetCabinet.Text = "Сброс кабинета";
+            bResetCabinet.UseVisualStyleBackColor = true;
+            bResetCabinet.Click += bResetCabinet_Click;
             // 
             // cbSlotNumber
             // 
-            this.cbSlotNumber.FormattingEnabled = true;
-            this.cbSlotNumber.Items.AddRange(new object[] {
-            "1",
-            "2",
-            "3",
-            "4"});
-            this.cbSlotNumber.Location = new System.Drawing.Point(648, 41);
-            this.cbSlotNumber.Name = "cbSlotNumber";
-            this.cbSlotNumber.Size = new System.Drawing.Size(121, 23);
-            this.cbSlotNumber.TabIndex = 14;
+            cbSlotNumber.FormattingEnabled = true;
+            cbSlotNumber.Items.AddRange(new object[] { "1", "2", "3", "4" });
+            cbSlotNumber.Location = new Point(648, 41);
+            cbSlotNumber.Name = "cbSlotNumber";
+            cbSlotNumber.Size = new Size(121, 23);
+            cbSlotNumber.TabIndex = 14;
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(663, 20);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(79, 15);
-            this.label3.TabIndex = 14;
-            this.label3.Text = "Номер слота";
+            label3.AutoSize = true;
+            label3.Location = new Point(663, 20);
+            label3.Name = "label3";
+            label3.Size = new Size(79, 15);
+            label3.TabIndex = 14;
+            label3.Text = "Номер слота";
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 115);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(95, 15);
-            this.label4.TabIndex = 16;
-            this.label4.Text = "Имя устройства";
+            label4.AutoSize = true;
+            label4.Location = new Point(12, 115);
+            label4.Name = "label4";
+            label4.Size = new Size(95, 15);
+            label4.TabIndex = 16;
+            label4.Text = "Имя устройства";
             // 
             // tbDeviceName
             // 
-            this.tbDeviceName.Location = new System.Drawing.Point(12, 133);
-            this.tbDeviceName.Name = "tbDeviceName";
-            this.tbDeviceName.Size = new System.Drawing.Size(171, 23);
-            this.tbDeviceName.TabIndex = 3;
+            tbDeviceName.Location = new Point(12, 133);
+            tbDeviceName.Name = "tbDeviceName";
+            tbDeviceName.Size = new Size(171, 23);
+            tbDeviceName.TabIndex = 3;
             // 
             // label5
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(202, 64);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(49, 15);
-            this.label5.TabIndex = 20;
-            this.label5.Text = "Пароль";
+            label5.AutoSize = true;
+            label5.Location = new Point(202, 64);
+            label5.Name = "label5";
+            label5.Size = new Size(49, 15);
+            label5.TabIndex = 20;
+            label5.Text = "Пароль";
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(202, 16);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(41, 15);
-            this.label6.TabIndex = 19;
-            this.label6.Text = "Логин";
+            label6.AutoSize = true;
+            label6.Location = new Point(202, 16);
+            label6.Name = "label6";
+            label6.Size = new Size(41, 15);
+            label6.TabIndex = 19;
+            label6.Text = "Логин";
             // 
             // tbPass
             // 
-            this.tbPass.Location = new System.Drawing.Point(202, 82);
-            this.tbPass.Name = "tbPass";
-            this.tbPass.Size = new System.Drawing.Size(143, 23);
-            this.tbPass.TabIndex = 5;
+            tbPass.Location = new Point(202, 82);
+            tbPass.Name = "tbPass";
+            tbPass.Size = new Size(143, 23);
+            tbPass.TabIndex = 5;
             // 
             // tbLogin
             // 
-            this.tbLogin.Location = new System.Drawing.Point(202, 34);
-            this.tbLogin.Name = "tbLogin";
-            this.tbLogin.Size = new System.Drawing.Size(143, 23);
-            this.tbLogin.TabIndex = 4;
+            tbLogin.Location = new Point(202, 34);
+            tbLogin.Name = "tbLogin";
+            tbLogin.Size = new Size(143, 23);
+            tbLogin.TabIndex = 4;
             // 
             // bInventory
             // 
-            this.bInventory.Location = new System.Drawing.Point(358, 128);
-            this.bInventory.Name = "bInventory";
-            this.bInventory.Size = new System.Drawing.Size(102, 23);
-            this.bInventory.TabIndex = 21;
-            this.bInventory.Text = "Инвентарь";
-            this.bInventory.UseVisualStyleBackColor = true;
+            bInventory.Location = new Point(358, 128);
+            bInventory.Name = "bInventory";
+            bInventory.Size = new Size(102, 23);
+            bInventory.TabIndex = 21;
+            bInventory.Text = "Инвентарь";
+            bInventory.UseVisualStyleBackColor = true;
+            bInventory.Click += bInventory_Click;
             // 
             // bSniffer
             // 
-            this.bSniffer.Location = new System.Drawing.Point(485, 133);
-            this.bSniffer.Name = "bSniffer";
-            this.bSniffer.Size = new System.Drawing.Size(143, 23);
-            this.bSniffer.TabIndex = 22;
-            this.bSniffer.Text = "Сниффер";
-            this.bSniffer.UseVisualStyleBackColor = true;
-            this.bSniffer.Click += new System.EventHandler(this.bSniffer_Click);
-            // 
-            // rtbSnif
-            // 
-            this.rtbSnif.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.rtbSnif.Location = new System.Drawing.Point(12, 162);
-            this.rtbSnif.Name = "rtbSnif";
-            this.rtbSnif.Size = new System.Drawing.Size(776, 276);
-            this.rtbSnif.TabIndex = 23;
-            this.rtbSnif.Text = "";
-            this.rtbSnif.Visible = false;
+            bSniffer.Location = new Point(485, 133);
+            bSniffer.Name = "bSniffer";
+            bSniffer.Size = new Size(143, 23);
+            bSniffer.TabIndex = 22;
+            bSniffer.Text = "Сниффер";
+            bSniffer.UseVisualStyleBackColor = true;
+            bSniffer.Click += bSniffer_Click;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.rtbSnif);
-            this.Controls.Add(this.bSniffer);
-            this.Controls.Add(this.bInventory);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.tbPass);
-            this.Controls.Add(this.tbLogin);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.tbDeviceName);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.cbSlotNumber);
-            this.Controls.Add(this.bResetCabinet);
-            this.Controls.Add(this.bPushPowerBankForce);
-            this.Controls.Add(this.bPushPowerBank);
-            this.Controls.Add(this.bNetworkInfo);
-            this.Controls.Add(this.bAPNInfo);
-            this.Controls.Add(this.bSIMInfo);
-            this.Controls.Add(this.bServerInfo);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.bConnect);
-            this.Controls.Add(this.tbServerPort);
-            this.Controls.Add(this.tbServerAddress);
-            this.Controls.Add(this.rtbLog);
-            this.Name = "Form1";
-            this.Text = "ChargeStation client";
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 450);
+            Controls.Add(bSniffer);
+            Controls.Add(bInventory);
+            Controls.Add(label5);
+            Controls.Add(label6);
+            Controls.Add(tbPass);
+            Controls.Add(tbLogin);
+            Controls.Add(label4);
+            Controls.Add(tbDeviceName);
+            Controls.Add(label3);
+            Controls.Add(cbSlotNumber);
+            Controls.Add(bResetCabinet);
+            Controls.Add(bPushPowerBankForce);
+            Controls.Add(bPushPowerBank);
+            Controls.Add(bNetworkInfo);
+            Controls.Add(bAPNInfo);
+            Controls.Add(bSIMInfo);
+            Controls.Add(bServerInfo);
+            Controls.Add(label2);
+            Controls.Add(label1);
+            Controls.Add(bConnect);
+            Controls.Add(tbServerPort);
+            Controls.Add(tbServerAddress);
+            Controls.Add(rtbLog);
+            Name = "Form1";
+            Text = "ChargeStation client";
+            FormClosed += Form1_FormClosed;
+            Load += Form1_Load;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -327,6 +319,5 @@
         private TextBox tbLogin;
         private Button bInventory;
         private Button bSniffer;
-        private RichTextBox rtbSnif;
     }
 }

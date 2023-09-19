@@ -54,8 +54,6 @@ namespace GuiClient
 
         private void bConnect_Click(object sender, EventArgs e)
         {
-
-            addLog($"Подключение к серверу...");
             new Thread(() =>
             {
                 DeviceConnect(tbServerAddress.Text, Convert.ToUInt32(tbServerPort.Text), tbLogin.Text, tbPass.Text); ;
@@ -101,7 +99,7 @@ namespace GuiClient
             }).Start();
         }
 
-        private void ConnectError(object sender,string error)
+        private void ConnectError(object sender, string error)
         {
             //MessageBox.Show($"Ошибка подключения к серверу: {error}");
             addLog($"Ошибка подключения к серверу: {error}");
@@ -112,7 +110,6 @@ namespace GuiClient
             {
 
                 addLog($"Успешно подключено к серверу {tbServerAddress.Text}:{tbServerPort.Text}");
-
                 device.EvPushPowerBank += Device_EvPushPowerBank;
                 device.EvPushPowerBankForce += Device_EvPushPowerBankForce;
                 device.EvQueryTheInventory += Device_EvQueryTheInventory;
@@ -123,13 +120,14 @@ namespace GuiClient
                 device.EvQuerySIMCardICCID += Device_EvQuerySIMCardICCID;
                 device.EvResetCabinet += Device_EvResetCabinet;
                 device.EvSubSniffer += Device_EvSubSniffer;
+                device.SubSniffer();
                 device.Subcribe(tbDeviceName.Text);
             }
         }
 
-        private void Device_EvSubSniffer(object sender, string topic)
+        private void Device_EvSubSniffer(string topic)
         {
-            throw new NotImplementedException();
+            addLog($"Получен пакет {topic}");
         }
 
         private void Disconnected(object sender)
@@ -341,7 +339,7 @@ namespace GuiClient
             foreach (var pbank in data.RlBank1s)
             {
                 addLog($"--------- Повербанк номер {pbank.RlSlot.ToString()} ----------");
-                
+
                 if (pbank.RlIdok == 1)
                 {
 
@@ -379,7 +377,7 @@ namespace GuiClient
                     }
                     addLog($"Процент заряда: {chargeLevel}");
 
-                } 
+                }
                 else
                 {
                     addLog($"*** Отсутствует ***");
@@ -403,7 +401,7 @@ namespace GuiClient
         private void bPushPowerBank_Click(object sender, EventArgs e)
         {
             addLog($"Команда: выдать повербанк");
-            device.CmdPushPowerBank((uint)cbSlotNumber.SelectedIndex + 1,tbDeviceName.Text.Trim());
+            device.CmdPushPowerBank((uint)cbSlotNumber.SelectedIndex + 1, tbDeviceName.Text.Trim());
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -467,14 +465,16 @@ namespace GuiClient
 
         private void bSniffer_Click(object sender, EventArgs e)
         {
-            if (rtbSnif.Visible == false)
+            if (bSniffer.Font.Bold == false)
             {
-                rtbSnif.Visible = true;
+                bSniffer.Font = new Font(bSniffer.Font.Name, bSniffer.Font.Size, FontStyle.Bold); 
             }
             else
             {
-                rtbSnif.Visible = false;
+                bSniffer.Font = new Font(bSniffer.Font.Name, bSniffer.Font.Size, FontStyle.Regular);
             }
         }
+
+
     }
 }
