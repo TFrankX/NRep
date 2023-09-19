@@ -24,6 +24,7 @@ namespace SimnetLib
     public delegate void dConnected(object sender);
     public delegate void dDisconnected(object sender);
     public delegate void dConnectError(object sender,string error);
+    public delegate void dSubSniffer(object sender, string topic);
 
 
 
@@ -78,6 +79,7 @@ namespace SimnetLib
         public event dConnected EvConnected;
         public event dDisconnected EvDisconnected;
         public event dConnectError EvConnectError;
+        public event dSubSniffer EvSubSniffer;
 
         public Device()
         {
@@ -130,6 +132,11 @@ namespace SimnetLib
             Connect( host,  port);
         }
 
+
+        public void SubSniffer()
+        {
+            client.Subscribe<object>("cabinet/#", (sender, topic, message) => EvSubSniffer?.Invoke(self,topic));
+        }
 
         public void Subcribe(string deviceName)
         {

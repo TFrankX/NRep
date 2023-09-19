@@ -122,8 +122,14 @@ namespace GuiClient
                 device.EvQueryServer += Device_EvQueryServer;
                 device.EvQuerySIMCardICCID += Device_EvQuerySIMCardICCID;
                 device.EvResetCabinet += Device_EvResetCabinet;
+                device.EvSubSniffer += Device_EvSubSniffer;
                 device.Subcribe(tbDeviceName.Text);
             }
+        }
+
+        private void Device_EvSubSniffer(object sender, string topic)
+        {
+            throw new NotImplementedException();
         }
 
         private void Disconnected(object sender)
@@ -457,6 +463,18 @@ namespace GuiClient
         {
             addLog($"Команда: запрос информации сети устройства");
             device.CmdQueryNetworkInfo(tbDeviceName.Text.Trim());
+        }
+
+        private void bSniffer_Click(object sender, EventArgs e)
+        {
+            if (rtbSnif.Visible == false)
+            {
+                rtbSnif.Visible = true;
+            }
+            else
+            {
+                rtbSnif.Visible = false;
+            }
         }
     }
 }

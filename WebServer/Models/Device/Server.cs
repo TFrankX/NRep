@@ -28,6 +28,7 @@ namespace WebServer.Models.Device
             Init = false;
             Connected = false;
             device = new SimnetLib.Device();
+            //deviceSub = new SimnetLib.Device();
             Error = "";
             //Connect();
         }
@@ -49,7 +50,7 @@ namespace WebServer.Models.Device
         public bool Init { get; set; }
         
         [NotMapped]
-        SimnetLib.Device device;
+        SimnetLib.Device device, deviceSub;
 
 
 
@@ -69,6 +70,15 @@ namespace WebServer.Models.Device
             device.EvDisconnected += Device_EvDisconnected;
             device.EvConnectError += Device_EvConnectError;
             device.Connect(this.Host, this.Port, this.Login, this.Password);
+            //deviceSub.Connect(this.Host, this.Port, this.Login, this.Password);
+        }
+
+        public void Subscript()
+        {
+            if (this.Connected)
+            {
+
+            }
         }
 
         private void Device_EvDisconnected(object sender)
