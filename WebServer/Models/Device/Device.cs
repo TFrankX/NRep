@@ -8,7 +8,7 @@ namespace WebServer.Models.Device
 
         public Device() { }
 
-        public Device(ulong id, ulong hostDeviceId, bool online, uint error, DateTime lastOnlineTime, DateTime firstOnlineTime, string ip, string devMainServer, string devResServer)
+        public Device(ulong id,ulong hostDeviceId, bool online, uint error, DateTime lastOnlineTime, DateTime firstOnlineTime, string ip, string devMainServer, string devResServer)
         {
             Id = id;
             HostDeviceId = hostDeviceId;

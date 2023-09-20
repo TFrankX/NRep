@@ -467,7 +467,7 @@ namespace GuiClient
         {
             if (bSniffer.Font.Bold == false)
             {
-                bSniffer.Font = new Font(bSniffer.Font.Name, bSniffer.Font.Size, FontStyle.Bold); 
+                bSniffer.Font = new Font(bSniffer.Font.Name, bSniffer.Font.Size, FontStyle.Bold);
             }
             else
             {

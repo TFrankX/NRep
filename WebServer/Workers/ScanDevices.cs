@@ -184,9 +184,12 @@ namespace WebServer.Workers
             {
 
                 string dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
-                ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
-                ((Server)(sender)).CmdQueryTheInventory(dev);
-                Logger.LogInformation($"New device - {dev} , try to add \n");
+                
+
+                    ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
+                    ((Server)(sender)).CmdQueryTheInventory(dev);
+                    Logger.LogInformation($"New device - {dev} , try to add \n");
+
             }
             catch
             {
@@ -198,7 +201,60 @@ namespace WebServer.Workers
 
         private void Srv_EvQueryTheInventory(object sender, RplQueryTheInventory data)
         {
-            
+
+            foreach (var pbank in data.RlBank1s)
+            {
+                addLog($"--------- Повербанк номер {pbank.RlSlot.ToString()} ----------");
+
+                if (pbank.RlIdok == 1)
+                {
+
+                    addLog($"S/N: {pbank.RlPbid}");
+                    string readIDok = pbank.RlIdok == 1 ? "удачно" : "неудачно";
+                    addLog($"readID прочитан {readIDok}");
+                    string lockLevel = pbank.RlLock == 1 ? "Да" : "Нет";
+                    addLog($"Заблокирован: {lockLevel}");
+                    string charging = pbank.RlCharge == 1 ? "Да" : "Нет";
+                    addLog($"Заряжается: {charging}");
+                    string chargeLevel;
+                    switch (pbank.RlQoe)
+                    {
+                        case 0:
+                            chargeLevel = "0%..20%";
+                            break;
+                        case 1:
+                            chargeLevel = "20%..40%";
+                            break;
+                        case 2:
+                            chargeLevel = "40%..60%";
+                            break;
+                        case 3:
+                            chargeLevel = "60%..80%";
+                            break;
+                        case 4:
+                            chargeLevel = "80%..100%";
+                            break;
+                        case 5:
+                            chargeLevel = "100%";
+                            break;
+                        default:
+                            chargeLevel = "сбой получения данных о заряде";
+                            break;
+                    }
+                    addLog($"Процент заряда: {chargeLevel}");
+
+                }
+                else
+                {
+                    addLog($"*** Отсутствует ***");
+                }
+
+
+
+
+            }
+
+
         }
 
         private void Srv_EvConnected(object sender)
