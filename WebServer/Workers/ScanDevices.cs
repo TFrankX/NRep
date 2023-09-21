@@ -4,6 +4,8 @@ using ProtoBuf.Meta;
 using SimnetLib;
 using System;
 using System.Data;
+using System.Security.Cryptography;
+using System.Text;
 using WebServer.Models.Device;
 using static System.Formats.Asn1.AsnWriter;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -13,10 +15,12 @@ namespace WebServer.Workers
     public class ScanDevices : BackgroundService
     {
         public List<Server> servers;
+        public List<WebServer.Models.Device.Device> devices;
+        public List<PowerBank> powerbanks;
         public readonly IServiceScopeFactory ScopeFactory;
         private readonly ILogger<ScanDevices> Logger;
         IServiceScope scope;
-       // DeviceContext dbDevice;
+        // DeviceContext dbDevice;
 
         //  public ScanDevices(List<Server> Servers, ILogger<ScanDevices> logger, IServiceScopeFactory scopeFactory)
         public ScanDevices(ILogger<ScanDevices> logger, IServiceScopeFactory scopeFactory)
@@ -74,8 +78,8 @@ namespace WebServer.Workers
         {
 
             //var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
-             scope = ScopeFactory.CreateScope();
-             //dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+            scope = ScopeFactory.CreateScope();
+            //dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>();
 
 
 
@@ -86,13 +90,13 @@ namespace WebServer.Workers
             //            powerBanks[2] = new PowerBank { Id = 3 };
             //            powerBanks[3] = new PowerBank { Id = 4 };
             Server server = new Server("yaup.ru", 8884, "devclient", "Potato345!", 30);
-            Models.Device.Device device = new Models.Device.Device(123, 156, false, 3, DateTime.Now, DateTime.Now, "10.0.0.1", "yaup.ru", "hhh.hh");
 
+            //Models.Device.Device device = new Models.Device.Device("Derv", 156, true);
             try
             {
                 using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
                 {
-                    if (dbDevice.Server.Any(o => o.Id != server.Id))
+                    if ((dbDevice.Server.Any(o => o.Id != server.Id)) || (dbDevice.Server.Count() == 0))
                     {
                         dbDevice.Server.Add(server);
                         dbDevice.SaveChanges();
@@ -101,37 +105,40 @@ namespace WebServer.Workers
             }
             catch (Exception ex)
             {
-               //dbDevice.Entry(server).State = EntityState.Detached;
+                //dbDevice.Entry(server).State = EntityState.Detached;
                 HandleDbException(ex);
             }
 
-            try
-            {
 
-                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
-                {
-                    if (dbDevice.Device.Any(o => o.Id != device.Id))
-                    {
-                        dbDevice.Device.Add(device);
-                        dbDevice.SaveChanges();
-                    }
-                }
+            //try
+            //{
+            //    Models.Device.Device device = new Models.Device.Device(123, 156, false, 3, DateTime.Now, DateTime.Now, "10.0.0.1", "yaup.ru", "hhh.hh");
+            //    using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+            //    {
+            //        if (dbDevice.Device.Any(o => o.Id != device.Id))
+            //        {
+            //            dbDevice.Device.Add(device);
+            //            dbDevice.SaveChanges();
+            //        }
+            //    }
 
-            }
-            catch (Exception ex)
-            {
-                //dbDevice.Entry(device).State = EntityState.Detached;
-                HandleDbException(ex);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    //dbDevice.Entry(device).State = EntityState.Detached;
+            //    HandleDbException(ex);
+            //}
 
             servers = new List<Server>();
+            devices = new List<WebServer.Models.Device.Device>();
+            powerbanks = new List<PowerBank>();
             ulong tmpId;
 
             InitServers();
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                ReconnectServers();               
+                ReconnectServers();
                 await Task.Delay(TimeSpan.FromSeconds(10));
             }
 
@@ -161,7 +168,7 @@ namespace WebServer.Workers
         {
             foreach (var srv in servers)
             {
-                if ((srv!=null))
+                if ((srv != null))
                 {
                     if (!srv.Connected)
                     {
@@ -178,83 +185,131 @@ namespace WebServer.Workers
             }
 
         }
-        private void Srv_EvSniffer(object sender,string topic)
+        private void Srv_EvSniffer(object sender, string topic, object message)
         {
             try
             {
 
                 string dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
-                
+                string command = topic.Substring(topic.LastIndexOf("/") + 1, topic.Length - topic.LastIndexOf("/") - 1);
+                if (command == SimnetLib.Model.MessageTypes.ReportCabinetLogin)
+                {
+                    if (devices.FindIndex(item => item.Id == GetGUID(dev))<0)
+                    {
+                        devices.Add(new Models.Device.Device(dev, ((Server)(sender)).Id, true));
+                    }
+                    else
+                    {
+                        devices[devices.FindIndex(item => item.Id == GetGUID(dev))].LastOnlineTime = DateTime.Now;
+                    }
 
-                    ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
-                    ((Server)(sender)).CmdQueryTheInventory(dev);
-                    Logger.LogInformation($"New device - {dev} , try to add \n");
 
+
+                    using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+                    {
+                        if (dbDevice.Device.Any(o => o.Id != GetGUID(dev)) || (dbDevice.Device.Count() == 0))
+                        {
+                            dbDevice.Device.Add(new Models.Device.Device(dev, ((Server)(sender)).Id, true));
+                            dbDevice.SaveChanges();
+                            ((Server)(sender)).SubScript(dev);
+                            ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
+                            ((Server)(sender)).CmdQueryTheInventory(dev);
+
+                            Logger.LogInformation($"New device login - {dev} , try to add \n");
+                        }
+                        else
+                        {
+                            var device = dbDevice.Device.FirstOrDefault(item => item.Id == GetGUID(dev));
+                            if (device != null)
+                            {
+                                device.LastOnlineTime = DateTime.Now;
+                                dbDevice.SaveChanges();
+                                ((Server)(sender)).SubScript(dev);
+                                ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
+                                ((Server)(sender)).CmdQueryTheInventory(dev);
+                            }
+                            Logger.LogInformation($"Exist device login - {dev} \n");
+                        }
+                    }
+                }
             }
             catch
             {
                 Logger.LogInformation($"Get invalid device with topic: {topic}; Waiting somthing like - cabinet/<name of device>/...\n");
             }
-            
-          //  ((Server)(sender)).CmdQueryTheInventory(topic.IndexOf("Dev"));
+
+
         }
 
-        private void Srv_EvQueryTheInventory(object sender, RplQueryTheInventory data)
+        private void Srv_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
         {
-
-            foreach (var pbank in data.RlBank1s)
+            string dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
+            Logger.LogInformation($"Get inventory info from device: {dev} \n");
+            try
             {
-                addLog($"--------- Повербанк номер {pbank.RlSlot.ToString()} ----------");
 
-                if (pbank.RlIdok == 1)
+                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
                 {
-
-                    addLog($"S/N: {pbank.RlPbid}");
-                    string readIDok = pbank.RlIdok == 1 ? "удачно" : "неудачно";
-                    addLog($"readID прочитан {readIDok}");
-                    string lockLevel = pbank.RlLock == 1 ? "Да" : "Нет";
-                    addLog($"Заблокирован: {lockLevel}");
-                    string charging = pbank.RlCharge == 1 ? "Да" : "Нет";
-                    addLog($"Заряжается: {charging}");
-                    string chargeLevel;
-                    switch (pbank.RlQoe)
+                    uint slots = 0;
+                    foreach (var pbank in data.RlBank1s)
                     {
-                        case 0:
-                            chargeLevel = "0%..20%";
-                            break;
-                        case 1:
-                            chargeLevel = "20%..40%";
-                            break;
-                        case 2:
-                            chargeLevel = "40%..60%";
-                            break;
-                        case 3:
-                            chargeLevel = "60%..80%";
-                            break;
-                        case 4:
-                            chargeLevel = "80%..100%";
-                            break;
-                        case 5:
-                            chargeLevel = "100%";
-                            break;
-                        default:
-                            chargeLevel = "сбой получения данных о заряде";
-                            break;
+
+                        if (pbank.RlIdok == 1)
+                        {
+
+                            if (powerbanks.FindIndex(item => item.Id == pbank.RlPbid) < 0)
+                            {
+                                powerbanks.Add(new PowerBank(pbank.RlPbid, ((Server)(sender)).Id, pbank.RlLock > 0 ? true : false, true, pbank.RlCharge > 0 ? true : false, (PowerBankChargeLevel)pbank.RlQoe));
+                            }
+                            else
+                            {
+                                powerbanks[powerbanks.FindIndex(item => item.Id == pbank.RlPbid)].Locked = pbank.RlLock > 0 ? true : false;
+                                powerbanks[powerbanks.FindIndex(item => item.Id == pbank.RlPbid)].Plugged = true;
+                                powerbanks[powerbanks.FindIndex(item => item.Id == pbank.RlPbid)].Charging = pbank.RlCharge > 0 ? true : false;
+                                powerbanks[powerbanks.FindIndex(item => item.Id == pbank.RlPbid)].ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
+
+                            }
+
+
+                            if (dbDevice.PowerBank.Any(o => o.Id != pbank.RlPbid) || (dbDevice.PowerBank.Count() == 0))
+                            {
+
+                                slots = slots | (2^(pbank.RlSlot-1));
+                                Logger.LogInformation($"Get info about powerbank in slot: {pbank.RlSlot.ToString()} \n");
+
+
+                                    dbDevice.PowerBank.Add(new PowerBank(pbank.RlPbid, ((Server)(sender)).Id, pbank.RlLock > 0 ? true : false, true, pbank.RlCharge > 0 ? true : false, (PowerBankChargeLevel)pbank.RlQoe)); ;
+//                                  bool locked, bool plugged, bool charging, PowerBankChargeLevel chargeLevel
+
+
+                            }
+                            else
+                            {
+
+                                var powerbank = dbDevice.PowerBank.FirstOrDefault(item => item.Id == pbank.RlPbid);
+                                if (powerbank != null)
+                                {
+                                    powerbank.Locked = pbank.RlLock > 0 ? true : false;
+                                    powerbank.Plugged = true;
+                                    powerbank.Charging = pbank.RlCharge > 0 ? true : false;
+                                    powerbank.ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
+                                }
+
+
+                            }
+                            dbDevice.SaveChanges();
+
+                        }
                     }
-                    addLog($"Процент заряда: {chargeLevel}");
-
-                }
-                else
-                {
-                    addLog($"*** Отсутствует ***");
                 }
 
-
-
-
+                    
+                 
             }
-
-
+            catch
+            {
+                Logger.LogInformation($"Error saving powerbanks from device {dev} info to database\n");
+            }
         }
 
         private void Srv_EvConnected(object sender)
@@ -264,7 +319,14 @@ namespace WebServer.Workers
             {
                 using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
                 {
-                    dbDevice.SaveChanges();
+
+                    var server = dbDevice.Server.FirstOrDefault(item => item.Id == ((Server)(sender)).Id);
+                    if (server != null)
+                    {
+                        server.Connected = true;
+                        dbDevice.SaveChanges();
+                    }
+
                 }
             }
             catch (Exception ex)
@@ -283,7 +345,12 @@ namespace WebServer.Workers
             {
                 using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
                 {
-                    dbDevice.SaveChanges();
+                    var server = dbDevice.Server.FirstOrDefault(item => item.Id == ((Server)(sender)).Id);
+                    if (server != null)
+                    {
+                        server.Connected = false;
+                        dbDevice.SaveChanges();
+                    }
                 }
             }
             catch (Exception ex)
@@ -292,15 +359,22 @@ namespace WebServer.Workers
             }
             Logger.LogInformation($"Disconnected from Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
         }
-        private void Srv_EvConnectError(object sender,string error)
+        private void Srv_EvConnectError(object sender, string error)
         {
-            ((Server)sender).Error= error;
+            ((Server)sender).Error = error;
             ((Server)sender).ConnectTime = DateTime.Now;
             try
             {
                 using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
                 {
-                    dbDevice.SaveChanges();
+
+                    var server = dbDevice.Server.FirstOrDefault(item => item.Id == ((Server)(sender)).Id);
+                    if (server != null)
+                    {
+                        server.Error = error;
+                        dbDevice.SaveChanges();
+                    }
+
                 }
             }
             catch (Exception ex)
@@ -309,6 +383,16 @@ namespace WebServer.Workers
             }
             Logger.LogInformation($"Error in connect to {((Server)sender).Host}:{((Server)sender).Port} : {error}\n");
         }
-    }
 
+        private ulong GetGUID(string input)
+        {
+            MD5 md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+            Byte[] bId = new Guid(hash).ToByteArray();
+            ulong result = BitConverter.ToUInt64(bId, 0);
+            return result;
+        }
+
+
+    }
 }

@@ -57,8 +57,11 @@ namespace SimnetLib
 
         public void Subscribe<T>(string topic, MessageEventHandler<T> handler) where T : class
         {
-            _subscriptions.Add(topic, new Subscription(typeof(T), handler));
-            _networkBus.Subscribe(topic);
+            if (!_subscriptions.ContainsKey(topic)) 
+            {
+                _subscriptions.Add(topic, new Subscription(typeof(T), handler));
+                _networkBus.Subscribe(topic);
+            }
         }
 
         public void Publish<T>(string topic, T payload) where T : class

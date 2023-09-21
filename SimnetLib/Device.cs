@@ -5,26 +5,27 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimnetLib
 {
-    public delegate void dPushPowerBank(RplPushPowerBank data);
-    public delegate void dPushPowerBankForce(RplPushPowerBankForce data);
-    public delegate void dQueryNetworkInfo(RplQueryNetworkInfo data);
-    public delegate void dQueryTheInventory(RplQueryTheInventory data);
-    public delegate void dQueryServer(RplQueryServer data);
-    public delegate void dQueryCabinetAPN(RplQueryCabinetAPN data);
-    public delegate void dQuerySIMCardICCID(RplQuerySIMCardICCID data);
-    public delegate void dResetCabinet(RplResetCabinet data);
-    public delegate void dReturnThePowerBank(RptReturnThePowerBank data);
-    public delegate void dReportCabinetLogin(RptReportCabinetLogin data);
+    public delegate void dPushPowerBank(object sender, string topic, RplPushPowerBank data);
+    public delegate void dPushPowerBankForce(object sender, string topic, RplPushPowerBankForce data);
+    public delegate void dQueryNetworkInfo(object sender, string topic, RplQueryNetworkInfo data);
+    public delegate void dQueryTheInventory(object sender, string topic, RplQueryTheInventory data);
+    public delegate void dQueryServer(object sender, string topic, RplQueryServer data);
+    public delegate void dQueryCabinetAPN(object sender, string topic, RplQueryCabinetAPN data);
+    public delegate void dQuerySIMCardICCID(object sender, string topic, RplQuerySIMCardICCID data);
+    public delegate void dResetCabinet(object sender, string topic, RplResetCabinet data);
+    public delegate void dReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data);
+    public delegate void dReportCabinetLogin(object sender, string topic, RptReportCabinetLogin data);
     public delegate void dConnected(object sender);
     public delegate void dDisconnected(object sender);
     public delegate void dConnectError(object sender,string error);
-    public delegate void dSubSniffer(string topic);
+    public delegate void dSubSniffer(object sender, string topic, object message);
 
 
 
@@ -137,7 +138,7 @@ namespace SimnetLib
         {
             client.Subscribe<object>("cabinet/#", (sender, topic, message) =>
             {
-                EvSubSniffer?.Invoke(topic);
+                EvSubSniffer?.Invoke(sender,topic,message);
             });
         }
 
@@ -161,52 +162,52 @@ namespace SimnetLib
 
                 client.Subscribe<RplPushPowerBank>(rplPushPowerBank, (sender, topic, message) =>
                 {
-                    EvPushPowerBank?.Invoke(message);
+                    EvPushPowerBank?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RplPushPowerBankForce>(rplPushPowerBankForce, (sender, topic, message) =>
                 {
-                    EvPushPowerBankForce?.Invoke(message);
+                    EvPushPowerBankForce?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RplQueryNetworkInfo>(rplQueryNetworkInfo, (sender, topic, message) =>
                 {
-                    EvQueryNetworkInfo?.Invoke(message);
+                    EvQueryNetworkInfo?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RplQueryTheInventory>(rplQueryTheInventory, (sender, topic, message) =>
                 {
-                    EvQueryTheInventory?.Invoke(message);
+                    EvQueryTheInventory?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RplQueryServer>(rplQueryServer, (sender, topic, message) =>
                 {
-                    EvQueryServer?.Invoke(message);
+                    EvQueryServer?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RplQueryCabinetAPN>(rplQueryCabinetAPN, (sender, topic, message) =>
                 {
-                    EvQueryCabinetAPN?.Invoke(message);
+                    EvQueryCabinetAPN?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RplQuerySIMCardICCID>(rplQuerySIMCardICCID, (sender, topic, message) =>
                 {
-                    EvQuerySIMCardICCID?.Invoke(message);
+                    EvQuerySIMCardICCID?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RplResetCabinet>(rplResetCabinet, (sender, topic, message) =>
                 {
-                    EvResetCabinet?.Invoke(message);
+                    EvResetCabinet?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RptReturnThePowerBank>(rptReturnThePowerBank, (sender, topic, message) =>
                 {
-                    EvReturnThePowerBank?.Invoke(message);
+                    EvReturnThePowerBank?.Invoke(sender, topic, message);
                 });
 
                 client.Subscribe<RptReportCabinetLogin>(rptReportCabinetLogin, (sender, topic, message) =>
                 {
-                    EvReportCabinetLogin?.Invoke(message);
+                    EvReportCabinetLogin?.Invoke(sender, topic, message);
                 });
 
             }

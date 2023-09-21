@@ -10,17 +10,17 @@ namespace WebServer.Models.Device
     public delegate void dConnected(object sender);
     public delegate void dDisconnected(object sender);
     public delegate void dConnectError(object sender,string error);
-    public delegate void dPushPowerBank(object sender, RplPushPowerBank data);
-    public delegate void dPushPowerBankForce(object sender, RplPushPowerBankForce data);
-    public delegate void dQueryNetworkInfo(object sender, RplQueryNetworkInfo data);
-    public delegate void dQueryTheInventory(object sender, RplQueryTheInventory data);
-    public delegate void dQueryServer(object sender, RplQueryServer data);
-    public delegate void dQueryCabinetAPN(object sender, RplQueryCabinetAPN data);
-    public delegate void dQuerySIMCardICCID(object sender, RplQuerySIMCardICCID data);
-    public delegate void dResetCabinet(object sender, RplResetCabinet data);
-    public delegate void dReturnThePowerBank(object sender, RptReturnThePowerBank data);
-    public delegate void dReportCabinetLogin(object sender, RptReportCabinetLogin data);
-    public delegate void dSubSniffer(object sender, string topic);
+    public delegate void dPushPowerBank(object sender,string topic, RplPushPowerBank data);
+    public delegate void dPushPowerBankForce(object sender, string topic, RplPushPowerBankForce data);
+    public delegate void dQueryNetworkInfo(object sender, string topic, RplQueryNetworkInfo data);
+    public delegate void dQueryTheInventory(object sender, string topic, RplQueryTheInventory data);
+    public delegate void dQueryServer(object sender, string topic, RplQueryServer data);
+    public delegate void dQueryCabinetAPN(object sender, string topic, RplQueryCabinetAPN data);
+    public delegate void dQuerySIMCardICCID(object sender, string topic, RplQuerySIMCardICCID data);
+    public delegate void dResetCabinet(object sender, string topic, RplResetCabinet data);
+    public delegate void dReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data);
+    public delegate void dReportCabinetLogin(object sender, string topic, RptReportCabinetLogin data);
+    public delegate void dSubSniffer(object sender, string topic,object message);
     public class Server
     {
         public event dConnected EvConnected;
@@ -52,6 +52,7 @@ namespace WebServer.Models.Device
             servermqtt = new SimnetLib.Device();
             //deviceSub = new SimnetLib.Device();
             Error = "";
+            Slots = 0;
             //Connect();
         }
         public ulong Id { get; set; }
@@ -59,6 +60,7 @@ namespace WebServer.Models.Device
         public uint Port { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
+        public uint Slots {  get; set; }
         public string Error { get; set; }
         public uint ReconnectTime { get; set; }
         //public List<Device> Devices { get; set; }
@@ -99,23 +101,33 @@ namespace WebServer.Models.Device
         {
             if (this.Connected)
             {
-                //device.EvPushPowerBank += Device_EvPushPowerBank;
-                //device.EvPushPowerBankForce += Device_EvPushPowerBankForce;
-                //device.EvQueryTheInventory += Device_EvQueryTheInventory;
-                //device.EvReportCabinetLogin += Device_EvReportCabinetLogin;
-                //device.EvReturnThePowerBank += Device_EvReturnThePowerBank;
-                //device.EvQueryNetworkInfo += Device_EvQueryNetworkInfo;
-                //device.EvQueryServer += Device_EvQueryServer;
-                //device.EvQuerySIMCardICCID += Device_EvQuerySIMCardICCID;
-                //device.EvResetCabinet += Device_EvResetCabinet;
                 servermqtt.EvSubSniffer += Device_EvSubSniffer;
                 servermqtt.SubSniffer();
             }
         }
 
-        private void Device_EvSubSniffer(string topic)
+        public void SubScript(string dev)
         {
-            EvSubSniffer?.Invoke(this,topic);
+            //device.EvPushPowerBank += Device_EvPushPowerBank;
+            //device.EvPushPowerBankForce += Device_EvPushPowerBankForce;
+            servermqtt.EvQueryTheInventory += Device_EvQueryTheInventory;
+            //device.EvReportCabinetLogin += Device_EvReportCabinetLogin;
+            //device.EvReturnThePowerBank += Device_EvReturnThePowerBank;
+            //device.EvQueryNetworkInfo += Device_EvQueryNetworkInfo;
+            //device.EvQueryServer += Device_EvQueryServer;
+            //device.EvQuerySIMCardICCID += Device_EvQuerySIMCardICCID;
+            //device.EvResetCabinet += Device_EvResetCabinet;
+            servermqtt.Subcribe(dev);
+        }
+
+        private void Device_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
+        {
+            EvQueryTheInventory?.Invoke(this, topic, data);
+        }
+
+        private void Device_EvSubSniffer(object sender, string topic, object message)
+        {
+            EvSubSniffer?.Invoke(this,topic,message);
         }
 
         private void Device_EvDisconnected(object sender)

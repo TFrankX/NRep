@@ -54,6 +54,9 @@ namespace GuiClient
 
         private void bConnect_Click(object sender, EventArgs e)
         {
+           // string topic = "cabinet/Dev01/report/10";
+           // string command = topic.Substring(topic.LastIndexOf("/") + 1, topic.Length - topic.LastIndexOf("/")-1);
+
             new Thread(() =>
             {
                 DeviceConnect(tbServerAddress.Text, Convert.ToUInt32(tbServerPort.Text), tbLogin.Text, tbPass.Text); ;
@@ -125,7 +128,7 @@ namespace GuiClient
             }
         }
 
-        private void Device_EvSubSniffer(string topic)
+        private void Device_EvSubSniffer(object sender,string topic,object message)
         {
             addLog($"Получен пакет {topic}");
         }
@@ -135,7 +138,7 @@ namespace GuiClient
             addLog($"Потеряна связь с сервером {tbServerAddress.Text}:{tbServerPort.Text}");
         }
 
-        private void Device_EvPushPowerBankForce(RplPushPowerBankForce data)
+        private void Device_EvPushPowerBankForce(object sender, string topic, RplPushPowerBankForce data)
         {
             addLog($"Ответ на запрос 'принудительно выдать повербанк'");
             addLog($"Номер слота: {data.RlSlot}");
@@ -145,17 +148,17 @@ namespace GuiClient
 
         }
 
-        private void Device_EvResetCabinet(RplResetCabinet data)
+        private void Device_EvResetCabinet(object sender, string topic, RplResetCabinet data)
         {
             addLog($"Ответ на запрос 'перезапуск устройства'");
         }
 
-        private void Device_EvQuerySIMCardICCID(RplQuerySIMCardICCID data)
+        private void Device_EvQuerySIMCardICCID(object sender, string topic, RplQuerySIMCardICCID data)
         {
             addLog($"Ответ на запрос информации SIM-карты");
         }
 
-        private void Device_EvQueryServer(RplQueryServer data)
+        private void Device_EvQueryServer(object sender, string topic, RplQueryServer data)
         {
             addLog($"Ответ на запрос информации сервера");
             string serverType = data.RlType == 1 ? "Основной" : "Резервный";
@@ -164,7 +167,7 @@ namespace GuiClient
             addLog($"Порт сервера: {data.RlPort}");
         }
 
-        private void Device_EvQueryNetworkInfo(RplQueryNetworkInfo data)
+        private void Device_EvQueryNetworkInfo(object sender, string topic, RplQueryNetworkInfo data)
         {
             addLog($"Ответ на запрос информации сети");
 
@@ -241,7 +244,7 @@ namespace GuiClient
             addLog($"Сила сигнала WiFi RSSI (для мобильной сети=0): {data.RlWifi}");
         }
 
-        private void Device_EvReturnThePowerBank(RptReturnThePowerBank data)
+        private void Device_EvReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data)
         {
             addLog($"Зарегистрировано возвращение повербанка в слот: {data.RlSlot}");
             addLog($"Серийный номер: {data.RlPbid}");
@@ -281,7 +284,7 @@ namespace GuiClient
 
         }
 
-        private void Device_EvReportCabinetLogin(RptReportCabinetLogin data)
+        private void Device_EvReportCabinetLogin(object sender, string topic, RptReportCabinetLogin data)
         {
             addLog($"Зарегистрировано устройство на сервере:");
             addLog($"Поддерживаемое количество повербанков: {data.RlCount}");
@@ -333,7 +336,7 @@ namespace GuiClient
             addLog($"ICCID SIM-карты: {data.RlIccid}");
         }
 
-        private void Device_EvQueryTheInventory(RplQueryTheInventory data)
+        private void Device_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
         {
             addLog($"Ответ на запрос инвентаризации");
             foreach (var pbank in data.RlBank1s)
@@ -389,7 +392,7 @@ namespace GuiClient
             }
         }
 
-        private void Device_EvPushPowerBank(RplPushPowerBank data)
+        private void Device_EvPushPowerBank(object sender, string topic, RplPushPowerBank data)
         {
             addLog($"Ответ на запрос выдачи повербанка");
             addLog($"Номер слота: {data.RlSlot}");

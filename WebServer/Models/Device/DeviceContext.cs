@@ -6,7 +6,7 @@ namespace WebServer.Models.Device
     {
         public DbSet<Device> Device { get; set; }
         public DbSet<Server> Server { get; set; }
-        public DbSet<PowerBank> PowerBanks { get; set; }
+        public DbSet<PowerBank> PowerBank { get; set; }
         public DeviceContext(DbContextOptions<DeviceContext> options)
         : base(options)
             {
