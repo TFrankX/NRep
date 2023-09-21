@@ -6,12 +6,12 @@ using WebServer.Models.Identity;
 
 namespace WebServer.Controllers.Identity
 {
-    public class AppAccountController : Controller
+    public class Stations : Controller
     {
         private readonly UserManager<AppUser> userManag;
         private readonly SignInManager<AppUser> signInManag;
 
-        public AppAccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public Stations(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             userManag = userManager;
             signInManag = signInManager;
