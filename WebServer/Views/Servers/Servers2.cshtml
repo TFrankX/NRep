@@ -1,0 +1,1555 @@
+﻿<script src="~/jqwidgets/jqxbuttons.js"></script>
+<script src="~/jqwidgets/jqxscrollbar.js"></script>
+<script src="~/jqwidgets/jqxgrid.js"></script>
+<script src="~/jqwidgets/jqxgrid.edit.js"></script>
+<script src="~/jqwidgets/jqxgrid.columnsresize.js"></script>
+<script src="~/jqwidgets/jqxgrid.filter.js"></script>
+<script src="~/jqwidgets/jqxgrid.selection.js"></script>
+<script src="~/jqwidgets/jqxgrid.sort.js"></script>
+<script src="~/jqwidgets/jqxgrid.pager.js"></script>
+<script src="~/jqwidgets/jqxgrid.aggregates.js"></script>
+<script src="~/jqwidgets/jqxgrid.grouping.js"></script>
+<script src="~/jqwidgets/jqxmenu.js"></script>
+<script src="~/jqwidgets/jqxlistbox.js"></script>
+<script src="~/jqwidgets/jqxdropdownlist.js"></script>
+<script src="~/jqwidgets/jqxwindow.js"></script>
+<script src="~/jqwidgets/jqxcore.js"></script>
+<script src="~/jqwidgets/jqxdata.js"></script>
+<script src="~/jqwidgets/jqxdraw.js"></script>
+<script src="~/jqwidgets/jqxchart.core.js"></script>
+<script src="~/jqwidgets/jqxchart.rangeselector.js"></script>
+
+
+
+<meta name="keywords" content="jQuery Window, Window Widget, Window" />
+<link rel="stylesheet" href="~/jqwidgets/styles/jqx.base.css" type="text/css" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1" />
+
+@{
+    ViewData["Title"] = "";
+}
+
+@section scripts
+    {
+    <script type="text/javascript">
+        //        function GoToDetails(serverIP) {
+
+        //            if (serverIP == null)
+        //                return;
+
+        //            $.ajax({
+        //                type: "POST",
+        //                // url: '@Url.Action("GoToDetails", "Servers")',
+        //                url: '@Url.Action("SetFilter", "Containers")',
+        //                contentType: 'application/json',
+        //                data: JSON.stringify({
+        //                    // ServerIP: serverIP
+        //                    Filter: serverIP
+        //                }),
+        //                success: function() {
+        //                    //location.href = document.location.origin + '@Url.Action("ServerDetails", "ServerDetails")';
+        //                    location.href = document.location.origin + '@Url.Action("Containers", "Containers")';
+        //                }
+        //            });
+        //        }
+
+        //        // Окно ожидания
+        //        function AddPreloder(text) {
+        //            var element = document.createElement('div');
+        //            element.setAttribute("id", "p_prldr");
+        //            element.innerHTML = '<div class="contpre"><span class="svg_anm"><br>Подождите<br><small>'+text+'</small></span></div>';
+        //            document.body.appendChild(element);
+        //        }
+
+
+        //        // Сокрытие окна ожидания
+        //        function HidePreloder() {
+        //            var $preloader = $('#p_prldr'),
+        //                $svg_anm = $preloader.find('.svg_anm');
+        //            $svg_anm.fadeOut();
+        //            $preloader.delay(500).fadeOut('slow');
+
+        //            setTimeout(() => {
+        //                document.body.removeChild(document.getElementById('p_prldr'));
+        //            }, 600);
+        //        }
+
+        //        // Функция отображения PopUp
+        //        function PopUpShow(name, text) {
+        //            var element = document.createElement('div');
+        //            element.setAttribute("id", "filepopup");
+        //            element.setAttribute("class", "b-popup");
+        //            element.innerHTML = '<div class="b-popup-content"><div>'+name+'</div><textarea id="filepopup_text">'+text+'</textarea><a href="javascript:PopUpHide()">Close</a><p>  </p><a href="javascript:SaveFile()">Save</a>';
+        //            document.body.appendChild(element);
+        //            $("#filepopup").show();
+        //        }
+
+        //        // Функция перезапуска сервиса
+        //        function RestartService(serverIP, serviceName) {
+
+        //            if (serverIP == null)
+        //                return;
+
+        //            if (!window.confirm("Перезапустить сервис " + serviceName + " на сервере " + serverIP + "?")) {
+        //                return;
+        //            }
+
+        //            AddPreloder("Идёт перезапуск сервиса " + serviceName);
+
+        //            $.ajax({
+        //                type: "POST",
+        //                url: '@Url.Action("RestartService", "Servers")',
+        //                contentType: 'application/json',
+        //                data: JSON.stringify({
+        //                    Server: serverIP,
+        //                    Container: serviceName
+        //                }),
+        //                success: function (response) {
+        //                    HidePreloder();
+        //                    setTimeout(() => {
+        //                        console.info("Сервис успешно перезапущен: " + response.responseText);
+        //                    }, 550);
+        //                },
+        //                failure: function (response) {
+        //                    HidePreloder();
+        //                    setTimeout(() => {
+        //                        console.error(response);
+        //                        alert(response.responseText);
+        //                    }, 550);
+        //                },
+        //                error: function (response, textStatus, errorThrown) {
+        //                    HidePreloder();
+        //                    setTimeout(() => {
+        //                        console.error(response.responseText);
+        //                        alert(response.responseText);
+        //                    }, 550);
+        //                }
+        //            });
+        //        }
+
+
+        //        function GoToChartDiskFreeSpace(serverIP) {
+        //            //alert(serverIP);
+        //            $('#chartContainer').css('visibility', 'hidden');
+        //            $('#chartTitle').css('visibility', 'visible');
+        //            $('#chartWindow').jqxWindow('open');
+        //            sleep(300);
+        //            minDateVal = null;
+        //            maxDateVal = null;
+        //            //alert('TimeDiap=' + (new Date()).setDate((new Date()).getDate() - 1) + ' - ' + (new Date()).setDate((new Date()).getDate()));
+        //            getServersData(serverIP,
+        //                "DiskFreeSpace",
+        //                (new Date()).setDate((new Date()).getDate() - 1),
+        //                (new Date()).setDate((new Date()).getDate()));
+        //        }
+
+        //        function GoToChartFreePhysicalMemory(serverIP) {
+        //            //alert(serverIP);
+        //            $('#chartContainer').css('visibility', 'hidden');
+        //            $('#chartTitle').css('visibility', 'visible');
+        //            $('#chartWindow').jqxWindow('open');
+        //            sleep(300);
+        //            minDateVal = null;
+        //            maxDateVal = null;
+        //            getServersData(serverIP,
+        //                "FreePhysicalMemory",
+        //                (new Date()).setDate((new Date()).getDate() - 1),
+        //                (new Date()).setDate((new Date()).getDate()));
+        //        }
+
+
+        //        function Confirm(title, message, hint, server, container, controller, method) {
+
+        //            var confirm = '<div class="modal fade" tabindex="-1" id="confirm" aria-labelledby="modal-head">' +
+        //                '<div class="modal-dialog">' +
+        //                '<div class="modal-content">' +
+        //                '<div class="modal-header">' +
+        //                '<h5 class="modal-title" id="modal-head">' +
+        //                decodeURIComponent(title) +
+        //                '</h5>' +
+        //                '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+        //                '</div>' +
+        //                '<div class="modal-body">' +
+        //                '<span id="modal-body">' +
+        //                decodeURIComponent(message) +
+        //                '</span>' +
+        //                '<p class="text-secondary" id="modal-desc"><small>' +
+        //                decodeURIComponent(hint) +
+        //                '</small></p>' +
+        //                '<p class="text-secondary" id="modal-dcont"></p>' +
+        //                '</div>' +
+        //                '<div class="modal-footer">' +
+        //                '<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+        //                '<input class="btn btn-primary" id="yesButt" value="Yes" />' +
+        //                '</form>' +
+        //                '</div>' +
+        //                '</div>' +
+        //                '</div>' +
+        //                '</div>';
+
+        //            var thisConfirm = $(confirm).clone();
+        //            $('body').append(thisConfirm);
+        //            $(thisConfirm).modal('show');
+        //            $('#yesButt').on('click',
+        //                () => {
+        //                    $.ajax({ //Do an ajax post to the controller
+        //                        type: 'POST',
+        //                        url: '/' + controller + '/' + method,
+        //                        dataType: 'json',
+        //                        data: JSON.stringify({
+        //                                Server: decodeURIComponent(server),
+        //                                Container: decodeURIComponent(container)
+        //                            }
+        //                        ),
+
+        //                        contentType: 'application/json',
+        //                        success: function(response) {
+
+        //                            var strData = JSON.stringify(Data,
+        //                                function(key, value) {
+        //                                    if (value && typeof value === 'object') {
+        //                                        var replacement = {};
+        //                                        for (var k in value) {
+        //                                            if (Object.hasOwnProperty.call(value, k)) {
+        //                                                replacement[k && k.charAt(0).toUpperCase() + k.substring(1)] = value[k];
+        //                                            }
+        //                                        }
+        //                                        return replacement;
+        //                                    }
+        //                                    return value;
+        //                                });
+        //                            //window.location.reload();
+        //                            //console.log(response.responseText);
+        //                        },
+        //                        error: function(response) {
+        //                            console.log('Fail');
+        //                            console.log(response.responseText);
+        //                        }
+
+
+        //                    });
+        //                    $(thisConfirm).modal('hide');
+        //                });
+
+
+        //            $(thisConfirm).on('hidden.bs.modal',
+        //                function(e) {
+        //                    $(this).remove();
+        //                });
+
+        //        }
+
+
+        function cellsrenderer(row, column, value) {
+            var jsonmod = source.localdata;
+            var backcolor = "#FFFFFF";
+            var text = value;
+
+            //            if ((jsonmod[row].Connected !== null) && (jsonmod[row].OfflineTime !== '')) {
+            //                backcolor = "#FFA07A";
+            //            }
+            var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
+
+
+
+            //            if ((jsonmod[row].OfflineTime !== null) && (jsonmod[row].OfflineTime !== '')) {
+
+            //                if (column === 'HostName') {
+            //                    // MergerColspan(row, column);
+            //                    return divstartstyle +
+            //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //                        value +
+            //                        "<br>" +
+            //                        "Disconnect:" +
+            //                        "</span>" +
+            //                        "</div>";
+            //                }
+
+            //                if (column === 'ServerIP') {
+            //                    // MergerColspan(row, column);
+            //                    return divstartstyle +
+            //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //                        value +
+            //                        "<br>" +
+            //                        jsonmod[row].OfflineTime +
+            //                        " min ago" +
+            //                        "</span>" +
+            //                        "</div>";
+            //                }
+
+
+            //                return divstartstyle;
+            //            }
+
+
+            //            //alert(column);
+            if (column === 'HostName') {
+                if (!jsonmod[row].Error) {
+                    return divstartstyle +
+                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                        value +
+                        "</span>" +
+                        "</div>";
+                } else {
+                    return "<div style=' width: 100%; background: " +
+                        "#FFA07A'; title='" +
+                        jsonmod[row].Error +
+                        "'> <span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                        value +
+                        "</span>" +
+                        "</div>";
+                }
+            }
+        }
+            }
+        //            } else if (column === 'ServerIP') {
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+        //                    "<input style='height:30px;' type='button' " +
+        //                    "class='btn btn-success btn-lg btn-block btn-sm' " +
+        //                    "onclick=GoToDetails('" +
+        //                    jsonmod[row].ServerIP +
+        //                    "'); " +
+        //                    "href='javascript: void (0);' value='" +
+        //                    jsonmod[row].ServerIP +
+        //                    "' /> " +
+        //                    "</span>" +
+        //                    "</div>";
+        //            } else if (column === 'AllContainers') {
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    value +
+        //                    "</span>" +
+        //                    "</div>";
+        //            } else if (column === 'RunningContainers') {
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    value +
+        //                    "</span>" +
+        //                    "</div>";
+        //            } else if (column === 'NoProcessContainers') {
+        //                if (value !== 0) {
+        //                    return "<div style=' width: 100%; background: " +
+        //                        backcolor +
+        //                        "; color: #ff0000' title='" +
+        //                        "Crashed proceses: \r\n" +
+        //                        jsonmod[row].NoProcessDetails +
+        //                        "'>" +
+        //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                        value +
+        //                        "</span>" +
+        //                        "</div>";
+        //                } else {
+        //                    return divstartstyle +
+        //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                        value +
+        //                        "</span>" +
+        //                        "</div>";
+        //                }
+        //            } else if (column === 'DockerMissing') {
+        //                if (value !== 0) {
+        //                    return "<div style=' width: 100%; background: " +
+        //                        backcolor +
+        //                        "; color: #ff0000' title='" +
+        //                        "Missing containers: \r\n" +
+        //                        jsonmod[row].DockerMissingNames +
+        //                        "'>" +
+        //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                        value +
+        //                        "</span>" +
+        //                        "</div>";
+        //                } else {
+        //                    return divstartstyle +
+        //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                        value +
+        //                        "</span>" +
+        //                        "</div>";
+        //                }
+        //            } else if (column === 'ProcessorCoresCount') {
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    value +
+        //                    "</span>" +
+        //                    "</div>";
+        //            } else if (column === 'CPUUsage') {
+        //                if (value === "0.0") {
+        //                    text = "---";
+        //                }
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    text +
+        //                    "</span>" +
+        //                    "</div>";
+        //            } else if (column === 'RAMTotal') {
+        //                if ((value === null) || (value === "0.0")) {
+        //                    text = "---";
+        //                }
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    text +
+        //                    "</span>" +
+        //                    "</div>";
+        //            } else if (column === 'ContainersWorkingSet') {
+        //                if ((jsonmod[row].RAMTotal === null) ||
+        //                    (jsonmod[row].RAMTotal === 0) ||
+        //                    (jsonmod[row].RAMTotal > value)) {
+        //                    if (value === null) {
+        //                        text = "Waiting <br> for stats";
+        //                    }
+        //                    return "<div style=' width: 100%; background: " +
+        //                        backcolor +
+        //                        ";' title='" +
+        //                        jsonmod[row].ContainersWorkingSetStats +
+        //                        "'>" +
+        //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                        text +
+        //                        "</span>" +
+        //                        "</div>";
+        //                } else {
+        //                    return "<div style=' width: 100%; background: " +
+        //                        backcolor +
+        //                        ";color: #ff0000;' title='" +
+        //                        jsonmod[row].ContainersWorkingSetStats +
+        //                        "'>" +
+        //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                        text +
+        //                        "</span>" +
+        //                        "</div>";
+
+        //                }
+
+        //            } else if (column === 'FreePhysicalMemory') {
+        //                if ((value === null) || (value === "0.0")) {
+        //                    text = "---";
+        //                }
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+        //                    "<input style='height:30px;' type='button' " +
+        //                    "class='btn btn-light btn-lg btn-block btn-sm' " +
+        //                    "onclick=GoToChartFreePhysicalMemory('" +
+        //                    jsonmod[row].ServerIP +
+        //                    "'); " +
+        //                    "href='javascript: void (0);' value='" +
+        //                    text +
+        //                    "' /> " +
+        //                    "</span>" +
+        //                    "</div>";
+        //                /*
+        //                return "<div style='height: 100%; width: 100%; background: " +
+        //                    backcolor +
+        //                    "color: #ff0000;'> " +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+        //                    "<input style='height:30px;' type='button' " +
+        //                    "class='btn btn-light btn-lg btn-block btn-sm' " +
+        //                    "onclick=GoToChartFreePhysicalMemory('" +
+        //                    jsonmod[row].ServerIP +
+        //                    "'); " +
+        //                    "href='javascript: void (0);' value='" +
+        //                    text +
+        //                    "' /> " +
+        //                    "</span>" +
+        //                    "</div>";
+        //                    */
+        //                /*
+        //                return "<div style='height: 100%; width: 100%; background: " +
+        //                    backcolor +
+        //                    ";'>" +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    text +
+        //                    "</span>" +
+        //                    "</div>";
+        //                    */
+        //            } else if (column === 'DiskSpace') {
+        //                if (value === null) {
+        //                    text = "---";
+        //                }
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    value +
+        //                    "</span>" +
+        //                    "</div>";
+        //            } else if (column === 'DiskFreeSpace') {
+
+        //                if ((value !== null) && (value !== 0) && ((value / jsonmod[row].DiskFreeSpaceStat) < 0.05)) {
+
+        //                    return "<div style=' width: 100%; background: " +
+        //                        backcolor +
+        //                        "color: #ff0000;'> " +
+        //                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+        //                        "<input style='height:30px;' type='button' " +
+        //                        "class='btn btn-light btn-lg btn-block btn-sm' " +
+        //                        "onclick=GoToChartDiskFreeSpace('" +
+        //                        jsonmod[row].ServerIP +
+        //                        "'); " +
+        //                        "href='javascript: void (0);' value='" +
+        //                        value +
+        //                        "' /> " +
+        //                        "</span>" +
+        //                        "</div>";
+        //                }
+
+        ///*
+
+        //*/
+        //                /*
+        //                return "<div style='height: 100%; width: 100%; background: " +
+        //                    backcolor +
+        //                    ";color: #ff0000;' title='" +
+        //                    jsonmod[row].DiskFreeSpaceStat +
+        //                    "'>" +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    value +
+        //                    "</span>" +
+        //                    "</div>";
+        //                    */
+
+
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+        //                    "<input style='height:30px;' type='button' " +
+        //                    "class='btn btn-light btn-lg btn-block btn-sm' " +
+        //                    "onclick=GoToChartDiskFreeSpace('" +
+        //                    jsonmod[row].ServerIP +
+        //                    "'); " +
+        //                    "href='javascript: void (0);' value='" +
+        //                    value +
+        //                    "' /> " +
+        //                    "</span>" +
+        //                    "</div>";
+
+
+        //                /*
+        //                return "<div style='height: 100%; width: 100%; background: " +
+        //                    backcolor +
+        //                    ";' title='" +
+        //                    jsonmod[row].DiskFreeSpaceStat +
+        //                    "'>" +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    value +
+        //                    "</span>" +
+        //                    "</div>";
+        //                    */
+        //            } else if (column === 'ServerControl') {
+        //                //if ((jsonmod[row].IsRunAllContainers) || (jsonmod[row].IsStopAllContainers) || (jsonmod[row].IsRebuildAllContainers)) {
+        //                if (jsonmod[row].IsRunAllContainers && jsonmod[row].AllowRunAll) {
+        //                    return divstartstyle +
+        //                        "<span style='margin-top: 5px; margin-left: 50px; position: absolute;'> " +
+        //                        "<input style='height:30px;' type='button' " +
+        //                        "class='btn-danger btn-lg btn-block btn-sm yellow'" +
+        //                        "onclick=Confirm('" +
+        //                        encodeURIComponent(jsonmod[row].HostName +
+        //                            '(' +
+        //                            jsonmod[row].ServerIP +
+        //                            ')') +
+        //                        "','" +
+        //                        encodeURIComponent('Do you want to INTERRUPT RUN ALL containers on server?') +
+        //                        "','" +
+        //                        encodeURIComponent(jsonmod[row].HostName +
+        //                            '(' +
+        //                            jsonmod[row].ServerIP +
+        //                            ')') +
+        //                        "','" +
+        //                        encodeURIComponent(jsonmod[row].ServerIP) +
+        //                        "','All','" +
+        //                        encodeURIComponent('Servers') +
+        //                        "','" +
+        //                        encodeURIComponent('InterruptContainersRun') +
+        //                        "'); value='Interrupt Run All'/>" +
+        //                        "</span>" +
+        //                        "</div>";
+        //                } else if (jsonmod[row].IsStopAllContainers && jsonmod[row].AllowStopAll) {
+        //                    return divstartstyle +
+        //                        "<span style='margin-top: 5px; margin-left: 50px; position: absolute;'> " +
+        //                        "<input style='height:30px;' type='button' " +
+        //                        "class='btn-danger btn-lg btn-block btn-sm yellow'" +
+        //                        "onclick=Confirm('" +
+        //                        encodeURIComponent(jsonmod[row].HostName +
+        //                            '(' +
+        //                            jsonmod[row].ServerIP +
+        //                            ')') +
+        //                        "','" +
+        //                        encodeURIComponent('Do you want to INTERRUPT STOP ALL containers on server?') +
+        //                        "','" +
+        //                        encodeURIComponent(jsonmod[row].HostName +
+        //                            '(' +
+        //                            jsonmod[row].ServerIP +
+        //                            ')') +
+        //                        "','" +
+        //                        encodeURIComponent(jsonmod[row].ServerIP) +
+        //                        "','All','" +
+        //                        encodeURIComponent('Servers') +
+        //                        "','" +
+        //                        encodeURIComponent('InterruptContainersStop') +
+        //                        "'); value='Interrupt Stop All'/>" +
+        //                        "</span>" +
+        //                        "</div>";
+        //                } else if (jsonmod[row].IsRebuildAllContainers && jsonmod[row].AllowRebuildAll) {
+        //                    return divstartstyle +
+        //                        "<span style='margin-top: 5px; margin-left: 50px; position: absolute;'> " +
+        //                        "<input style='height:30px;' type='button' " +
+        //                        "class='btn-danger btn-lg btn-block btn-sm yellow'" +
+        //                        "onclick=Confirm('" +
+        //                        encodeURIComponent(jsonmod[row].HostName +
+        //                            '(' +
+        //                            jsonmod[row].ServerIP +
+        //                            ')') +
+        //                        "','" +
+        //                        encodeURIComponent('Do you want to INTERRUPT REBUILD ALL containers on server?') +
+        //                        "','" +
+        //                        encodeURIComponent(jsonmod[row].HostName +
+        //                            '(' +
+        //                            jsonmod[row].ServerIP +
+        //                            ')') +
+        //                        "','" +
+        //                        encodeURIComponent(jsonmod[row].ServerIP) +
+        //                        "','All','" +
+        //                        encodeURIComponent('Servers') +
+        //                        "','" +
+        //                        encodeURIComponent('InterruptContainersRebuild') +
+        //                        "'); value='Interrupt Rebuild All'/>" +
+        //                        "</span>" +
+        //                        "</div>";
+
+        //                } else {
+
+        //                    var res = divstartstyle;
+
+        //                    if (jsonmod[row].AllowRunAll) {
+        //                        res = res + "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+        //                            "<input style='height:30px;' type='button' " +
+        //                            "class='btn btn-success btn-lg btn-block btn-sm'" +
+        //                            "onclick=Confirm('" +
+        //                            encodeURIComponent(jsonmod[row].HostName +
+        //                                '(' +
+        //                                jsonmod[row].ServerIP +
+        //                                ')') +
+        //                            "','" +
+        //                            encodeURIComponent('Do you want to RUN ALL containers on server?') +
+        //                            "','" +
+        //                            encodeURIComponent(jsonmod[row].HostName +
+        //                                '(' +
+        //                                jsonmod[row].ServerIP +
+        //                                ')') +
+        //                            "','" +
+        //                            encodeURIComponent(jsonmod[row].ServerIP) +
+        //                            "','All','" +
+        //                            encodeURIComponent('Servers') +
+        //                            "','" +
+        //                            encodeURIComponent('RunAllContainers') +
+        //                            "'); value='Run All'/>" +
+        //                            "</span>";
+        //                    }
+
+        //                    if (jsonmod[row].AllowStopAll) {
+        //                        res = res + "<span style='margin-top: 5px; margin-left: 80px; position: absolute;'>" +
+        //                            "<input style='height:30px;' type='button' " +
+        //                            "class='btn btn-danger btn-lg btn-block btn-sm'" +
+        //                            "onclick=Confirm('" +
+        //                            encodeURIComponent(jsonmod[row].HostName +
+        //                                '(' +
+        //                                jsonmod[row].ServerIP +
+        //                                ')') +
+        //                            "','" +
+        //                            encodeURIComponent('Do you want to STOP ALL containers on server?') +
+        //                            "','" +
+        //                            encodeURIComponent(jsonmod[row].HostName +
+        //                                '(' +
+        //                                jsonmod[row].ServerIP +
+        //                                ')') +
+        //                            "','" +
+        //                            encodeURIComponent(jsonmod[row].ServerIP) +
+        //                            "','All','" +
+        //                            encodeURIComponent('Servers') +
+        //                            "','" +
+        //                            encodeURIComponent('StopAllContainers') +
+        //                            "'); value='Stop All'/>" +
+        //                            "</span>";
+        //                    }
+
+        //                    if (jsonmod[row].AllowRebuildAll) {
+        //                        res = res + "<span style='margin-top: 5px; margin-left: 155px; position: absolute;'>" +
+        //                            "<input style='height:30px;' type='button' " +
+        //                            "class='btn btn-warning btn-lg btn-block btn-sm'" +
+        //                            "onclick=Confirm('" +
+        //                            encodeURIComponent(jsonmod[row].HostName +
+        //                                '(' +
+        //                                jsonmod[row].ServerIP +
+        //                                ')') +
+        //                            "','" +
+        //                            encodeURIComponent('Do you want to REBUILD ALL containers on server?') +
+        //                            "','" +
+        //                            encodeURIComponent(jsonmod[row].HostName +
+        //                                '(' +
+        //                                jsonmod[row].ServerIP +
+        //                                ')') +
+        //                            "','" +
+        //                            encodeURIComponent(jsonmod[row].ServerIP) +
+        //                            "','All','" +
+        //                            encodeURIComponent('Servers') +
+        //                            "','" +
+        //                            encodeURIComponent('RebuildAllContainers') +
+        //                            "'); value='Rebuild All'/>" +
+        //                            "</span>";
+        //                    }
+
+        //                    return res + "</div>";
+        //                }
+        //            } else if (column === 'DockerPrune' && jsonmod[row].AllowDockerPrune) {
+        //                if ((jsonmod[row].DockerPruneState !== null) && (jsonmod[row].DockerPruneState !== '')) {
+        //                    if (jsonmod[row].DockerPruneState.startsWith('Errors')) {
+        //                        text =
+        //                            "<span style='margin-top: 5px; margin-left: 135px; position: absolute;' class='redCircle'; title='" +
+        //                            jsonmod[row].DockerPruneState +
+        //                            "'></span>";
+        //                    } else {
+        //                        text =
+        //                            "<span style='margin-top: 5px; margin-left: 135px; position: absolute;' class='greenCircle'; title='" +
+        //                            jsonmod[row].DockerPruneState +
+        //                            "'></span>";
+        //                    }
+        //                } else {
+        //                    text = '';
+        //                }
+
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+        //                    "<input style='height:30px;' type='button' " +
+        //                    "class='btn btn-warning btn-lg btn-block btn-sm'" +
+        //                    "onclick=Confirm('" +
+        //                    encodeURIComponent(jsonmod[row].HostName +
+        //                        '(' +
+        //                        jsonmod[row].ServerIP +
+        //                        ')') +
+        //                    "','" +
+        //                    encodeURIComponent('Do you want to SYSTEM PRUNE on server?') +
+        //                    "','" +
+        //                    encodeURIComponent(jsonmod[row].HostName +
+        //                        '(' +
+        //                        jsonmod[row].ServerIP +
+        //                        ')') +
+        //                    "','" +
+        //                    encodeURIComponent(jsonmod[row].ServerIP) +
+        //                    "','All','" +
+        //                    encodeURIComponent('Servers') +
+        //                    "','" +
+        //                    encodeURIComponent('DockerPrune') +
+        //                    "'); value='Docker PRUNE'/>" +
+        //                    "</span>" +
+        //                    text +
+        //                    "</div>";
+
+        //            } else if (column === 'RestartServices' && jsonmod[row].AllowRestartServices) {
+        //                var otherUserServiceCount = jsonmod[row].RestartOtherUserServicesList.length;
+        //                console.info("OtherUserServiceCount: " + otherUserServiceCount);
+        //                console.info("User: " + otherUserServiceCount);
+        //                var allSerivecesCount = 0;
+
+        //                const allUsersServices = [];
+
+        //                for (var i = 0; i < otherUserServiceCount; i++) {
+        //                    var userServiceData = JSON.parse(jsonmod[row].RestartOtherUserServicesList[i]);
+
+        //                    allSerivecesCount += userServiceData.Item2.length;
+
+        //                    console.info(userServiceData);
+
+        //                    console.info(userServiceData.Item1);
+        //                    console.info(userServiceData.Item2);
+
+        //                    for (var j = 0; j < userServiceData.Item2.length; j++)
+        //                    {
+        //                        allUsersServices.push(userServiceData.Item2[j]);
+        //                    }
+        //                }
+
+
+
+        //                var serviceCount = jsonmod[row].RestartServicesList.length;
+        //                //console.info("ServicesCount: " + serviceCount);
+        //                //console.info("row: " + row);
+
+        //                allSerivecesCount += serviceCount;
+
+        //                for (var i = 0; i < serviceCount; i++) {
+        //                    allUsersServices.push(jsonmod[row].RestartServicesList[i]);
+        //                }
+        //                serviceCount = allUsersServices.length;
+
+        //                var serviceCountForHeight = 1;
+        //                if (allSerivecesCount != null && allSerivecesCount != 0)
+        //                    serviceCountForHeight = allSerivecesCount;
+
+        //                var serviceResult = "<div style='height:"+ ((5 * serviceCountForHeight) + (30 * serviceCountForHeight)) +"px; width: 100%; background: " + backcolor + ";'> ";
+
+
+
+        //                for (var i = 0; i < jsonmod[row].RestartServicesList.length; i++) {
+        //                    //console.info(jsonmod[row].RestartServicesList[i]);
+
+        //                    var restartBtnStyle = "btn-success";
+        //                    if (jsonmod[row].RestartServicesList[i].includes("fail"))
+        //                        restartBtnStyle = "btn-danger";
+
+        //                    serviceResult +=
+        //                    "<span style='margin-top: " + (5 * (i + 2) + (30 * (i + 1) - 30)) + "px; margin-left: 10px; width: 100%; position: absolute;'> " +
+
+        //                    "<button style='height:30px; width: 92%; font-size: 12px;' id='btnStop' class='btn " + restartBtnStyle + " btn-lg btn-block btn-sm' type='button' title='Restart " + jsonmod[row].RestartServicesList[i].replace(/\s+\-\s+(fail|ok)/gmi, "") + " service'" +
+        //                        "onclick='RestartService(\"" + jsonmod[row].ServerIP + "\", \"" + jsonmod[row].RestartServicesList[i].replace(/\s+\-\s+(fail|ok)/gmi, '') + "\")' href='javascript:void(0);'>" +
+        //                    jsonmod[row].RestartServicesList[i].replace(/(\.service)?\s+\-\s+(fail|ok)/gmi, "") +
+        //                     "</button>" +
+
+        //                    "</span>";
+        //                }
+
+        //                var buttomOffset = jsonmod[row].RestartServicesList.length;
+        //                for (var i = 0; i < otherUserServiceCount; i++) {
+        //                    var userServiceData = JSON.parse(jsonmod[row].RestartOtherUserServicesList[i]);
+
+        //                    console.info(userServiceData.Item1);
+        //                    console.info(userServiceData.Item2);
+
+        //                    for (var j = 0; j < userServiceData.Item2.length; j++)
+        //                    {
+        //                        var otherUserServiceName = userServiceData.Item2[j];
+
+        //                        var restartBtnStyle = "btn-success";
+        //                        if (otherUserServiceName.includes("fail"))
+        //                            restartBtnStyle = "btn-danger";
+
+        //                        serviceResult +=
+        //                            "<span style='margin-top: " + (5 * (buttomOffset + j + 2) + (30 * (buttomOffset + j + 1) - 30)) + "px; margin-left: 10px; width: 100%; position: absolute;'> " +
+
+        //                            "<button style='height:30px; width: 92%; font-size: 12px;' id='btnStop' class='btn " + restartBtnStyle + " btn-lg btn-block btn-sm' type='button' title='Restart " + otherUserServiceName.replace(/\s+\-\s+(fail|ok)/gmi, "") + " service.\nUser: "+ userServiceData.Item1 +"'" +
+        //                            "onclick='RestartService(\"" + jsonmod[row].ServerIP + "\", \"" + otherUserServiceName.replace(/\s+\-\s+(fail|ok)/gmi, '') + "\")' href='javascript:void(0);'>" +
+        //                            otherUserServiceName.replace(/(\.service)?\s+\-\s+(fail|ok)/gmi, "") +
+        //                            "</button>" +
+
+        //                            "</span>";
+        //                    }
+
+        //                    buttomOffset += userServiceData.Item2.length;
+        //                }
+
+        //                return serviceResult + text +"</div>";
+
+        //            } else if (column === 'CurrentOperation') {
+        //                return divstartstyle +
+        //                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                    (jsonmod[row].IsRunAllContainers
+        //                        ? jsonmod[row].RunAllContainersStatus
+        //                        : jsonmod[row].IsStopAllContainers
+        //                        ? jsonmod[row].StopAllContainersStatus
+        //                        : jsonmod[row].IsRebuildAllContainers
+        //                        ? jsonmod[row].RebuildAllContainersStatus
+        //                        : "") +
+        //                    "</span>" +
+        //                    "</div>";
+
+        //            } else if (column === 'Progress') {
+        //                text = '0';
+        //                if (jsonmod[row].IsRunAllContainers) {
+        //                    text = jsonmod[row].RunAllContainersProgress.toString();
+        //                }
+        //                if (jsonmod[row].IsStopAllContainers) {
+        //                    text = jsonmod[row].StopAllContainersProgress.toString();
+        //                }
+        //                if (jsonmod[row].IsRebuildAllContainers) {
+        //                    text = jsonmod[row].RebuildAllContainersProgress.toString();
+        //                }
+
+
+        //                //: jsonmod[row].IsStopAllContainers);
+        //                //? jsonmod[row].StopAllContainersProgress.toString()
+        //                //: jsonmod[row].IsRebuildAllContainers
+        //                //? jsonmod[row].RebuildAllContainersProgress.toString():'0');
+        //                if (jsonmod[row].IsRunAllContainers ||
+        //                    jsonmod[row].IsStopAllContainers ||
+        //                    jsonmod[row].IsRebuildAllContainers) {
+        //                    return divstartstyle +
+        //                        "<span style='margin-top: 15px; margin-left: 40px; position: absolute;'>" +
+        //                        "<progress value='" +
+        //                        text +
+        //                        "' max='100'></progress>" +
+        //                        "</span>" +
+        //                        "</div>";
+        //                } else {
+        //                    return divstartstyle +
+        //                        "</div>";
+        //                }
+
+
+        //            }
+        //            return divstartstyle +
+        //                "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+        //                value +
+        //                "</span>" +
+        //                "</div>";
+        //        }
+
+
+        function refresh() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Refresh", "Servers")',
+                contentType: 'application/json',
+                data: JSON.stringify({ cnt: 0 }),
+                success: function (Data) {
+                    var strData = JSON.stringify(Data,
+                        function (key, value) {
+                            if (value && typeof value === 'object') {
+                                var replacement = {};
+                                for (var k in value) {
+                                    if (Object.hasOwnProperty.call(value, k)) {
+                                        replacement[k && k.charAt(0).toUpperCase() + k.substring(1)] = value[k];
+                                    }
+                                }
+                                return replacement;
+                            }
+                            return value;
+                        });
+                    source.localdata = Data;
+                    if (!newdata) {
+                        $("#jqxgrid").jqxGrid({ source: source });
+                        newdata = true;
+                    }
+
+                    //
+                    //$("#jqxgrid").trigger('reloadGrid');
+                    $("#jqxgrid").jqxGrid('refresh');
+                    $("#jqxgrid").jqxGrid('updatebounddata', 'sort');
+                    //$("#jqxgrid").jqxGrid('updatebounddata', 'filter');
+                    //alert('x');
+                }
+            });
+        }
+
+
+        //        function sleep(milliseconds) {
+        //            const date = Date.now();
+        //            let currentDate = null;
+        //            do {
+        //                currentDate = Date.now();
+        //            } while (currentDate - date < milliseconds);
+        //        }
+
+
+        //        function getServersData(serverIP, Field, TimeBegin, TimeEnd) {
+        //            //alert('Received data from server: '+ serverIP);
+        //            //alert(TimeBegin.toJSON());
+
+
+        //            var timeBegin = new Date(TimeBegin);
+        //            var timeEnd = new Date(TimeEnd);
+
+
+        //            if ((minDateVal == null) || (TimeBegin < minDateVal)) {
+        //                minDateVal = timeBegin;
+        //            }
+
+        //            if ((maxDateVal == null) || (TimeEnd > maxDateVal)) {
+        //                maxDateVal = timeEnd;
+        //            }
+
+
+        //            function detectNumeric(obj) {
+
+        //                // alert(JSON.stringify(obj));
+        //                var nObj = {
+        //                    FreePhysicalMemory: 0,
+        //                    DiskFreeSpace: 0,
+        //                    UpdateTime: new Date()
+        //                }
+
+        //                var Data = {};
+
+        //                Data.Data = [];
+
+        //                for (var index in obj) {
+        //                    // if object property value *is* a number, like 1 or "500"
+        //                    //alert(obj[index].DiskFreeSpace);
+        //                    //alert('o i = ' + obj[index].FreePhysicalMemory);
+        //                    if ((obj[index].FreePhysicalMemory != null) &&
+        //                        (obj[index].DiskFreeSpace != null) &&
+        //                        (obj[index].UpdateTime) != null) {
+
+        //                        nObj.FreePhysicalMemory = Number(obj[index].FreePhysicalMemory);
+        //                        nObj.DiskFreeSpace = Number(obj[index].DiskFreeSpace);
+        //                        nObj.UpdateTime = new Date(obj[index].UpdateTime);
+
+        //                        Data.Data.push(nObj);
+        //                        // convert it to 1 or 500
+        //                        //obj[index].FreePhysicalMemory = Number(obj[index].FreePhysicalMemory);
+        //                        //obj[index].DiskFreeSpace = Number(obj[index].DiskFreeSpace);
+        //                        //obj[index].UpdateTime = new Date(obj[index].UpdateTime);
+        //                        // alert(nObj);
+        //                    }
+        //                    // to do: explain what this does
+        //                    // else if (typeof obj === "object") {
+        //                    //  detectNumeric(obj[index]);
+        //                    // }
+        //                }
+        //                // alert('F');
+        //                //console.log(my_object)
+        //                //alert('converted');
+        //                alert('New=' + JSON.stringify(Data));
+        //                return Data;
+        //            }
+
+
+        //            $.ajax({
+        //                type: "POST",
+        //                url: '@Url.Action("GetServersData", "Servers")',
+        //                contentType: 'application/json',
+        //                data: JSON.stringify({
+        //                    Server: decodeURIComponent(serverIP),
+        //                    Container: "",
+        //                    // TimeBegin: JSON.stringify(TimeBegin),
+        //                    // TimeEnd: JSON.stringify(TimeEnd)
+        //                    //TimeBegin: timeBegin.getDate() +
+        //                    //    "/" +
+        //                    //    (timeBegin.getMonth() + 1) +
+        //                    //    "/" +
+        //                    //    timeBegin.getFullYear() +
+        //                    //    " " +
+        //                    //    timeBegin.getHours() +
+        //                    //    ':' +
+        //                    //    timeBegin.getMinutes() +
+        //                    //    ':' +
+        //                    //    timeBegin.getSeconds(),
+        //                    //TimeEnd: timeEnd.getDate() +
+        //                    //    "/" +
+        //                    //    (timeEnd.getMonth() + 1) +
+        //                    //    "/" +
+        //                    //    timeEnd.getFullYear() +
+        //                    //    " " +
+        //                    //    timeEnd.getHours() +
+        //                    //    ':' +
+        //                    //    timeEnd.getMinutes() +
+        //                    //    ':' +
+        //                    //    timeEnd.getSeconds()
+        //                    TimeBegin: ('0' + timeBegin.getDate()).slice(-2) + '/' + ('0' + (timeBegin.getMonth() + 1)).slice(-2) + '/' +
+        //                        timeBegin.getFullYear() + ' ' + ('0' + timeBegin.getHours()).slice(-2) + ':' +
+        //                        ('0' + timeBegin.getMinutes()).slice(-2) + ':' + ('0' + timeBegin.getSeconds()).slice(-2),
+        //                    TimeEnd: ('0' + timeEnd.getDate()).slice(-2) + '/' + ('0' + (timeEnd.getMonth() + 1)).slice(-2) + '/' +
+        //                        timeEnd.getFullYear()+ ' ' + ('0' + timeEnd.getHours()).slice(-2) + ':' +
+        //                        ('0' + timeEnd.getMinutes()).slice(-2) + ':' + ('0' + timeEnd.getSeconds()).slice(-2)
+        //                }),
+        //                success: function(Data) {
+        //                    // alert('success');
+        //                    var strData = JSON.stringify(Data,
+        //                        function(key, value) {
+        //                            if (value && typeof value === 'object') {
+        //                                var replacement = {};
+        //                                for (var k in value) {
+        //                                    if (Object.hasOwnProperty.call(value, k)) {
+        //                                        replacement[k && k.charAt(0).toUpperCase() + k.substring(1)] = value[k];
+        //                                    }
+        //                                }
+        //                                return replacement;
+        //                            }
+        //                            return value;
+        //                        });
+
+        //                    //detectNumeric(Data.Data);
+        //                    //alert('Free='+Data[1].DiskFreeSpace);
+
+        //                    //serverData = Data;
+        //                    // $('#chartWindow').jqxWindow('open');
+        //                    //  $('#chartContainer').jqxChart('refresh');
+        //                    //alert('orig='+JSON.stringify(Data.Data));
+        //                    //alert(Data.Data.length);
+        //                    //alert('End of parse data from server: '+ serverIP);
+
+
+        //                    // chartSource.localData = serverData;
+
+        //                    chartSource =
+        //                    {
+        //                        datatype: "json",
+        //                        datafields: [
+        //                            { name: 'UpdateTime' },
+        //                            { name: (Field === "DiskFreeSpace") ? 'DiskFreeSpace' : 'FreePhysicalMemory' }
+        //                        ]
+        //                    }
+        //                    chartSource.localData = Data.Data; //detectNumeric(Data.Data);
+        //                    var chartDataAdapter = new $.jqx.dataAdapter(chartSource,
+        //                        {
+        //                            async: true,
+        //                            autoBind: true,
+        //                            loadError: function(xhr, status, error) { alert('Error loading: ' + error); }
+        //                        });
+
+
+        //                    if (prevChartData !== Field) {
+
+
+        //                        var months = [
+        //                            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        //                        ];
+
+        //                        var toolTipCustomFormatFn =
+        //                            function(value, itemIndex, serie, group, categoryValue, categoryAxis) {
+        //                                var dataItem = chartDataAdapter.records[itemIndex];
+
+        //                                return '<DIV style="text-align:left"><b>Date: ' +
+        //                                    categoryValue.getDate() +
+        //                                    '-' +
+        //                                    months[categoryValue.getMonth()] +
+        //                                    '-' +
+        //                                    categoryValue.getFullYear() +
+        //                                    ' ' +
+        //                                    ('0' + categoryValue.getHours()).slice(-2) +
+        //                                    ':' +
+        //                                    ('0' + categoryValue.getMinutes()).slice(-2) +
+        //                                    ':' +
+        //                                    ('0' + categoryValue.getSeconds()).slice(-2) +
+        //                                    (Field === "DiskFreeSpace"
+        //                                        ? '</b><br />Free disk space, Gb: '
+        //                                        : '</b><br />Free RAM, Gb: ') +
+        //                                    (Field === "DiskFreeSpace" ? dataItem.DiskFreeSpace : dataItem.FreePhysicalMemory) +
+        //                                    '</DIV>';
+        //                            };
+
+        //                        var settings = {
+        //                            title: 'Server: ' + Data.Server,
+        //                            description: Field === "DiskFreeSpace"
+        //                                ? "Free space on disk, Gb"
+        //                                : "Free Physical memory (RAM), Gb",
+        //                            enableAnimations: false,
+        //                            //animationDuration: 1500,
+        //                            enableCrosshairs: true,
+        //                            padding: { left: 5, top: 5, right: 30, bottom: 5 },
+        //                            titlePadding: { left: 30, top: 5, right: 0, bottom: 10 },
+        //                            source: chartDataAdapter,
+        //                            xAxis:
+        //                            {
+        //                                dataField: 'UpdateTime',
+        //                                minValue: TimeBegin,
+        //                                maxValue: (new Date()).setDate((new Date()).getDate()),
+        //                                // minValue: (new Date()).setDate((new Date()).getDate() - 1),
+        //                                // minValue: new Date(2020, 01, 14),
+        //                                //maxValue: new Date(),
+        //                                type: 'date',
+        //                                baseUnit: 'day',
+        //                                labels:
+        //                                {
+        //                                    formatFunction: function(value) {
+        //                                        return value.getDate() +
+        //                                            '-' +
+        //                                            months[value.getMonth()] +
+        //                                            '\'' +
+        //                                            value.getFullYear().toString().substring(2);
+        //                                    }
+        //                                },
+        //                                rangeSelector: {
+        //                                    // Uncomment the line below to render the selector in a separate container
+        //                                    //renderTo: $('#selectorContainer'),
+        //                                    size: 80,
+        //                                    padding: { top: 0, bottom: 0 },
+        //                                    minValue: (new Date()).setDate((new Date()).getDate() - 31),
+        //                                    backgroundColor: 'white',
+        //                                    dataField: (Field === "DiskFreeSpace") ? 'DiskFreeSpace' : 'FreePhysicalMemory',
+        //                                    //baseUnit: 'day',
+        //                                    gridLines: { visible: false },
+        //                                    serieType: 'area',
+        //                                    labels:
+        //                                    {
+        //                                        formatFunction: function(value) {
+        //                                            return value.getDate() +
+        //                                                '-' +
+        //                                                months[value.getMonth()] +
+        //                                                '\'' +
+        //                                                value.getFullYear().toString().substring(2);
+        //                                        }
+        //                                    }
+        //                                    //labels: {
+        //                                    //    formatFunction: function(value) {
+        //                                    //        return months[value.getMonth()] +
+        //                                    //            '\'' +
+        //                                    //            value.getFullYear().toString().substring(2);
+        //                                    //    }
+        //                                    // }
+        //                                }
+        //                            },
+        //                            valueAxis:
+        //                            {
+        //                                title: {
+        //                                    text: Field === "DiskFreeSpace"
+        //                                        ? 'Free space on disk, Gb<br><br>'
+        //                                        : 'Free RAM<br><br>'
+        //                                },
+        //                                labels: { horizontalAlignment: 'right' }
+        //                            },
+        //                            colorScheme: 'scheme01',
+        //                            seriesGroups:
+        //                            [
+        //                                {
+        //                                    type: 'line',
+        //                                    toolTipFormatFunction: toolTipCustomFormatFn,
+        //                                    series: [
+        //                                        {
+        //                                            dataField: Field === "DiskFreeSpace"
+        //                                                ? 'DiskFreeSpace'
+        //                                                : 'FreePhysicalMemory',
+        //                                            displayText: Field === "DiskFreeSpace"
+        //                                                ? "Free space on disk, Gb"
+        //                                                : "Free Physical memory (RAM), Gb",
+        //                                            lineWidth: 1,
+        //                                            lineWidthSelected: 1
+        //                                        }
+        //                                    ]
+        //                                }
+        //                            ]
+
+        //                        };
+
+
+        //                        prevChartData = Field;
+        //                        removeElement("chartHujart");
+        //                        addElement("chartParent",
+        //                            "div",
+        //                            "chartHujart",
+        //                            "<div id='chartContainer' style='z - index: 2; position: absolute; width: 800px; height: 500px;'>");
+
+        //                        //alert('Accept settings');
+        //                        $('#chartContainer').jqxChart(settings);
+        //                        $('#chartContainer').on('rangeSelectionChanged',
+        //                            function(event) {
+        //                                //alert('changed');
+        //                                var args = event.args;
+        //                                if ((args.minValue < minDateVal) || (args.maxValue > maxDateVal)) {
+        //                                    //alert('args.minValue=' + args.minValue);
+        //                                    //alert('minDateVal=' + minDateVal);
+        //                                    //alert('args.maxValue=' + args.maxValue);
+        //                                    //alert('maxDateVal=' + maxDateVal);
+        //                                    getServersData(serverIP, Field, args.minValue, args.maxValue);
+        //                                }
+        //                            });
+
+        //                    } else {
+
+
+        //                        // xAxis.rangeSelector.minValue = (new Date()).setDate((new Date()).getDate() - 1);
+        //                        // xAxis.rangeSelector.maxValue = xAxis.maxValue;
+        //                        // alert('min=' + xAxis.rangeSelector.minValue);
+        //                        // alert('max=' + xAxis.rangeSelector.maxValue);
+
+        //                        // var xAxis = $('#chartContainer').jqxChart('xAxis');
+        //                        // xAxis._selectorRange = [];
+        //                        // $('#chartContainer').jqxChart('update');
+
+
+        //                        var settingsSec = {
+        //                            title: 'Server: ' + Data.Server,
+        //                            source: chartDataAdapter
+        //                            //xAxis:
+        //                            //{
+        //                            //    minValue: TimeBegin,
+        //                            // }
+        //                        }
+
+        //                        $('#chartContainer').jqxChart(settingsSec);
+        //                        $('#chartContainer').jqxChart('refresh');
+        //                    }
+        //                    $('#chartTitle').css('visibility', 'hidden');
+        //                    $('#chartContainer').css('visibility', 'visible');
+
+        //                }
+
+        //            });
+        //        }
+
+
+        //        var minDateVal = null;
+        //        var maxDateVal = null;
+        //        var serverData;
+        //        var newdata = false;
+        //        var prevChartData = "";
+        //        var grid = $("#jqxgrid"),
+        //            intervalId = setInterval(refresh, 3000);
+
+
+        //        var chartSource =
+        //        {
+        //            datatype: "json",
+        //            datafields: [
+        //                { name: 'UpdateTime' },
+        //                { name: 'DiskFreeSpace' }
+        //            ]
+        //        }
+
+
+        //        var source =
+        //        {
+        //            datatype: "json",
+        //            datafields: [
+        //                { name: 'HostName', type: 'string' },
+        //                { name: 'ServerIP', type: 'string' },
+        //                { name: 'AllContainers', type: 'number' },
+        //                { name: 'RunningContainers', type: 'number' },
+        //                { name: 'NoProcessContainers', type: 'number' },
+        //                { name: 'DockerMissing', type: 'number' },
+        //                { name: 'ProcessorCoresCount', type: 'number' },
+        //                { name: 'RAMTotal', type: 'number' },
+        //                { name: 'CPUUsage', type: 'number' },
+        //                { name: 'FreePhysicalMemory', type: 'number' },
+        //                { name: 'ContainersWorkingSet', type: 'number' },
+        //                { name: 'DiskSpace', type: 'number' },
+        //                { name: 'DiskFreeSpace', type: 'number' },
+        //            ]
+
+        //        };
+
+
+        //        var dataAdapter = new $.jqx.dataAdapter(source);
+
+
+        //        $(document).ready(function() {
+
+
+        //            $("#jqxgrid").jqxGrid(
+        //                {
+        //                    width: '100%',
+        //                    source: dataAdapter,
+        //                    //theme: 'energyblue',
+        //                    sortable: true,
+        //                    filterable: true,
+        //                    //showfilterrow: true,
+        //                    //autorowheight: true,
+        //                    //rowsheight: 48,
+        //                    autorowheight: true,
+        //                    //autoheight: true,
+        //                    pageable: true,
+        //                    height: 720,
+        //                    columnsresize: true,
+        //                    columns: [
+        //                        { text: "Name", datafield: "HostName", width: "7%", cellsrenderer: cellsrenderer },
+        //                        { text: "Server IP", datafield: "ServerIP", width: "8%", cellsrenderer: cellsrenderer },
+        //                        { text: "Containers", datafield: "AllContainers", width: "5%", cellsrenderer: cellsrenderer },
+        //                        { text: "Running", datafield: "RunningContainers", width: "4%", cellsrenderer: cellsrenderer },
+        //                        {
+        //                            text: "No Process",
+        //                            datafield: "NoProcessContainers",
+        //                            width: "5%",
+        //                            cellsrenderer: cellsrenderer
+        //                        },
+        //                        { text: "Docker Miss", datafield: "DockerMissing", width: "5%", cellsrenderer: cellsrenderer },
+        //                        { text: "Cores", datafield: "ProcessorCoresCount", width: "3%", cellsrenderer: cellsrenderer },
+        //                        { text: "CPU Usage,%", datafield: "CPUUsage", width: "6%", cellsrenderer: cellsrenderer },
+        //                        { text: "RAM,Gb", datafield: "RAMTotal", width: "4%", cellsrenderer: cellsrenderer },
+        //                        {
+        //                            text: "Cont RAM,Gb",
+        //                            datafield: "ContainersWorkingSet",
+        //                            width: "5%",
+        //                            cellsrenderer: cellsrenderer
+        //                        },
+        //                        {
+        //                            text: "Free RAM,Gb",
+        //                            datafield: "FreePhysicalMemory",
+        //                            width: "5%",
+        //                            cellsrenderer: cellsrenderer
+        //                        },
+        //                        { text: "Disk,Gb", datafield: "DiskSpace", width: "4%", cellsrenderer: cellsrenderer },
+        //                        { text: "Free,Gb", datafield: "DiskFreeSpace", width: "4%", cellsrenderer: cellsrenderer },
+        //                        {
+        //                            text: "Server Control",
+        //                            datafield: "ServerControl",
+        //                            width: "14%",
+        //                            filterable: false,
+        //                            cellsrenderer: cellsrenderer
+        //                        },
+        //                        {
+        //                            text: "Docker Prune",
+        //                            datafield: "DockerPrune",
+        //                            width: "9%",
+        //                            filterable: false,
+        //                            cellsrenderer: cellsrenderer
+        //                        },
+        //                        {
+        //                            text: "Resrtart Services",
+        //                            datafield: "RestartServices",
+        //                            width: "12%",
+        //                            filterable: false,
+        //                            cellsrenderer: cellsrenderer
+        //                        },
+        //                        {
+        //                            text: "Current Operation",
+        //                            datafield: "CurrentOperation",
+        //                            width: "7%",
+        //                            filterable: false,
+        //                            cellsrenderer: cellsrenderer
+        //                        },
+        //                        {
+        //                            text: "Progress, %",
+        //                            datafield: "Progress",
+        //                            filterable: false,
+        //                            width: "10%",
+        //                            cellsrenderer: cellsrenderer
+        //                        }
+        //                    ]
+        //                });
+        //            refresh();
+        //            _createWindow();
+        //            $("#jqxWidget").css('display', 'block');
+
+
+        //        });
+
+
+        //        function addElement(parentId, elementTag, elementId, html) {
+        //            // Adds an element to the document
+        //            var p = document.getElementById(parentId);
+        //            var newElement = document.createElement(elementTag);
+        //            newElement.setAttribute('id', elementId);
+        //            newElement.innerHTML = html;
+        //            p.appendChild(newElement);
+        //        }
+
+        //        function removeElement(elementId) {
+        //            // Removes an element from the document
+        //            var element = document.getElementById(elementId);
+        //            element.parentNode.removeChild(element);
+        //        }
+
+        //        function _createWindow() {
+        //            var jqxWidget = $('#jqxWidget');
+        //            var offset = jqxWidget.offset();
+        //            $('#chartWindow').jqxWindow({
+        //                position: { x: offset.left + 50, y: offset.top + 50 },
+        //                showCollapseButton: true,
+        //                maxHeight: 600,
+        //                maxWidth: 900,
+        //                minHeight: 200,
+        //                minWidth: 400,
+        //                height: 600,
+        //                width: 900,
+        //                initContent: function() {
+        //                    //$('#tab').jqxTabs({ height: '100%', width:  '100%' });
+        //                    $('#chartWindow').jqxWindow('focus');
+        //                },
+        //                autoOpen: false
+        //            });
+
+
+        //            // $('#chartWindow').jqxWindow('close');
+        //        };
+
+    </script>
+
+}
+
+
+
+<body class="default">
+    <div id="jqxWidget">
+        <div style="display: none; width: 100%; height: 650px; margin-top: 50px;" id="mainWinContainer">
+            <div id="chartWindow">
+
+                <div id="windowHeader">
+                    <span>
+                        Chart
+                    </span>
+                </div>
+
+
+                <div style="overflow: hidden;" id="windowContent">
+
+                    <div id="chartParent">
+
+                        <div id="chartTitle" class="text-center" style="z-index: 1; position: absolute; margin-top: 250px; margin-left: 25%;">
+                            <h2>Wait, chart data is loading...</h2>
+                        </div>
+                        <div id="chartHujart">
+                            <div id="chartContainer" style="z-index: 2; position: absolute; width: 800px; height: 500px;"></div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+
+<style>
+    .disable {
+        pointer-events: none;
+        background: #ccc;
+    }
+
+    .yellow {
+        background: orange;
+        border-color: orange;
+    }
+
+    .redCircle {
+        width: 24px;
+        height: 24px;
+        background: red;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .greenCircle {
+        width: 24px;
+        height: 24px;
+        background: green;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+
+    /* Preloader */
+
+    #p_prldr {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: #0066FF;
+        z-index: 30;
+    }
+
+    .contpre small {
+        font-size: 20px;
+        line-height: 24px;
+    }
+
+    .contpre {
+        width: 250px;
+        height: 100px;
+        position: absolute;
+        left: 50%;
+        top: 48%;
+        margin-left: -125px;
+        margin-top: -75px;
+        color: #fff;
+        font-size: 32px;
+        text-align: center;
+        line-height: 36px;
+    }
+
+    #p_prldr .svg_anm {
+        position: absolute;
+        width: 41px;
+        height: 41px;
+        background: url(/images/tail-spin.svg) center center no-repeat;
+        background-size: 41px;
+        margin: -16px 0 0 -16px;
+    }
+</style>
+
+
+
+<div class="text-center">
+    <h2>Charge Stations</h2>
+</div>
+<div id="jqxgrid"></div>
+
+

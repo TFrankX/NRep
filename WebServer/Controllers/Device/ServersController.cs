@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using WebServer.Models.Device;
 using WebServer.Models.Identity;
 
-namespace WebServer.Controllers.Stations
+namespace WebServer.Controllers.Device
 {
     public class ServersController : Controller
     {
@@ -23,7 +23,7 @@ namespace WebServer.Controllers.Stations
 
         [HttpGet]
         [Authorize(Roles = "admin, manager, viewer, support")]
-        public IActionResult Stations()
+        public IActionResult Servers()
         {
             return View();
         }
