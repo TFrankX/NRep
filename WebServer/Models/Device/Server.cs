@@ -52,15 +52,17 @@ namespace WebServer.Models.Device
             servermqtt = new SimnetLib.Device();
             //deviceSub = new SimnetLib.Device();
             Error = "";
-            Slots = 0;
             //Connect();
+            DevicesCount = 0;
+            NotAuthDevicesCount = 0;
         }
         public ulong Id { get; set; }
         public string Host { get; set; }
         public uint Port { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
-        public uint Slots {  get; set; }
+        public uint DevicesCount { get; set; }
+        public uint NotAuthDevicesCount { get; set; }
         public string Error { get; set; }
         public uint ReconnectTime { get; set; }
         //public List<Device> Devices { get; set; }

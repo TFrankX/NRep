@@ -33,132 +33,7 @@
 @section scripts
 {
     <script type="text/javascript">
-        function GoToDetails(serverIP) {
-
-            if (serverIP == null)
-                return;
-
-            $.ajax({
-                type: "POST",
-                // url: '@Url.Action("GoToDetails", "Servers")',
-                url: '@Url.Action("SetFilter", "Containers")',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    // ServerIP: serverIP
-                    Filter: serverIP
-                }),
-                success: function() {
-                    //location.href = document.location.origin + '@Url.Action("ServerDetails", "ServerDetails")';
-                    location.href = document.location.origin + '@Url.Action("Containers", "Containers")';
-                }
-            });
-        }
-
-        // Окно ожидания
-        function AddPreloder(text) {
-            var element = document.createElement('div');
-            element.setAttribute("id", "p_prldr");
-            element.innerHTML = '<div class="contpre"><span class="svg_anm"><br>Подождите<br><small>'+text+'</small></span></div>';
-            document.body.appendChild(element);
-        }
-        
-
-        // Сокрытие окна ожидания
-        function HidePreloder() {
-            var $preloader = $('#p_prldr'),
-                $svg_anm = $preloader.find('.svg_anm');
-            $svg_anm.fadeOut();
-            $preloader.delay(500).fadeOut('slow');
-
-            setTimeout(() => {
-                document.body.removeChild(document.getElementById('p_prldr'));
-            }, 600);
-        }
-
-        // Функция отображения PopUp
-        function PopUpShow(name, text) {
-            var element = document.createElement('div');
-            element.setAttribute("id", "filepopup");
-            element.setAttribute("class", "b-popup");
-            element.innerHTML = '<div class="b-popup-content"><div>'+name+'</div><textarea id="filepopup_text">'+text+'</textarea><a href="javascript:PopUpHide()">Close</a><p>  </p><a href="javascript:SaveFile()">Save</a>';
-            document.body.appendChild(element);
-            $("#filepopup").show();
-        }
-
-        // Функция перезапуска сервиса
-        function RestartService(serverIP, serviceName) {
-
-            if (serverIP == null)
-                return;
-
-            if (!window.confirm("Перезапустить сервис " + serviceName + " на сервере " + serverIP + "?")) {
-                return;
-            }
-
-            AddPreloder("Идёт перезапуск сервиса " + serviceName);
-
-            $.ajax({
-                type: "POST",
-                url: '@Url.Action("RestartService", "Servers")',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    Server: serverIP,
-                    Container: serviceName
-                }),
-                success: function (response) {
-                    HidePreloder();
-                    setTimeout(() => {
-                        console.info("Сервис успешно перезапущен: " + response.responseText);
-                    }, 550);
-                },
-                failure: function (response) {
-                    HidePreloder();
-                    setTimeout(() => {
-                        console.error(response);
-                        alert(response.responseText);
-                    }, 550);
-                },
-                error: function (response, textStatus, errorThrown) {
-                    HidePreloder();
-                    setTimeout(() => {
-                        console.error(response.responseText);
-                        alert(response.responseText);
-                    }, 550);
-                }
-            });
-        }
-
-
-        function GoToChartDiskFreeSpace(serverIP) {
-            //alert(serverIP);
-            $('#chartContainer').css('visibility', 'hidden');
-            $('#chartTitle').css('visibility', 'visible');
-            $('#chartWindow').jqxWindow('open');
-            sleep(300);
-            minDateVal = null;
-            maxDateVal = null;
-            //alert('TimeDiap=' + (new Date()).setDate((new Date()).getDate() - 1) + ' - ' + (new Date()).setDate((new Date()).getDate()));
-            getServersData(serverIP,
-                "DiskFreeSpace",
-                (new Date()).setDate((new Date()).getDate() - 1),
-                (new Date()).setDate((new Date()).getDate()));
-        }
-
-        function GoToChartFreePhysicalMemory(serverIP) {
-            //alert(serverIP);
-            $('#chartContainer').css('visibility', 'hidden');
-            $('#chartTitle').css('visibility', 'visible');
-            $('#chartWindow').jqxWindow('open');
-            sleep(300);
-            minDateVal = null;
-            maxDateVal = null;
-            getServersData(serverIP,
-                "FreePhysicalMemory",
-                (new Date()).setDate((new Date()).getDate() - 1),
-                (new Date()).setDate((new Date()).getDate()));
-        }
-
-
+ 
         function Confirm(title, message, hint, server, container, controller, method) {
 
             var confirm = '<div class="modal fade" tabindex="-1" id="confirm" aria-labelledby="modal-head">' +
@@ -1267,34 +1142,21 @@
         var grid = $("#jqxgrid"),
             intervalId = setInterval(refresh, 3000);
 
-
-        var chartSource =
-        {
-            datatype: "json",
-            datafields: [
-                { name: 'UpdateTime' },
-                { name: 'DiskFreeSpace' }
-            ]
-        }
-
-
         var source =
         {
             datatype: "json",
             datafields: [
-                { name: 'HostName', type: 'string' },
-                { name: 'ServerIP', type: 'string' },
-                { name: 'AllContainers', type: 'number' },
-                { name: 'RunningContainers', type: 'number' },
-                { name: 'NoProcessContainers', type: 'number' },
-                { name: 'DockerMissing', type: 'number' },
-                { name: 'ProcessorCoresCount', type: 'number' },
-                { name: 'RAMTotal', type: 'number' },
-                { name: 'CPUUsage', type: 'number' },
-                { name: 'FreePhysicalMemory', type: 'number' },
-                { name: 'ContainersWorkingSet', type: 'number' },
-                { name: 'DiskSpace', type: 'number' },
-                { name: 'DiskFreeSpace', type: 'number' },
+                { name: 'Host', type: 'string' },
+                { name: 'Port', type: 'number' },
+                { name: 'Login', type: 'string' },
+                { name: 'Password', type: 'string' },
+                { name: 'Error', type: 'string' },
+                { name: 'Connected', type: 'boolean' },
+                { name: 'DevicesCount', type: 'number' },
+                { name: 'NotAuthDevicesCount', type: 'number' },
+                { name: 'ReconnectTime', type: 'number' },
+                { name: 'ConnectTime', type: 'date' },
+                { name: 'DisconnectTime', type: 'date' },
             ]
 
         };
@@ -1322,70 +1184,17 @@
                     height: 720,
                     columnsresize: true,
                     columns: [
-                        { text: "Name", datafield: "HostName", width: "7%", cellsrenderer: cellsrenderer },
-                        { text: "Server IP", datafield: "ServerIP", width: "8%", cellsrenderer: cellsrenderer },
-                        { text: "Containers", datafield: "AllContainers", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Running", datafield: "RunningContainers", width: "4%", cellsrenderer: cellsrenderer },
-                        {
-                            text: "No Process",
-                            datafield: "NoProcessContainers",
-                            width: "5%",
-                            cellsrenderer: cellsrenderer
-                        },
-                        { text: "Docker Miss", datafield: "DockerMissing", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Cores", datafield: "ProcessorCoresCount", width: "3%", cellsrenderer: cellsrenderer },
-                        { text: "CPU Usage,%", datafield: "CPUUsage", width: "6%", cellsrenderer: cellsrenderer },
-                        { text: "RAM,Gb", datafield: "RAMTotal", width: "4%", cellsrenderer: cellsrenderer },
-                        {
-                            text: "Cont RAM,Gb",
-                            datafield: "ContainersWorkingSet",
-                            width: "5%",
-                            cellsrenderer: cellsrenderer
-                        },
-                        {
-                            text: "Free RAM,Gb",
-                            datafield: "FreePhysicalMemory",
-                            width: "5%",
-                            cellsrenderer: cellsrenderer
-                        },
-                        { text: "Disk,Gb", datafield: "DiskSpace", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Free,Gb", datafield: "DiskFreeSpace", width: "4%", cellsrenderer: cellsrenderer },
-                        {
-                            text: "Server Control",
-                            datafield: "ServerControl",
-                            width: "14%",
-                            filterable: false,
-                            cellsrenderer: cellsrenderer
-                        },
-                        {
-                            text: "Docker Prune",
-                            datafield: "DockerPrune",
-                            width: "9%",
-                            filterable: false,
-                            cellsrenderer: cellsrenderer
-                        },
-                        {
-                            text: "Resrtart Services",
-                            datafield: "RestartServices",
-                            width: "12%",
-                            filterable: false,
-                            cellsrenderer: cellsrenderer
-                        },
-                        {
-                            text: "Current Operation",
-                            datafield: "CurrentOperation",
-                            width: "7%",
-                            filterable: false,
-                            cellsrenderer: cellsrenderer
-                        },
-                        {
-                            text: "Progress, %",
-                            datafield: "Progress",
-                            filterable: false,
-                            width: "10%",
-                            cellsrenderer: cellsrenderer
-                        }
-                    ]
+                        { text: "Host name", datafield: "Host", width: "7%", cellsrenderer: cellsrenderer },
+                        { text: "Port", datafield: "Port", width: "8%", cellsrenderer: cellsrenderer },
+                        { text: "Login", datafield: "Login", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Password", datafield: "Password", width: "4%", cellsrenderer: cellsrenderer },
+                        { text: "Error", datafield: "Error", width: "4%", cellsrenderer: cellsrenderer },
+                        { text: "Devices", datafield: "DevicesCount", width: "4%", cellsrenderer: cellsrenderer },
+                        { text: "Not auth", datafield: "NotAuthDevicesCount", width: "4%", cellsrenderer: cellsrenderer },
+                        { text: "Reconnect time,s", datafield: "ReconnectTime", width: "4%", cellsrenderer: cellsrenderer },
+                        { text: "Last connected time", datafield: "ConnectTime", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Last disconnected time", datafield: "DisconnectTime", width: "3%", cellsrenderer: cellsrenderer },
+                     ]
                 });
             refresh();
             _createWindow();

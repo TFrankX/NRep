@@ -39,29 +39,49 @@ namespace SimnetLib
             return _networkBus.IsConnected();
         }
 
-        public void Connect(string hostname, uint port, string username = "", string password = "")
+        public  void Connect(string hostname, uint port, string username = "", string password = "")
         {
-
-            _networkBus.MessageReceived += NetworkBusOnMessageReceived;
-            IPAddress host = Dns.GetHostAddresses(hostname)[0];
-            _networkBus.Connect(host, (int)(port), ClientId, username, password);
+            try
+            {
+                _networkBus.MessageReceived += NetworkBusOnMessageReceived;
+                IPAddress host = Dns.GetHostAddresses(hostname)[0];
+                _networkBus.Connect(host, (int)(port), ClientId, username, password);
+            }
+            catch (Exception e)
+            {
+                EvConnectError?.Invoke(this, e.Message);
+            }
         }
 
 
         public void Connect(IPAddress host, int port)
         {
-            _networkBus.MessageReceived += NetworkBusOnMessageReceived;
-
-            _networkBus.Connect(host, port, ClientId);
+            try
+            {
+                _networkBus.MessageReceived += NetworkBusOnMessageReceived;
+                _networkBus.Connect(host, port, ClientId);
+            }
+            catch (Exception e)
+            {
+                EvConnectError?.Invoke(this, e.Message);
+            }
         }
 
         public void Subscribe<T>(string topic, MessageEventHandler<T> handler) where T : class
         {
-            if (!_subscriptions.ContainsKey(topic)) 
+            try
             {
-                _subscriptions.Add(topic, new Subscription(typeof(T), handler));
-                _networkBus.Subscribe(topic);
+                if (!_subscriptions.ContainsKey(topic))
+                {
+                    _subscriptions.Add(topic, new Subscription(typeof(T), handler));
+                    _networkBus.Subscribe(topic);
+                }
             }
+            catch (Exception e)
+            {
+                EvConnectError?.Invoke(this, e.Message);
+            }
+
         }
 
         public void Publish<T>(string topic, T payload) where T : class

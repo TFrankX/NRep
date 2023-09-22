@@ -87,7 +87,7 @@ namespace SimnetLib.Network
             }
             else
             {
-                Console.WriteLine("mqtt: could not connect");
+               // Console.WriteLine("mqtt: could not connect");
             }
         }
 

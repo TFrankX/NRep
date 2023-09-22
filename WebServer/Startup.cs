@@ -93,12 +93,16 @@ namespace WebServer
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Servers}/{action=Servers}");
+
                 //                endpoints.MapControllerRoute(
                 //                    name: "default",
                 //                    pattern: "{controller=Administration}/{action=Administration}");
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=AppAccount}/{action=AppAccountLogin}");
+                ////endpoints.MapControllerRoute(
+                ////    name: "default",
+                ////    pattern: "{controller=AppAccount}/{action=AppAccountLogin}");
                 //endpoints.MapControllerRoute(
                 //    name: "default",
                 //    pattern: "{controller=WebDocSection}/{action=GetChartData}");

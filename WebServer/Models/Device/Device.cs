@@ -23,7 +23,7 @@ namespace WebServer.Models.Device
                 LastOnlineTime = DateTime.Now;
                 FirstOnlineTime = DateTime.Now;
             }
-            
+            Slots = 0;
             DevMainServer = "";
             DevResServer = "";
             //PowerBanks = powerBanks;
@@ -38,6 +38,7 @@ namespace WebServer.Models.Device
         public ulong HostDeviceId { get; set; }
         public bool Online { get; set; }
         public bool Activated { get; set; }
+        public uint Slots {  get; set; }
         public string IP { get; set; } = "";
         public string DevMainServer { get; set; }
         public string DevResServer { get; set; }

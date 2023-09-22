@@ -349,6 +349,7 @@ namespace WebServer.Workers
                     if (server != null)
                     {
                         server.Connected = false;
+                        server.Error = "Success";
                         dbDevice.SaveChanges();
                     }
                 }
