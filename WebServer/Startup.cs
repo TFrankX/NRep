@@ -9,6 +9,7 @@ using WebServer.Models.Identity;
 using WebServer.Models.Device;
 using WebServer.Workers;
 using Microsoft.Extensions.Hosting;
+using WebServer.Data;
 
 namespace WebServer
 {
@@ -31,12 +32,13 @@ namespace WebServer
 
             services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
             services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
-           // services.AddSingleton<IAlertService, AlertService>();
+            services.AddSingleton<IDevicesData, DevicesData>();
             services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
             services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityContext>();
             //services.AddHostedService<ScanDevices>(serviceProvider =>
             //        new ScanDevices(Servers, serviceProvider.GetService<IServiceScopeFactory>()));
-            services.AddHostedService<ScanDevices>();
+            services.AddSingleton<ScanDevices>();
+            services.AddHostedService<ScanDevices>(p => p.GetRequiredService<ScanDevices>());
             services.Configure<IdentityOptions>(options =>
             {
                 // Default SignIn settings.

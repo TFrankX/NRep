@@ -33,8 +33,10 @@ namespace WebServer.Models.Device
         //            enty.Property("LastUpdate").CurrentValue = DateTime.UtcNow;
         //        }
         //    }
-
-        //    return base.SaveChanges();
+        //     return base.SaveChanges();
         //}
+
+
+
     }
 }

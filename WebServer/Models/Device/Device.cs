@@ -48,7 +48,11 @@ namespace WebServer.Models.Device
         public DateTime LastOnlineTime { get; set; }
         public DateTime FirstOnlineTime { get; set; }
         public DateTime LastUpdate { get; private set; }
+        [NotMapped]
+        public bool Init { get; set; }
 
+        [NotMapped]
+        public bool Stored { get; set; }
 
         private ulong GetGUID(string input)
         {

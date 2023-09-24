@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Servers\Servers2.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="C:\Users\User\.nuget\packages\nlog.config\4.7.15\contentFiles\any\any\NLog.config" />
   </ItemGroup>
 
@@ -46,7 +42,6 @@
     <None Include="Views\AppRoleManagement\AppRole.cshtml" />
     <None Include="Views\AppRoleManagement\EditRole.cshtml" />
     <None Include="Views\Errors\HandleErrorCode.cshtml" />
-    <None Include="Views\Servers\Servers2.cshtml" />
     <None Include="Views\Shared\Error.cshtml" />
     <None Include="Views\Shared\NavVertical.cshtml" />
     <None Include="Views\Shared\Warnings.cshtml" />

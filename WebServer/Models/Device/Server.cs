@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Hosting;
 using ProtoBuf.Meta;
 using SimnetLib;
@@ -56,6 +58,8 @@ namespace WebServer.Models.Device
             DevicesCount = 0;
             NotAuthDevicesCount = 0;
         }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Key]
         public ulong Id { get; set; }
         public string Host { get; set; }
         public uint Port { get; set; }
@@ -69,12 +73,14 @@ namespace WebServer.Models.Device
         public DateTime ConnectTime { get; set; }
         public DateTime DisconnectTime { get; set; }
         public  DateTime LastUpdate { get; private set; }
-        [NotMapped]
         public bool Connected { get; set; }
 
         [NotMapped]
         public bool Init { get; set; }
-        
+
+        [NotMapped]
+        public bool Stored { get; set; }
+
         [NotMapped]
         SimnetLib.Device servermqtt, deviceSub;
 
@@ -112,9 +118,11 @@ namespace WebServer.Models.Device
         {
             //device.EvPushPowerBank += Device_EvPushPowerBank;
             //device.EvPushPowerBankForce += Device_EvPushPowerBankForce;
+            servermqtt.EvQueryTheInventory -= Device_EvQueryTheInventory;
             servermqtt.EvQueryTheInventory += Device_EvQueryTheInventory;
             //device.EvReportCabinetLogin += Device_EvReportCabinetLogin;
-            //device.EvReturnThePowerBank += Device_EvReturnThePowerBank;
+            servermqtt.EvReturnThePowerBank -= Device_EvReturnThePowerBank;
+            servermqtt.EvReturnThePowerBank += Device_EvReturnThePowerBank;
             //device.EvQueryNetworkInfo += Device_EvQueryNetworkInfo;
             //device.EvQueryServer += Device_EvQueryServer;
             //device.EvQuerySIMCardICCID += Device_EvQuerySIMCardICCID;
@@ -127,6 +135,10 @@ namespace WebServer.Models.Device
             EvQueryTheInventory?.Invoke(this, topic, data);
         }
 
+        private void Device_EvReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data)
+        {
+            EvReturnThePowerBank?.Invoke(this, topic, data);
+        }
         private void Device_EvSubSniffer(object sender, string topic, object message)
         {
             EvSubSniffer?.Invoke(this,topic,message);

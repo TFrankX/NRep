@@ -1,33 +1,40 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using ProtoBuf.Meta;
-using SimnetLib;
+using NuGet.Protocol.Plugins;
 using System;
 using System.Data;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
+using WebServer.Data;
 using WebServer.Models.Device;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Formats.Asn1.AsnWriter;
+using static System.Reflection.Metadata.BlobBuilder;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace WebServer.Workers
 {
     public class ScanDevices : BackgroundService
     {
-        public List<Server> servers;
-        public List<WebServer.Models.Device.Device> devices;
-        public List<PowerBank> powerbanks;
-        public readonly IServiceScopeFactory ScopeFactory;
+        public IDevicesData DevicesData { get; set; }
+        //public List<Server> servers;
+        //public List<WebServer.Models.Device.Device> devices;
+        //public List<PowerBank> powerbanks;
+        //public readonly IServiceScopeFactory ScopeFactory;
         private readonly ILogger<ScanDevices> Logger;
+ 
         IServiceScope scope;
         // DeviceContext dbDevice;
 
         //  public ScanDevices(List<Server> Servers, ILogger<ScanDevices> logger, IServiceScopeFactory scopeFactory)
-        public ScanDevices(ILogger<ScanDevices> logger, IServiceScopeFactory scopeFactory)
+        public ScanDevices(ILogger<ScanDevices> logger, IDevicesData devicesData, IServiceScopeFactory scopeFactory)
         {
-            ScopeFactory = scopeFactory;
-            //servers = Servers;
+            //ScopeFactory = scopeFactory;
+            DevicesData = devicesData;
             Logger = logger;
+            scope = scopeFactory.CreateScope();
         }
 
         public virtual void HandleDbException(Exception exception)
@@ -74,99 +81,139 @@ namespace WebServer.Workers
         }
 
 
+
+        public TEntity AddOrUpdate<TEntity>(DbSet<TEntity> dbset, DbContext context, Func<TEntity, object> identifier, TEntity entity) where TEntity : class
+        {
+            TEntity result = dbset.Find(identifier.Invoke(entity));
+            if (result != null)
+            {
+                context.Entry(result).CurrentValues.SetValues(entity);
+                dbset.Update(result);
+                return result;
+            }
+            else
+            {
+                dbset.Add(entity);
+                return entity;
+            }
+        }
+
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
 
-            //var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
-            scope = ScopeFactory.CreateScope();
-            //dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>();
-
-
-
-            //var Servers = scope.ServiceProvider.GetRequiredService<Server>();            
-            //            PowerBank[] powerBanks = new PowerBank[4];
-            //            powerBanks[0] = new PowerBank { Id = 1, ChargeLevel = 0, Charging = true, ClientTime = DateTimeOffset.Now, LastGetTime = DateTime.Now, LastPutTime = DateTime.Now, Locked = true, Plugged = true, Price = 100 };
-            //            powerBanks[1] = new PowerBank { Id = 2, ChargeLevel = 0, Charging = true, ClientTime = DateTimeOffset.Now, LastGetTime = DateTime.Now, LastPutTime = DateTime.Now, Locked = true, Plugged = true, Price = 100 };
-            //            powerBanks[2] = new PowerBank { Id = 3 };
-            //            powerBanks[3] = new PowerBank { Id = 4 };
             Server server = new Server("yaup.ru", 8884, "devclient", "Potato345!", 30);
-
-            //Models.Device.Device device = new Models.Device.Device("Derv", 156, true);
-            try
+            using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
             {
-                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
-                {
-                    if ((dbDevice.Server.Any(o => o.Id != server.Id)) || (dbDevice.Server.Count() == 0))
-                    {
-                        dbDevice.Server.Add(server);
-                        dbDevice.SaveChanges();
-                    }
-                }
+                AddOrUpdate(dbDevice.Server, dbDevice, c => c.Id, server);
+                server.Stored = true;
+                dbDevice.SaveChanges();
             }
-            catch (Exception ex)
-            {
-                //dbDevice.Entry(server).State = EntityState.Detached;
-                HandleDbException(ex);
-            }
-
-
             //try
             //{
-            //    Models.Device.Device device = new Models.Device.Device(123, 156, false, 3, DateTime.Now, DateTime.Now, "10.0.0.1", "yaup.ru", "hhh.hh");
             //    using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
             //    {
-            //        if (dbDevice.Device.Any(o => o.Id != device.Id))
+            //        if ((dbDevice.Server.Any(o => o.Id != server.Id)) || (dbDevice.Server.Count() == 0))
             //        {
-            //            dbDevice.Device.Add(device);
+            //            dbDevice.Server.Add(server);
             //            dbDevice.SaveChanges();
             //        }
             //    }
-
             //}
             //catch (Exception ex)
             //{
-            //    //dbDevice.Entry(device).State = EntityState.Detached;
+            //    //dbDevice.Entry(server).State = EntityState.Detached;
             //    HandleDbException(ex);
             //}
 
-            servers = new List<Server>();
-            devices = new List<WebServer.Models.Device.Device>();
-            powerbanks = new List<PowerBank>();
-            ulong tmpId;
 
-            InitServers();
-
+            InitDevices();
             while (!stoppingToken.IsCancellationRequested)
             {
                 ReconnectServers();
+                UpdateDb();
                 await Task.Delay(TimeSpan.FromSeconds(10));
             }
 
         }
 
-        private void InitServers()
-        {
 
+
+        private void UpdateDb()
+        {
+            using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+            {
+
+
+                foreach (var powbank in DevicesData.PowerBanks)
+                {
+                    if (!powbank.Stored)
+                    {
+                        AddOrUpdate(dbDevice.PowerBank, dbDevice, c => c.Id, powbank);
+                        powbank.Stored = true;
+                    }
+                }
+
+                foreach (var dev in DevicesData.Devices)
+                {
+                 
+                    if (!dev.Stored)
+                    {
+                        AddOrUpdate(dbDevice.Device, dbDevice, c => c.Id, dev);
+                        dev.Stored = true;
+                    }
+                }
+
+                foreach (var srv in DevicesData.Servers)
+                {
+                    if (!srv.Stored)
+                    {
+                        AddOrUpdate(dbDevice.Server, dbDevice,c => c.Id, srv);
+                         srv.Stored = true;
+                    }
+                }
+
+                dbDevice.SaveChanges();
+
+            }
+        }
+
+
+        private void InitDevices()
+        {
             using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
             {
                 foreach (var srv in dbDevice.Server)
                 {
-                    if (!srv.Init)
+                    srv.Connected = false;
+                    srv.Stored = false;
+                    DevicesData.Servers.Add(srv);
+                }
+                ReconnectServers();
+                foreach (var powerbank in dbDevice.PowerBank)
+                {
                     {
-                        // servers.Add(new(srv.Host, srv.Port, srv.Login,srv.Password,srv.ReconnectTime)); ;
-                        servers.Add(srv);
-                        //srv.Init = true;
-                        //srv.EvConnected += Srv_EvConnected;
-                        //srv.EvDisconnected += Srv_EvDisconnected;
-                        //srv.Connect();
+                        DevicesData.PowerBanks.Add(powerbank);
+                        powerbank.Plugged = false;
                     }
+                }
+                foreach (var dev in dbDevice.Device)
+                {
+                        dev.Online = false;
+                        DevicesData.Devices.Add(dev);
+                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvQueryTheInventory += Srv_EvQueryTheInventory;
+                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvReturnThePowerBank += Srv_EvReturnThePowerBank;
+                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].SubScript(dev.DeviceName);
+                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].CmdQueryTheInventory(dev.DeviceName);
                 }
             }
         }
 
         private void ReconnectServers()
         {
-            foreach (var srv in servers)
+            foreach (var srv in DevicesData.Servers)
             {
                 if ((srv != null))
                 {
@@ -187,201 +234,175 @@ namespace WebServer.Workers
         }
         private void Srv_EvSniffer(object sender, string topic, object message)
         {
+
+            string dev="";
+            string command = "";
             try
             {
 
-                string dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
-                string command = topic.Substring(topic.LastIndexOf("/") + 1, topic.Length - topic.LastIndexOf("/") - 1);
-                if (command == SimnetLib.Model.MessageTypes.ReportCabinetLogin)
-                {
-                    if (devices.FindIndex(item => item.Id == GetGUID(dev))<0)
-                    {
-                        devices.Add(new Models.Device.Device(dev, ((Server)(sender)).Id, true));
-                    }
-                    else
-                    {
-                        devices[devices.FindIndex(item => item.Id == GetGUID(dev))].LastOnlineTime = DateTime.Now;
-                    }
-
-
-
-                    using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
-                    {
-                        if (dbDevice.Device.Any(o => o.Id != GetGUID(dev)) || (dbDevice.Device.Count() == 0))
-                        {
-                            dbDevice.Device.Add(new Models.Device.Device(dev, ((Server)(sender)).Id, true));
-                            dbDevice.SaveChanges();
-                            ((Server)(sender)).SubScript(dev);
-                            ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
-                            ((Server)(sender)).CmdQueryTheInventory(dev);
-
-                            Logger.LogInformation($"New device login - {dev} , try to add \n");
-                        }
-                        else
-                        {
-                            var device = dbDevice.Device.FirstOrDefault(item => item.Id == GetGUID(dev));
-                            if (device != null)
-                            {
-                                device.LastOnlineTime = DateTime.Now;
-                                dbDevice.SaveChanges();
-                                ((Server)(sender)).SubScript(dev);
-                                ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
-                                ((Server)(sender)).CmdQueryTheInventory(dev);
-                            }
-                            Logger.LogInformation($"Exist device login - {dev} \n");
-                        }
-                    }
-                }
+                dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
+                command = topic.Substring(topic.LastIndexOf("/") + 1, topic.Length - topic.LastIndexOf("/") - 1);
             }
             catch
             {
                 Logger.LogInformation($"Get invalid device with topic: {topic}; Waiting somthing like - cabinet/<name of device>/...\n");
+                return;
             }
 
+            if ((command == SimnetLib.Model.MessageTypes.ReportCabinetLogin) && (dev != ""))
+            {
+                if (DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev)) < 0)
+                {
+                    Device device = new Device(dev, ((Server)(sender)).Id, true);
+                    device.LastOnlineTime = DateTime.Now;
+                    DevicesData.Devices.Add(device);
+                    Logger.LogInformation($"New device login - {dev} , try to add \n");
+                }
+                else
+                {
+                    DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].LastOnlineTime = DateTime.Now;
+                    DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].Online = true;
+                    DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].Stored = false;
+                    Logger.LogInformation($"Exist device login - {dev} \n");
+                }
+                ((Server)(sender)).EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                ((Server)(sender)).EvQueryTheInventory += Srv_EvQueryTheInventory;
 
+                ((Server)(sender)).EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                ((Server)(sender)).EvReturnThePowerBank += Srv_EvReturnThePowerBank;
+
+
+                ((Server)(sender)).SubScript(dev);
+                ((Server)(sender)).CmdQueryTheInventory(dev);
+
+   
+            }
         }
 
-        private void Srv_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
+        private void Srv_EvReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data)
         {
-            string dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
-            Logger.LogInformation($"Get inventory info from device: {dev} \n");
+
+            string dev = "";
+            Device device;
             try
             {
-
-                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
-                {
-                    uint slots = 0;
-                    foreach (var pbank in data.RlBank1s)
-                    {
-
-                        if (pbank.RlIdok == 1)
-                        {
-
-                            if (powerbanks.FindIndex(item => item.Id == pbank.RlPbid) < 0)
-                            {
-                                powerbanks.Add(new PowerBank(pbank.RlPbid, ((Server)(sender)).Id, pbank.RlLock > 0 ? true : false, true, pbank.RlCharge > 0 ? true : false, (PowerBankChargeLevel)pbank.RlQoe));
-                            }
-                            else
-                            {
-                                powerbanks[powerbanks.FindIndex(item => item.Id == pbank.RlPbid)].Locked = pbank.RlLock > 0 ? true : false;
-                                powerbanks[powerbanks.FindIndex(item => item.Id == pbank.RlPbid)].Plugged = true;
-                                powerbanks[powerbanks.FindIndex(item => item.Id == pbank.RlPbid)].Charging = pbank.RlCharge > 0 ? true : false;
-                                powerbanks[powerbanks.FindIndex(item => item.Id == pbank.RlPbid)].ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
-
-                            }
-
-
-                            if (dbDevice.PowerBank.Any(o => o.Id != pbank.RlPbid) || (dbDevice.PowerBank.Count() == 0))
-                            {
-
-                                slots = slots | (2^(pbank.RlSlot-1));
-                                Logger.LogInformation($"Get info about powerbank in slot: {pbank.RlSlot.ToString()} \n");
-
-
-                                    dbDevice.PowerBank.Add(new PowerBank(pbank.RlPbid, ((Server)(sender)).Id, pbank.RlLock > 0 ? true : false, true, pbank.RlCharge > 0 ? true : false, (PowerBankChargeLevel)pbank.RlQoe)); ;
-//                                  bool locked, bool plugged, bool charging, PowerBankChargeLevel chargeLevel
-
-
-                            }
-                            else
-                            {
-
-                                var powerbank = dbDevice.PowerBank.FirstOrDefault(item => item.Id == pbank.RlPbid);
-                                if (powerbank != null)
-                                {
-                                    powerbank.Locked = pbank.RlLock > 0 ? true : false;
-                                    powerbank.Plugged = true;
-                                    powerbank.Charging = pbank.RlCharge > 0 ? true : false;
-                                    powerbank.ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
-                                }
-
-
-                            }
-                            dbDevice.SaveChanges();
-
-                        }
-                    }
-                }
-
-                    
-                 
+                dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
+                device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)];
             }
             catch
             {
-                Logger.LogInformation($"Error saving powerbanks from device {dev} info to database\n");
+                Logger.LogInformation($"Get invalid device with topic: {topic}; Waiting somthing like - cabinet/<name of device>/...\n");
+                return;
             }
+            Logger.LogInformation($"Powerbank {data.RlPbid} returned in device: {dev} , slot: {data.RlSlot}\n");
+
+
+
+            device.Slots = device.Slots | (2 ^ (data.RlSlot - 1) & ~(2 ^ (data.RlSlot - 1)));
+            device.Online = true;
+            device.LastOnlineTime = DateTime.Now;
+            if (DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid) < 0)
+            {
+                DevicesData.PowerBanks.Add(new PowerBank(data.RlPbid, device.HostDeviceId, data.RlSlot, data.RlLock > 0 ? true : false, true, false, (PowerBankChargeLevel)data.RlQoe));
+
+            }
+            else
+            {
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].HostDeviceId = device.HostDeviceId;
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].HostSlot = data.RlSlot;
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Locked = data.RlLock > 0 ? true : false;
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Plugged = true;
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Charging = data.RlLimited > 0 ? true : false;
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].ChargeLevel = (PowerBankChargeLevel)data.RlQoe;
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].IsOk = data.RlCode == 0 ? true : false;
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Stored = false;
+                DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].LastPutTime = DateTime.Now;
+            }
+
+             ((Server)(sender)).SrvReturnThePowerBank(data.RlSlot, 1, dev);
+             device.Online = true;
+             device.LastOnlineTime = DateTime.Now;
+             device.Stored = false;
+        }
+        
+
+        private void Srv_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
+        {
+            string dev = "";
+            Device device;
+            try
+            {
+               dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
+               device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)];
+            }
+            catch
+            {
+                Logger.LogInformation($"Get invalid device with topic: {topic}; Waiting somthing like - cabinet/<name of device>/...\n");
+                return;
+            }
+
+
+            Logger.LogInformation($"Get inventory info from device: {dev} \n");
+
+            //ulong hostedId = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)].Id;
+
+            uint slots = 0;
+            foreach (var pbank in data.RlBank1s)
+            {
+
+                if (pbank.RlIdok == 1)
+                {
+
+                    slots = slots | (2 ^ (pbank.RlSlot - 1));
+                    if (DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid) < 0)
+                    {
+                        DevicesData.PowerBanks.Add(new PowerBank(pbank.RlPbid, device.HostDeviceId,pbank.RlSlot, pbank.RlLock > 0 ? true : false, true, pbank.RlCharge > 0 ? true : false, (PowerBankChargeLevel)pbank.RlQoe));
+                        
+                    }
+                    else
+                    {
+                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].HostDeviceId = device.HostDeviceId;
+                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].HostSlot = pbank.RlSlot;
+                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Locked = pbank.RlLock > 0 ? true : false;
+                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Plugged = true;
+                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Charging = pbank.RlCharge > 0 ? true : false;
+                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
+                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Stored = false;
+                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].LastPutTime = DateTime.Now;
+                    }
+
+                }
+            }
+            device.Online = true;
+            device.LastOnlineTime = DateTime.Now;
+            device.Slots = slots;
+            device.Stored = false;
         }
 
         private void Srv_EvConnected(object sender)
         {
             ((Server)sender).ConnectTime = DateTime.Now;
-            try
-            {
-                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
-                {
-
-                    var server = dbDevice.Server.FirstOrDefault(item => item.Id == ((Server)(sender)).Id);
-                    if (server != null)
-                    {
-                        server.Connected = true;
-                        dbDevice.SaveChanges();
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                HandleDbException(ex);
-            }
-
+            ((Server)sender).Connected = true;
             Logger.LogInformation($"Connected to Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
             ((Server)sender).SubSniffer();
+            ((Server)sender).Stored = false;
         }
+
         private void Srv_EvDisconnected(object sender)
         {
 
             ((Server)sender).DisconnectTime = DateTime.Now;
-            try
-            {
-                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
-                {
-                    var server = dbDevice.Server.FirstOrDefault(item => item.Id == ((Server)(sender)).Id);
-                    if (server != null)
-                    {
-                        server.Connected = false;
-                        server.Error = "Success";
-                        dbDevice.SaveChanges();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                HandleDbException(ex);
-            }
-            Logger.LogInformation($"Disconnected from Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
+
+            ((Server)sender).ConnectTime = DateTime.Now;
+            ((Server)sender).Connected = false;
+             Logger.LogInformation($"Disconnected from Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
+            ((Server)sender).Stored = false;
         }
         private void Srv_EvConnectError(object sender, string error)
         {
             ((Server)sender).Error = error;
             ((Server)sender).ConnectTime = DateTime.Now;
-            try
-            {
-                using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
-                {
-
-                    var server = dbDevice.Server.FirstOrDefault(item => item.Id == ((Server)(sender)).Id);
-                    if (server != null)
-                    {
-                        server.Error = error;
-                        dbDevice.SaveChanges();
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                HandleDbException(ex);
-            }
+            ((Server)sender).Stored = false;
             Logger.LogInformation($"Error in connect to {((Server)sender).Host}:{((Server)sender).Port} : {error}\n");
         }
 
