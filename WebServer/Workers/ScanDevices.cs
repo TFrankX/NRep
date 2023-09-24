@@ -298,7 +298,7 @@ namespace WebServer.Workers
 
 
 
-            device.Slots = device.Slots | (2 ^ (data.RlSlot - 1) & ~(2 ^ (data.RlSlot - 1)));
+            device.Slots = device.Slots | ((uint)(Math.Pow(2, data.RlSlot - 1))) & ~((uint)(Math.Pow(2, data.RlSlot - 1)));
             device.Online = true;
             device.LastOnlineTime = DateTime.Now;
             if (DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid) < 0)
@@ -353,7 +353,7 @@ namespace WebServer.Workers
                 if (pbank.RlIdok == 1)
                 {
 
-                    slots = slots | (2 ^ (pbank.RlSlot - 1));
+                    slots = slots | ((uint)(Math.Pow(2,pbank.RlSlot - 1)));
                     if (DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid) < 0)
                     {
                         DevicesData.PowerBanks.Add(new PowerBank(pbank.RlPbid, device.HostDeviceId,pbank.RlSlot, pbank.RlLock > 0 ? true : false, true, pbank.RlCharge > 0 ? true : false, (PowerBankChargeLevel)pbank.RlQoe));
