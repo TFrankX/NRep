@@ -30,7 +30,7 @@ namespace WebServer.Data
         {
             Servers = Servers.OrderBy(c => c.Host).ToList();
             Devices = Devices.OrderBy(c => c.DeviceName).ToList();
-            PowerBanks = PowerBanks.OrderBy(c => c.HostDeviceId).ToList();
+            PowerBanks = PowerBanks.OrderBy(c => c.HostDeviceName).ToList();
         }
 
 

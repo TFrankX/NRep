@@ -1,15 +1,18 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace WebServer.Models.Device
 {
     public class PowerBank
     {
-        public PowerBank(ulong id, ulong hostDeviceId, uint hostSlot, bool locked, bool plugged, bool charging, PowerBankChargeLevel chargeLevel)
+        public PowerBank(ulong id, string hostDeviceName, uint hostSlot, bool locked, bool plugged, bool charging, PowerBankChargeLevel chargeLevel)
         {
             Id = id;
-            HostDeviceId = hostDeviceId;
+            //HostDeviceId = hostDeviceId;
+            HostDeviceName= hostDeviceName;
             HostSlot = hostSlot;
             Locked = locked;
             Plugged = plugged;
@@ -24,7 +27,19 @@ namespace WebServer.Models.Device
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public ulong Id { get; set; }
-        public ulong HostDeviceId { get; set; }
+        [NotMapped]
+        public string Id_str 
+        {
+            get { return Id.ToString(); }
+        }
+
+        //public ulong HostDeviceId { get; set; }
+        public string HostDeviceName { get; set; }
+        //[NotMapped]
+        //public string HostDeviceId_str 
+        //{
+        //    get { return HostDeviceName.ToString(); }
+        //}
         public uint HostSlot { get; set; }
         public bool Locked { get; set; }
         public bool Plugged { get; set; }
@@ -41,6 +56,13 @@ namespace WebServer.Models.Device
 
         [NotMapped]
         public bool Stored { get; set; }
-
+        private ulong GetGUID(string input)
+        {
+            MD5 md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+            Byte[] bId = new Guid(hash).ToByteArray();
+            ulong result = BitConverter.ToUInt64(bId, 0);
+            return result;
+        }
     }
 }

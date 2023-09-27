@@ -41,6 +41,7 @@ namespace WebServer.Models.Device
         public event dSubSniffer EvSubSniffer;
         public Server(string host, uint port,string login,string password, uint reconnectTime)
         {
+            
             Host= host;
             Port= port;
             Login= login;
@@ -61,6 +62,11 @@ namespace WebServer.Models.Device
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public ulong Id { get; set; }
+        [NotMapped]
+        public string Id_str
+        {
+            get { return Id.ToString(); }
+        }
         public string Host { get; set; }
         public uint Port { get; set; }
         public string Login { get; set; }

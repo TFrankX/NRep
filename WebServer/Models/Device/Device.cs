@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml.Linq;
 
 namespace WebServer.Models.Device
 {
@@ -34,8 +35,18 @@ namespace WebServer.Models.Device
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public ulong Id { get; set; }
+        [NotMapped]
+        public string Id_str 
+        {
+            get { return Id.ToString(); }
+        }
         public string DeviceName { get; set; }
         public ulong HostDeviceId { get; set; }
+        [NotMapped]
+        public string HostDeviceId_str 
+        {          
+            get { return HostDeviceId.ToString(); } 
+        }
         public bool Online { get; set; }
         public bool Activated { get; set; }
         public uint Slots {  get; set; }

@@ -2666,3 +2666,219 @@
 2023-09-26 21:38:27.2140 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
 2023-09-26 21:38:27.2313 Info Configuration initialized.
 2023-09-26 21:38:27.9978 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:23:36.9268 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:23:36.9537 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:23:37.1035 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:23:37.1035 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:23:37.1167 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:23:37.1353 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:23:37.2320 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:23:37.2649 Info Configuration initialized.
+2023-09-27 18:23:38.8326 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:26:22.5526 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:26:22.5752 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:26:22.6517 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:26:22.6517 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:26:22.6517 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:26:22.6795 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:26:22.7335 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:26:22.7507 Info Configuration initialized.
+2023-09-27 18:26:24.3600 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:27:20.7592 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:27:20.7854 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:27:20.8454 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:27:20.8486 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:27:20.8486 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:27:20.8581 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:27:20.9020 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:27:20.9020 Info Configuration initialized.
+2023-09-27 18:27:22.4690 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:28:07.3337 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:28:07.3593 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:28:07.4260 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:28:07.4260 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:28:07.4260 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:28:07.4260 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:28:07.5182 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:28:07.5314 Info Configuration initialized.
+2023-09-27 18:28:09.1388 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:32:09.0495 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:32:09.0723 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:32:09.9520 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:32:09.9636 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:32:09.9636 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:32:10.0095 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:32:10.1372 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:32:10.1524 Info Configuration initialized.
+2023-09-27 18:32:10.8472 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:36:52.6218 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:36:52.6421 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:36:52.7055 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:36:52.7055 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:36:52.7055 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:36:52.7055 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:36:52.8597 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:36:52.8915 Info Configuration initialized.
+2023-09-27 18:36:54.1064 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:53:40.2112 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:53:40.2303 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:53:40.3443 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:53:40.3443 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:53:40.3443 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:53:40.3443 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:53:40.3724 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:53:40.4100 Info Configuration initialized.
+2023-09-27 18:53:41.9179 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:54:34.9493 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:54:34.9701 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:54:35.0631 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:54:35.0631 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:54:35.0631 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:54:35.0631 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:54:35.0927 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:54:35.1187 Info Configuration initialized.
+2023-09-27 18:54:36.8113 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:57:39.0647 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:57:39.0922 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:57:39.1945 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:57:39.1945 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:57:39.1974 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:57:39.1974 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:57:39.2290 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:57:39.2597 Info Configuration initialized.
+2023-09-27 18:57:40.7364 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:59:10.4703 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 18:59:10.6067 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 18:59:11.7676 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 18:59:11.7805 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 18:59:11.7805 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 18:59:11.8011 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 18:59:11.8488 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 18:59:11.8699 Info Configuration initialized.
+2023-09-27 18:59:12.6096 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:00:21.5014 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 19:00:21.6050 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 19:00:21.6826 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 19:00:21.6826 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 19:00:21.6826 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 19:00:21.6986 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 19:00:21.7286 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:00:21.7433 Info Configuration initialized.
+2023-09-27 19:00:23.6607 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:02:53.7242 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 19:02:53.8523 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 19:02:53.9330 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 19:02:53.9330 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 19:02:53.9330 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 19:02:53.9426 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 19:02:53.9623 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:02:53.9740 Info Configuration initialized.
+2023-09-27 19:02:55.3989 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:06:35.8917 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 19:06:35.9381 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 19:06:36.0193 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 19:06:36.0193 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 19:06:36.0193 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 19:06:36.0283 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 19:06:36.0481 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:06:36.0736 Info Configuration initialized.
+2023-09-27 19:06:37.7323 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:09:31.3025 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 19:09:31.3296 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 19:09:31.4012 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 19:09:31.4012 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 19:09:31.4101 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 19:09:31.4101 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 19:09:31.5677 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:09:31.6527 Info Configuration initialized.
+2023-09-27 19:09:32.9386 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:18:18.5435 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 19:18:18.6451 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 19:18:18.7377 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 19:18:18.7377 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 19:18:18.7377 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 19:18:18.7502 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 19:18:18.7709 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:18:18.7944 Info Configuration initialized.
+2023-09-27 19:18:20.7898 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:20:24.0477 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 19:20:24.0723 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 19:20:24.1644 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 19:20:24.1644 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 19:20:24.1644 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 19:20:24.2007 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 19:20:24.2546 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:20:24.3099 Info Configuration initialized.
+2023-09-27 19:20:25.5846 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:49:16.0333 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 19:49:16.0532 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 19:49:16.1160 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 19:49:16.1214 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 19:49:16.1214 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 19:49:16.1428 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 19:49:16.2167 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 19:49:16.2167 Info Configuration initialized.
+2023-09-27 19:49:17.8949 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 20:00:31.5010 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 20:00:31.5241 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 20:00:32.0704 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 20:00:32.1596 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 20:00:32.2413 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 20:00:32.2698 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 20:00:32.3558 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 20:00:32.4009 Info Configuration initialized.
+2023-09-27 20:00:33.3625 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 20:08:10.5631 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 20:08:10.5835 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 20:08:10.6917 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 20:08:10.7068 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 20:08:10.7068 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 20:08:10.7355 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 20:08:10.7826 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 20:08:10.7966 Info Configuration initialized.
+2023-09-27 20:08:12.6828 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 20:13:07.1037 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 20:13:07.1317 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 20:13:07.3671 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 20:13:07.4337 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 20:13:07.5512 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 20:13:07.7172 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 20:13:07.7839 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 20:13:07.8565 Info Configuration initialized.
+2023-09-27 20:13:08.9542 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 22:16:46.2483 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 22:16:46.3027 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 22:16:46.4768 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 22:16:46.4768 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 22:16:46.4768 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 22:16:46.4865 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 22:16:46.5158 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 22:16:46.5306 Info Configuration initialized.
+2023-09-27 22:16:47.8496 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 22:37:03.6166 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 22:37:03.7300 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 22:37:03.8135 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 22:37:03.8135 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 22:37:03.8135 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 22:37:03.8135 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 22:37:04.0362 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 22:37:04.1108 Info Configuration initialized.
+2023-09-27 22:37:06.0275 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 22:42:25.0976 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 22:42:25.1281 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 22:42:25.2332 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 22:42:25.2388 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 22:42:25.2448 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 22:42:25.2612 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 22:42:25.2950 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 22:42:25.3271 Info Configuration initialized.
+2023-09-27 22:42:26.9271 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 23:17:55.4365 Info Loading assembly name: NLog.Web.AspNetCore
+2023-09-27 23:17:55.4630 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.944. Product version: 5.3.4+c9ae8128ef4b6b6b6f2497cdaf451168b85d6ff7. GlobalAssemblyCache: False
+2023-09-27 23:17:55.5798 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2023-09-27 23:17:55.5798 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2023-09-27 23:17:55.5798 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2023-09-27 23:17:55.5798 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2023-09-27 23:17:55.6129 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config
+2023-09-27 23:17:55.6424 Info Configuration initialized.
+2023-09-27 23:17:57.0699 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=C:\Users\User\source\repos\ShareCharging\WebServer\bin\Debug\net7.0\NLog.config

@@ -11,19 +11,14 @@ using WebServer.Workers;
 using WebServer.Data;
 namespace WebServer.Controllers.Device
 {
-    public class PowerBankToPush 
-    {
-       // public string ServerId { get; set; } 
-        public string DeviceName { get; set; }
-        public string PowerBankNum { get; set; }
-    }
-    public class DevicesController : Controller
+
+    public class PowerBanksController : Controller
     {
         private readonly ILogger<DevicesController> Logger;
         private readonly UserManager<AppUser> userManager;
         private readonly ScanDevices scanDevices;
 
-        public DevicesController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<DevicesController> logger)
+        public PowerBanksController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<DevicesController> logger)
         {
             userManager = _userManager;
             Logger = logger;
@@ -34,7 +29,7 @@ namespace WebServer.Controllers.Device
         [HttpGet]
         [AllowAnonymous]
         [Authorize(Roles = "admin, manager, viewer, support")]
-        public IActionResult Devices()
+        public IActionResult PowerBanks()
         {
             return View();
         }
@@ -45,43 +40,10 @@ namespace WebServer.Controllers.Device
         public IActionResult PushPB([FromBody] PowerBankToPush powerBankToPush)
         {
 
-            if (powerBankToPush == null || string.IsNullOrEmpty(powerBankToPush.DeviceName)  || string.IsNullOrEmpty(powerBankToPush.PowerBankNum))
+            if (powerBankToPush == null || string.IsNullOrEmpty(powerBankToPush.DeviceName) || string.IsNullOrEmpty(powerBankToPush.PowerBankNum))
                 RedirectToAction("Devices");
 
-            //var userId = userManager.GetUserId(User);
-            //if (string.IsNullOrEmpty(userId))
-            //    return Unauthorized();
-
-            //userSettingsCache.AddFilterContainersParam(userId, serverDetails.ServerIP);
-
-            scanDevices.PushPowerBank(powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum));
-            //foreach (var server in scanDevices.DevicesData.Servers)
-            //{
-
-
-            //    if (server.Id.ToString() == powerBankToPush?.ServerId)
-            //    {
-            //        if ((Convert.ToUInt32(powerBankToPush?.PowerBankNum)) == 0)
-            //        {
-            //            foreach (var powerBank in scanDevices.DevicesData.PowerBanks)
-            //            {
-            //                //  if ((powerBank.Plugged) && (scanDevices.DevicesData.Devices[scanDevices.DevicesData.Devices.FindIndex(item => item.Id == powerBank.HostDeviceId)].DeviceName == powerBankToPush.DeviceName))
-            //                if ((powerBank.Plugged) && (powerBank.HostDeviceName== powerBankToPush?.DeviceName))
-            //                {
-            //                    //server.CmdPushPowerBank(powerBank.HostSlot, powerBankToPush.DeviceName);
-
-            //                    break;
-            //                }
-            //            }
-            //        }
-            //        else
-            //        {
-            //          //  server.CmdPushPowerBank(Convert.ToUInt32(powerBankToPush?.PowerBankNum), powerBankToPush?.DeviceName);
-
-            //        }
-
-            //    }
-            // }
+            scanDevices.PushPowerBank( powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum));
             Thread.Sleep(100);
 
             //return RedirectToAction("ServerDetails", "ServerDetails");
@@ -109,11 +71,11 @@ namespace WebServer.Controllers.Device
 
                 //serversTable.Servers = serversTable.Servers.OrderBy(c => c.Host).ToList();
                 serversTable.Sort();
-                return Json(serversTable.Devices, new JsonSerializerOptions { PropertyNamingPolicy = null });
+                return Json(serversTable.PowerBanks, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"{nameof(DevicesController)} -> {nameof(Refresh)} throw Exception");
+                Logger.LogError(ex, $"{nameof(PowerBanksController)} -> {nameof(Refresh)} throw Exception");
                 return null;
             }
         }

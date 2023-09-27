@@ -36,14 +36,14 @@
         function PushPB(DeviceName,PBNumber) {
              $.ajax({
                  type: "POST",
-                 url: '@Url.Action("PushPB", "Devices")',
+                 url: '@Url.Action("PushPB", "PowerBanks")',
                  contentType: 'application/json',
                  data: JSON.stringify({
                      DeviceName: DeviceName,
                      PowerBankNum: PBNumber
                  }),
                  success: function () {
-                    location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                    location.href = document.location.origin + '@Url.Action("PowerBanks", "PowerBanks")';
                  }
              });
          }
@@ -63,7 +63,7 @@
                 }),
                 success: function () {
                     //location.href = document.location.origin + '@Url.Action("ServerDetails", "ServerDetails")';
-                    location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                    location.href = document.location.origin + '@Url.Action("PowerBanks", "PowerBanks")';
                 }
             });
         }
@@ -154,7 +154,7 @@
             var backcolor = "#FFFFFF";
             var text = value;
 
-            if ((jsonmod[row].Connected !== null) && (jsonmod[row].Connected == false)) {
+            if ((jsonmod[row].Plugged !== null) && (jsonmod[row].Plugged == false)) {
                 backcolor = "#FFA07A";
             }
             var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
@@ -225,43 +225,79 @@
 
 
             //alert(column);
-            if (column === 'DeviceName') {
-                    // return divstartstyle +
-                    //     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    // value + ":" + jsonmod[row].Port
-                    //     "</span>" +
-                    //     "</div>";
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
-                    "<input style='height:30px;' type='button' " +
-                    "class='btn btn-success btn-lg btn-block btn-sm' " +
-                    "onclick=GoToDetails('" +
-                    jsonmod[row].DeviceName +
-                    "'); " +
-                    "href='javascript: void (0);' value='" +
-                    jsonmod[row].DeviceName +
-                    "' /> " +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'HostDeviceId') {
+            if (column === 'Id_str') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
                     value +
                     "</span>" +
                     "</div>";
-            } else if (column === 'Slots') {
+            } else if (column === 'HostDeviceName') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
                     value +
                     "</span>" +
                     "</div>";
-            } else if (column === 'LastOnlineTime') {
+            } else if (column === 'HostSlot') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
                     value +
                     "</span>" +
                     "</div>";
-            } else if (column === 'Connected') {
+            } else if (column === 'Plugged') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'Locked') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'Charging') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'IsOk') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ChargeLevel') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'LastGetTime') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'LastPutTime') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ClientTime') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'Price') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'LastUpdate') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
                     value +
@@ -272,7 +308,7 @@
                      "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
                      "<input style='height:30px;' type='button' " +
                      "class='btn btn-success btn-lg btn-block btn-sm' " +
-                    "onclick=PushPB('"  + jsonmod[row].DeviceName + "','" +"0" +
+                    "onclick=PushPB('" + jsonmod[row].HostDeviceName + "','" + jsonmod[row].HostSlot +
                       "'); " +
                      "href='javascript: void (0);' value='" +
                      "Push PowerBank" +
@@ -291,7 +327,7 @@
         function refresh() {
             $.ajax({
                 type: "POST",
-                url: '@Url.Action("Refresh", "Devices")',
+                url: '@Url.Action("Refresh", "PowerBanks")',
                 contentType: 'application/json',
                 data: JSON.stringify({ cnt: 0 }),
                 success: function(Data) {
@@ -347,11 +383,18 @@
             datatype: "json",
             datafields: [
                 { name: 'Id_str', type: 'string' },
-                { name: 'DeviceName', type: 'string' },
-                { name: 'HostDeviceId_str', type: 'string' },
-                { name: 'Online', type: 'boolean' },
-                { name: 'Slots', type: 'number' },
-                { name: 'LastOnlineTime', type: 'date' },
+                { name: 'HostDeviceName', type: 'string' },
+                { name: 'HostSlot', type: 'number' },
+                { name: 'Plugged', type: 'boolean' },
+                { name: 'Locked', type: 'boolean' },
+                { name: 'Charging', type: 'boolean' },
+                { name: 'IsOk', type: 'boolean' },
+                { name: 'ChargeLevel', type: 'number' },
+                { name: 'LastGetTime', type: 'date' },
+                { name: 'LastPutTime', type: 'date' },
+                { name: 'ClientTime', type: 'date' },
+                { name: 'Price', type: 'float' },
+                { name: 'LastUpdate', type: 'date' },
             ]
 
         };
@@ -380,11 +423,18 @@
                     columnsresize: true,
                     columns: [
                         { text: "Id", datafield: "Id_str", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Device name", datafield: "DeviceName", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Host Device Id", datafield: "HostDeviceId_str", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Online", datafield: "Online", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Slots", datafield: "Slots", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Last connected time", datafield: "LastOnlineTime", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "HostDeviceName", datafield: "HostDeviceName", width: "6%", cellsrenderer: cellsrenderer },
+                        { text: "HostSlot", datafield: "HostSlot", width: "4 % ", cellsrenderer: cellsrenderer },
+                        { text: "Plugged", datafield: "Plugged", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Locked", datafield: "Locked", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Charging", datafield: "Charging", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "IsOk", datafield: "IsOk", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "ChargeLevel", datafield: "ChargeLevel", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "LastGetTime", datafield: "LastGetTime", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "LastPutTime", datafield: "LastPutTime", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "LClientTime", datafield: "ClientTime", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Price", datafield: "Price", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "LastUpdate", datafield: "LastUpdate", width: "5%", cellsrenderer: cellsrenderer },
                         { text: "Push PB", datafield: "PushPB", width: "10%", cellsrenderer: cellsrenderer },
                      ]
                 });
