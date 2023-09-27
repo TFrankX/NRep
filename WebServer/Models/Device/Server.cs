@@ -207,6 +207,8 @@ namespace WebServer.Models.Device
             return servermqtt.SrvReturnThePowerBank(slot, result, deviceName);
         }
 
+
+
     }
 
 

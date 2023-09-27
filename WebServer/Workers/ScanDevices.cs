@@ -298,7 +298,7 @@ namespace WebServer.Workers
 
 
 
-            device.Slots = device.Slots | ((uint)(Math.Pow(2, data.RlSlot - 1))) & ~((uint)(Math.Pow(2, data.RlSlot - 1)));
+            device.Slots = (device.Slots | ((uint)(Math.Pow(2, data.RlSlot - 1)))) & ~((uint)(Math.Pow(2, data.RlSlot - 1)));
             device.Online = true;
             device.LastOnlineTime = DateTime.Now;
             if (DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid) < 0)

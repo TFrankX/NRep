@@ -33,19 +33,34 @@
 @section scripts
 {
     <script type="text/javascript">
-        function GoToDetails(Id) {
+         function PushPB(Device,PBNumber,ServerId) {
+             $.ajax({
+                 type: "POST",
+                 url: '@Url.Action("PushPB", "Devices")',
+                 contentType: 'application/json',
+                 data: JSON.stringify({
+                     Device: Device,
+                     PowerBankNum: PBNumber,
+                     ServerId:ServerId
+                 }),
+                 success: function () {
+                    location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                 }
+             });
+         }
+        function GoToDetails(serverIP) {
 
             if (serverIP == null)
                 return;
 
             $.ajax({
                 type: "POST",
-                // url: '@Url.Action("GoToDetails", "Servers")',
+                // url: '@Url.Action("GoToDetails", "Devices")',
                 url: '@Url.Action("SetFilter", "Devices")',
                 contentType: 'application/json',
                 data: JSON.stringify({
                     // ServerIP: serverIP
-                    Filter: Id
+                    Filter: serverIP
                 }),
                 success: function () {
                     //location.href = document.location.origin + '@Url.Action("ServerDetails", "ServerDetails")';
@@ -211,7 +226,7 @@
 
 
             //alert(column);
-            if (column === 'Host') {
+            if (column === 'DeviceName') {
                     // return divstartstyle +
                     //     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
                     // value + ":" + jsonmod[row].Port
@@ -222,11 +237,29 @@
                     "<input style='height:30px;' type='button' " +
                     "class='btn btn-success btn-lg btn-block btn-sm' " +
                     "onclick=GoToDetails('" +
-                    jsonmod[row].Host + ":" + jsonmod[row].Port +
+                    jsonmod[row].DeviceName +
                     "'); " +
                     "href='javascript: void (0);' value='" +
-                    jsonmod[row].Host + ":" + jsonmod[row].Port +
+                    jsonmod[row].DeviceName +
                     "' /> " +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'HostDeviceId') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'Slots') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'LastOnlineTime') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
                     "</span>" +
                     "</div>";
             } else if (column === 'Connected') {
@@ -235,54 +268,18 @@
                     value +
                     "</span>" +
                     "</div>";
-            } else if (column === 'Login') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'Password') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'DeviceCount') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'DeviceAuthCount') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'Error') {
-                    return divstartstyle +
-                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                        value +
-                        "</span>" +
-                        "</div>";
-            } else if (column === 'ReonnectTime') {
-                    return divstartstyle +
-                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                        value +
-                        "</span>" +
-                        "</div>";
-            } else if (column === 'ConnectTime') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'DisconnectTime') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
+             } else if (column === 'PushPB') {
+                 return divstartstyle +
+                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+                     "<input style='height:30px;' type='button' " +
+                     "class='btn btn-success btn-lg btn-block btn-sm' " +
+                     "onclick=PushPB('0','" + jsonmod[row].DeviceName+"','"+jsonmod[row].HostDeviceId +
+                      "'); " +
+                     "href='javascript: void (0);' value='" +
+                     "Push PowerBank" +
+                     "' /> " +
+                     "</span>" +
+                     "</div>";
             }
             return divstartstyle +
                 "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
@@ -295,7 +292,7 @@
         function refresh() {
             $.ajax({
                 type: "POST",
-                url: '@Url.Action("Refresh", "Servers")',
+                url: '@Url.Action("Refresh", "Devices")',
                 contentType: 'application/json',
                 data: JSON.stringify({ cnt: 0 }),
                 success: function(Data) {
@@ -350,17 +347,12 @@
         {
             datatype: "json",
             datafields: [
-                { name: 'Host', type: 'string' },
-                { name: 'Port', type: 'number' },
-                { name: 'Login', type: 'string' },
-                { name: 'Password', type: 'string' },
-                { name: 'Error', type: 'string' },
+                { name: 'Id', type: 'number' },
+                { name: 'DeviceName', type: 'string' },
+                { name: 'HostDeviceId', type: 'string' },
                 { name: 'Connected', type: 'boolean' },
-                { name: 'DevicesCount', type: 'number' },
-                { name: 'NotAuthDevicesCount', type: 'number' },
-                { name: 'ReconnectTime', type: 'number' },
-                { name: 'ConnectTime', type: 'date' },
-                { name: 'DisconnectTime', type: 'date' },
+                { name: 'Slots', type: 'number' },
+                { name: 'LastOnlineTime', type: 'date' },
             ]
 
         };
@@ -388,16 +380,13 @@
                     height: 720,
                     columnsresize: true,
                     columns: [
-                        { text: "Host name", datafield: "Host", width: "15%", cellsrenderer: cellsrenderer },
-                        { text: "Connected", datafield: "Connected", width: "8%", cellsrenderer: cellsrenderer },
-                        { text: "Login", datafield: "Login", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Password", datafield: "Password", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Error", datafield: "Error", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Devices", datafield: "DevicesCount", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Not auth", datafield: "NotAuthDevicesCount", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Reconnect time,s", datafield: "ReconnectTime", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Last connected time", datafield: "ConnectTime", width: "8%", cellsrenderer: cellsrenderer },
-                        { text: "Last disconnected time", datafield: "DisconnectTime", width: "8%", cellsrenderer: cellsrenderer },
+                        { text: "Id", datafield: "Id", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Device name", datafield: "DeviceName", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Host Device Id", datafield: "HostDeviceId", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Connected", datafield: "Connected", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Slots", datafield: "Slots", width: "4%", cellsrenderer: cellsrenderer },
+                        { text: "Last connected time", datafield: "LastOnlineTime", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Push PB", datafield: "PushPB", width: "10%", cellsrenderer: cellsrenderer },
                      ]
                 });
             refresh();

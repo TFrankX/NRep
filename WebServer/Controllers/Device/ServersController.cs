@@ -56,7 +56,7 @@ namespace WebServer.Controllers.Device
 
                 //serversTable.Servers = serversTable.Servers.OrderBy(c => c.Host).ToList();
                 serversTable.Sort();
-                return Json(serversTable, new JsonSerializerOptions { PropertyNamingPolicy = null });
+                return Json(serversTable.Servers, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)
             {

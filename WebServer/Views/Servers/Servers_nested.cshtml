@@ -33,26 +33,7 @@
 @section scripts
 {
     <script type="text/javascript">
-        function GoToDetails(Id) {
-
-            if (serverIP == null)
-                return;
-
-            $.ajax({
-                type: "POST",
-                // url: '@Url.Action("GoToDetails", "Servers")',
-                url: '@Url.Action("SetFilter", "Devices")',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    // ServerIP: serverIP
-                    Filter: Id
-                }),
-                success: function () {
-                    //location.href = document.location.origin + '@Url.Action("ServerDetails", "ServerDetails")';
-                    location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
-                }
-            });
-        }
+ 
         function Confirm(title, message, hint, server, container, controller, method) {
 
             var confirm = '<div class="modal fade" tabindex="-1" id="confirm" aria-labelledby="modal-head">' +
@@ -212,24 +193,12 @@
 
             //alert(column);
             if (column === 'Host') {
-                    // return divstartstyle +
-                    //     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    // value + ":" + jsonmod[row].Port
-                    //     "</span>" +
-                    //     "</div>";
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
-                    "<input style='height:30px;' type='button' " +
-                    "class='btn btn-success btn-lg btn-block btn-sm' " +
-                    "onclick=GoToDetails('" +
-                    jsonmod[row].Host + ":" + jsonmod[row].Port +
-                    "'); " +
-                    "href='javascript: void (0);' value='" +
-                    jsonmod[row].Host + ":" + jsonmod[row].Port +
-                    "' /> " +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'Connected') {
+                    return divstartstyle +
+                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                        value +
+                        "</span>" +
+                        "</div>";            
+            } else if (column === 'Port') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
                     value +
@@ -312,7 +281,8 @@
                             }
                             return value;
                         });
-                    source.localdata = Data;
+                    source.localdata = Data.Servers;
+                    devicesSource.localdata = Data.Devices;
                     if (!newdata) {
                         $("#jqxgrid").jqxGrid({ source: source });
                         newdata = true;
@@ -343,8 +313,91 @@
         var serverData;
         var newdata = false;
         var prevChartData = "";
+
         var grid = $("#jqxgrid"),
             intervalId = setInterval(refresh, 3000);
+
+       
+        // orders = ordersDataAdapter.records;
+
+
+
+        var devicesSource =
+        {
+            datatype: "json",
+            datafields: [
+                { name: 'Id', type: 'number' },
+                { name: 'DeviceName', type: 'string' },
+                { name: 'HostDeviceId', type: 'string' },
+                { name: 'Online', type: 'boolean' },
+                { name: 'Slots', type: 'number' },
+                { name: 'LastOnlineTime', type: 'date' }
+            ]
+        };
+        // var ordersDataAdapter = new $.jqx.dataAdapter(devicesSource, { autoBind: true });
+        // var deviceGrids = new Array();
+         var initdevicedetails = function (index, parentElement, gridElement, record) {
+              var id = record.uid.toString();
+              var grid = $($(parentElement).children()[0]);
+       //      deviceGrids[index] = grid;
+        //        var filtergroup = new $.jqx.filter();
+        //        var filter_or_operator = 1;
+        //        var filtervalue = id;
+        //        var filtercondition = 'equal';
+        //        var filter = filtergroup.createfilter('stringfilter', filtervalue, filtercondition);
+        //        //fill the orders depending on the id.
+        //        var ordersbyid = [];
+        //        for (var m = 0; m < orders.length; m++) {
+        //            var result = filter.evaluate(orders[m]["Id"]);
+        //            if (result)
+        //                ordersbyid.push(orders[m]);
+        //        }
+
+        //     var devicesource = {
+        //         datatype: "json",
+        //         datafields: [
+        //             { name: 'Id', type: 'number' },
+        //             { name: 'DeviceName', type: 'string' },
+        //             { name: 'HostDeviceId', type: 'string' },
+        //             { name: 'Online', type: 'boolean' },
+        //             { name: 'Slots', type: 'number' },
+        //             { name: 'LastOnlineTime', type: 'date' }
+        //         ],
+        //         id: 'Id',
+        //         localdata: ordersbyid
+        //     }
+            // var deviceGridAdapter = new $.jqx.dataAdapter(devicesource);
+            var deviceGridAdapter = new $.jqx.dataAdapter(devicesSource);
+            if (grid != null) {
+                if (index === 0) {
+                    grid.jqxGrid({
+                        source: deviceGridAdapter, width: 780, height: 200,
+                        columns: [
+                            { text: 'Id', datafield: 'Id', width: 150 },
+                            { text: 'DeviceName', datafield: 'DeviceName', width: 150 },
+                            { text: 'HostDeviceId', datafield: 'HostDeviceId' },
+                            { text: 'Online', datafield: 'Online' },
+                            { text: 'Slots', datafield: 'Slots' },
+                            { text: 'LastOnlineTime', datafield: 'LastOnlineTime' }
+                        ]
+                    });
+                } else {
+                    grid.jqxGrid({
+                        source: deviceGridAdapter, width: 780, height: 200,
+                        columns: [
+                            { text: 'Id', datafield: 'Id', width: 150 },
+                            { text: 'DeviceName', datafield: 'DeviceName', width: 150 },
+                            { text: 'HostDeviceId', datafield: 'HostDeviceId' },
+                            { text: 'Online', datafield: 'Online' },
+                            { text: 'Slots', datafield: 'Slots' },
+                            { text: 'LastOnlineTime', datafield: 'LastOnlineTime' }
+                        ]
+                    });
+                }
+            }
+        }
+
+
 
         var source =
         {
@@ -379,25 +432,33 @@
                     //theme: 'energyblue',
                     sortable: true,
                     filterable: true,
+                    rowdetails: true,
+                    rowsheight: 35,
+                    initrowdetails: initdevicedetails,
+                    rowdetailstemplate: { rowdetails: "<div id='grid' style='margin: 10px;'></div>", rowdetailsheight: 220, rowdetailshidden: true },
+                    ready: function () {
+                        $("#jqxgrid").jqxGrid('showrowdetails', 0);
+                        $("#jqxgrid").jqxGrid('showrowdetails', 1);
+                    },
                     //showfilterrow: true,
                     //autorowheight: true,
                     //rowsheight: 48,
-                    autorowheight: true,
+                    //autorowheight: true,
                     //autoheight: true,
-                    pageable: true,
+                    //pageable: true,
                     height: 720,
                     columnsresize: true,
                     columns: [
-                        { text: "Host name", datafield: "Host", width: "15%", cellsrenderer: cellsrenderer },
-                        { text: "Connected", datafield: "Connected", width: "8%", cellsrenderer: cellsrenderer },
+                        { text: "Host name", datafield: "Host", width: "7%", cellsrenderer: cellsrenderer },
+                        { text: "Port", datafield: "Port", width: "8%", cellsrenderer: cellsrenderer },
                         { text: "Login", datafield: "Login", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Password", datafield: "Password", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Password", datafield: "Password", width: "4%", cellsrenderer: cellsrenderer },
                         { text: "Error", datafield: "Error", width: "4%", cellsrenderer: cellsrenderer },
                         { text: "Devices", datafield: "DevicesCount", width: "4%", cellsrenderer: cellsrenderer },
                         { text: "Not auth", datafield: "NotAuthDevicesCount", width: "4%", cellsrenderer: cellsrenderer },
                         { text: "Reconnect time,s", datafield: "ReconnectTime", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Last connected time", datafield: "ConnectTime", width: "8%", cellsrenderer: cellsrenderer },
-                        { text: "Last disconnected time", datafield: "DisconnectTime", width: "8%", cellsrenderer: cellsrenderer },
+                        { text: "Last connected time", datafield: "ConnectTime", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Last disconnected time", datafield: "DisconnectTime", width: "3%", cellsrenderer: cellsrenderer }
                      ]
                 });
             refresh();
