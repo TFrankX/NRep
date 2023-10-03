@@ -444,6 +444,7 @@ namespace WebServer.Workers
                         if ((powerBank.Plugged) && (powerBank.HostDeviceName == deviceName) &&(powerBank.HostSlot == numberPB)) 
                         {
                             server.CmdPushPowerBank(numberPB, deviceName);
+                            powerBank.Plugged = false;
                             try
                             {
                                 Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == deviceName)];
