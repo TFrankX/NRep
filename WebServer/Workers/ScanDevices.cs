@@ -5,6 +5,7 @@ using SimnetLib;
 using System;
 using System.Data;
 using System.Numerics;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using WebServer.Controllers.Device;
@@ -213,6 +214,8 @@ namespace WebServer.Workers
             }
         }
 
+
+
         private void ReconnectServers()
         {
             foreach (var srv in DevicesData.Servers)
@@ -226,14 +229,67 @@ namespace WebServer.Workers
                         srv.EvDisconnected += Srv_EvDisconnected;
                         srv.EvSubSniffer += Srv_EvSniffer;
                         srv.Connect();
+                        srv.RecentlyConnect = true;
                     }
+                    else
+                    {
+                        if (srv.RecentlyConnect)
+                        {
 
+                            srv.EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                            srv.EvQueryTheInventory += Srv_EvQueryTheInventory;
+                            srv.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                            srv.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
+
+                            foreach(var dev in DevicesData.Devices)
+                            {
+                                if (dev.HostDeviceId == srv.Id)
+                                {
+                                    srv.SubScript(dev.DeviceName);
+                                    srv.CmdQueryTheInventory(dev.DeviceName);
+                                }
+                            }
+                            srv.RecentlyConnect = false;
+                        }
+                        else
+                        {
+                            foreach (var dev in DevicesData.Devices)
+                            {
+                                if ((dev.HostDeviceId == srv.Id) )
+                                {
+                                    if ((DateTime.Now - dev.LastOnlineTime).TotalSeconds > srv.OnlineTimeOut)
+                                    {
+                                        dev.Online = false;
+                                        dev.Slots = 0;
+                                        foreach (var powerbank in DevicesData.PowerBanks)
+                                        {
+                                            if (powerbank.HostDeviceName == dev.DeviceName)
+                                            {
+                                                powerbank.Plugged = false;
+                                            }
+                                        }
+                                    }
+
+                                    srv.CmdQueryTheInventory(dev.DeviceName);
+                                }
+
+                            }
+
+                        }
+
+
+
+                    }
 
                 }
 
             }
 
         }
+
+       
+
+
         private void Srv_EvSniffer(object sender, string topic, object message)
         {
 
@@ -376,7 +432,7 @@ namespace WebServer.Workers
                             DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Charging = pbank.RlCharge > 0 ? true : false;
                             DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
                             DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Stored = false;
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].LastPutTime = DateTime.Now;
+                            //DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].LastPutTime = DateTime.Now;
 
                         }
                         catch

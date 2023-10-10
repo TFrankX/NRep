@@ -154,7 +154,7 @@
             var backcolor = "#FFFFFF";
             var text = value;
 
-            if ((jsonmod[row].Connected !== null) && (jsonmod[row].Connected == false)) {
+            if ((jsonmod[row].Online !== null) && (jsonmod[row].Online == false)) {
                 backcolor = "#FFA07A";
             }
             var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
@@ -250,9 +250,30 @@
                     "</span>" +
                     "</div>";
             } else if (column === 'Slots') {
+
+                if (value & 1) {
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' class='greenCircle'; title=' 1 '>   1</span>";
+                } else {
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' class='grayCircle'; title=' 1 '>   1</span>";
+                }
+                if (value & 2) {
+                    text = text+"<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='greenCircle'; title=' 2 '>   2</span>";
+                } else {
+                    text = text+"<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='grayCircle'; title=' 2 '>   2</span>";
+                }
+                if (value & 4) {
+                    text = text + "<span style='margin-top: 5px; margin-left: 73px; position: absolute;' class='greenCircle'; title=' 3 '>   3</span>";
+                } else {
+                    text = text + "<span style='margin-top: 5px; margin-left: 73px; position: absolute;' class='grayCircle'; title=' 3 '>   3</span>";
+                }
+                if (value & 8) {
+                    text = text + "<span style='margin-top: 5px; margin-left: 103px; position: absolute;' class='greenCircle'; title=' 4 '>   4</span>";
+                } else {
+                    text = text + "<span style='margin-top: 5px; margin-left: 103px; position: absolute;' class='grayCircle'; title=' 4 '>   4</span>";
+                }
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
+                    text +
                     "</span>" +
                     "</div>";
             } else if (column === 'LastOnlineTime') {
@@ -383,7 +404,7 @@
                         { text: "Device name", datafield: "DeviceName", width: "5%", cellsrenderer: cellsrenderer },
                         { text: "Host Device Id", datafield: "HostDeviceId_str", width: "10%", cellsrenderer: cellsrenderer },
                         { text: "Online", datafield: "Online", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Slots", datafield: "Slots", width: "4%", cellsrenderer: cellsrenderer },
+                        { text: "Slots", datafield: "Slots", width: "10%", cellsrenderer: cellsrenderer },
                         { text: "Last connected time", datafield: "LastOnlineTime", width: "10%", cellsrenderer: cellsrenderer },
                         { text: "Push PB", datafield: "PushPB", width: "10%", cellsrenderer: cellsrenderer },
                      ]
@@ -487,6 +508,14 @@
             margin-right: auto;
         }
 
+        .grayCircle {
+            width: 24px;
+            height: 24px;
+            background: gray;
+            border-radius: 50%;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
         /* Preloader */
 

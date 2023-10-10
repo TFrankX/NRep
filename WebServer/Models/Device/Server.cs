@@ -58,10 +58,14 @@ namespace WebServer.Models.Device
             //Connect();
             DevicesCount = 0;
             NotAuthDevicesCount = 0;
+            OnlineTimeOut = 20;
         }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public ulong Id { get; set; }
+
+        [NotMapped]
+        public bool RecentlyConnect { get; set; }
         [NotMapped]
         public string Id_str
         {
@@ -74,6 +78,8 @@ namespace WebServer.Models.Device
         public uint DevicesCount { get; set; }
         public uint NotAuthDevicesCount { get; set; }
         public string Error { get; set; }
+
+        public uint OnlineTimeOut { get; set; }
         public uint ReconnectTime { get; set; }
         //public List<Device> Devices { get; set; }
         public DateTime ConnectTime { get; set; }
