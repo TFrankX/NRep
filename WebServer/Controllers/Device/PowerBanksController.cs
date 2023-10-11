@@ -14,11 +14,11 @@ namespace WebServer.Controllers.Device
 
     public class PowerBanksController : Controller
     {
-        private readonly ILogger<DevicesController> Logger;
+        private readonly ILogger<PowerBanksController> Logger;
         private readonly UserManager<AppUser> userManager;
         private readonly ScanDevices scanDevices;
 
-        public PowerBanksController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<DevicesController> logger)
+        public PowerBanksController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<PowerBanksController> logger)
         {
             userManager = _userManager;
             Logger = logger;

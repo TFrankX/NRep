@@ -88,6 +88,7 @@ namespace WebServer.Controllers.Device
             return RedirectToAction("Devices", "Devices");
         }
 
+
         public async Task<ActionResult> Refresh()
         {
             try
