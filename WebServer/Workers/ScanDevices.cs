@@ -403,7 +403,7 @@ namespace WebServer.Workers
                 return;
             }
 
-
+      
             Logger.LogInformation($"Get inventory info from device: {dev} \n");
 
             //ulong hostedId = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)].Id;
@@ -412,11 +412,11 @@ namespace WebServer.Workers
             foreach (var pbank in data.RlBank1s)
             {
 
-                if (pbank.RlIdok == 1)
+                if ((pbank.RlIdok == 1) && (pbank.RlPbid!=0))
                 {
 
                     slots = slots | ((uint)Math.Pow(2,pbank.RlSlot - 1));
-                    if (DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid) < 0)
+                    if (DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid) < 0) 
                     {
                         DevicesData.PowerBanks.Add(new PowerBank(pbank.RlPbid, device.DeviceName, pbank.RlSlot, pbank.RlLock > 0 ? true : false, true, pbank.RlCharge > 0 ? true : false, (PowerBankChargeLevel)pbank.RlQoe));
 

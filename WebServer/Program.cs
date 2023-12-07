@@ -81,13 +81,13 @@ internal class Program
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 var configuration = GetConfiguration();
-                webBuilder.UseHttpSys(options =>
-                {
-                    options.Authentication.Schemes = (Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes)AuthenticationSchemes.None;
-                    options.Authentication.AllowAnonymous = true;
-                    options.MaxConnections = null;
-                    options.MaxRequestBodySize = 30000000;
-                });
+  //              webBuilder.UseHttpSys(options =>
+  //              {
+  //                  options.Authentication.Schemes = (Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes)AuthenticationSchemes.None;
+  //                  options.Authentication.AllowAnonymous = true;
+  //                  options.MaxConnections = null;
+  //                  options.MaxRequestBodySize = 30000000;
+  //              });
                 webBuilder.UseKestrel(options =>
                 {
                     options.Listen(IPAddress.Any, int.Parse(configuration["BindingPort"]), listenOptions =>

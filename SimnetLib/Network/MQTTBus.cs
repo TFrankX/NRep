@@ -95,14 +95,25 @@ namespace SimnetLib.Network
         {
            // if (assurance == MessageAssurance.Reliable)
             {
-                await Task.Run(() => _mqttClient.PublishAsync(
-                    new MqttApplicationMessageBuilder()
-                        .WithTopic(topic)
-                        .WithPayload(payload)
-                        .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
-                        .Build()
-                ));
+                try
+                {
+                   await Task.Run(() => _mqttClient.PublishAsync(
+                      new MqttApplicationMessageBuilder()
+                       .WithTopic(topic)
+                       .WithPayload(payload)
+                       .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
+                       .Build()
+               ));
+
+                }
+                catch
+                {
+                    Disconnected?.Invoke(this);
+                }
+
             }
+
+
             //else
             //{
                // await _mqttClient.PublishAsync(topic, payload);
