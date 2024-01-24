@@ -54,7 +54,7 @@ namespace WebServer.Controllers.Device
 
             //userSettingsCache.AddFilterContainersParam(userId, serverDetails.ServerIP);
 
-            scanDevices.PushPowerBank(powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum));
+            scanDevices.PushPowerBank(powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum),"");
             //foreach (var server in scanDevices.DevicesData.Servers)
             //{
 

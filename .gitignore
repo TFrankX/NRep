@@ -431,3 +431,11 @@ $RECYCLE.BIN/
 !.vscode/launch.json
 !.vscode/extensions.json
 webdockmon/internal-nlog.txt
+
+
+## Database
+*.db-shm
+*.db-wal
+
+## Log
+internal-nlog.txt

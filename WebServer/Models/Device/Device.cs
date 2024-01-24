@@ -29,7 +29,7 @@ namespace WebServer.Models.Device
             DevResServer = "";
             //PowerBanks = powerBanks;
             LastUpdate = DateTime.Now;
-            ActivateTime = DateTime.MinValue;
+            ActivateTime = DateTime.MinValue;          
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -59,6 +59,7 @@ namespace WebServer.Models.Device
         public DateTime LastOnlineTime { get; set; }
         public DateTime FirstOnlineTime { get; set; }
         public DateTime LastUpdate { get; private set; }
+
         [NotMapped]
         public bool Init { get; set; }
 

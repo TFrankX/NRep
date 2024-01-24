@@ -43,7 +43,7 @@ namespace WebServer.Controllers.Device
             if (powerBankToPush == null || string.IsNullOrEmpty(powerBankToPush.DeviceName) || string.IsNullOrEmpty(powerBankToPush.PowerBankNum))
                 RedirectToAction("Devices");
 
-            scanDevices.PushPowerBank( powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum));
+            scanDevices.PushPowerBank( powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum),"");
             Thread.Sleep(100);
 
             //return RedirectToAction("ServerDetails", "ServerDetails");

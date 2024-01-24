@@ -39,6 +39,7 @@ namespace WebServer
             //        new ScanDevices(Servers, serviceProvider.GetService<IServiceScopeFactory>()));
             services.AddSingleton<ScanDevices>();
             services.AddHostedService<ScanDevices>(p => p.GetRequiredService<ScanDevices>());
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.Configure<IdentityOptions>(options =>
             {
                 // Default SignIn settings.

@@ -43,7 +43,7 @@ internal class Program
             }
 
             host.Run();
-
+ 
         }
         catch (Exception exception)
         {

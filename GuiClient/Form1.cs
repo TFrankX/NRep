@@ -65,7 +65,7 @@ namespace GuiClient
 
                 //if (!device.IsConnected())
                 //{
-                //        addLog($"Не удалось подключиться к серверу");
+                //        addLog($"пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
                 //}
 
 
@@ -73,7 +73,7 @@ namespace GuiClient
 
                 //{
 
-                //    addLog($"Успешно подключено к серверу {tbServerAddress.Text}:{tbServerPort.Text}");
+                //    addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ {tbServerAddress.Text}:{tbServerPort.Text}");
 
                 //    device.EvPushPowerBank += Device_EvPushPowerBank;
 
@@ -96,7 +96,7 @@ namespace GuiClient
                 //}
                 //else
                 //{
-                //    addLog($"Не удалось подключиться к серверу");
+                //    addLog($"пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
                 //}
 
             }).Start();
@@ -104,15 +104,15 @@ namespace GuiClient
 
         private void ConnectError(object sender, string error)
         {
-            //MessageBox.Show($"Ошибка подключения к серверу: {error}");
-            addLog($"Ошибка подключения к серверу: {error}");
+            //MessageBox.Show($"пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {error}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {error}");
         }
         private void Connected(object sender)
         {
             if (device.IsConnected())
             {
 
-                addLog($"Успешно подключено к серверу {tbServerAddress.Text}:{tbServerPort.Text}");
+                addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ {tbServerAddress.Text}:{tbServerPort.Text}");
                 device.EvPushPowerBank += Device_EvPushPowerBank;
                 device.EvPushPowerBankForce += Device_EvPushPowerBankForce;
                 device.EvQueryTheInventory += Device_EvQueryTheInventory;
@@ -130,46 +130,46 @@ namespace GuiClient
 
         private void Device_EvSubSniffer(object sender,string topic,object message)
         {
-            addLog($"Получен пакет {topic}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ {topic}");
         }
 
         private void Disconnected(object sender)
         {
-            addLog($"Потеряна связь с сервером {tbServerAddress.Text}:{tbServerPort.Text}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ {tbServerAddress.Text}:{tbServerPort.Text}");
         }
 
         private void Device_EvPushPowerBankForce(object sender, string topic, RplPushPowerBankForce data)
         {
-            addLog($"Ответ на запрос 'принудительно выдать повербанк'");
-            addLog($"Номер слота: {data.RlSlot}");
-            addLog($"Серийный номер повербанка: {data.RlPbid}");
-            string resultsucces = data.RlResult == 1 ? "удачно" : "неудачно";
-            addLog($"Результат операции: {resultsucces}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ'");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ: {data.RlSlot}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {data.RlPbid}");
+            string resultsucces = data.RlResult == 1 ? "пїЅпїЅпїЅпїЅпїЅпїЅ" : "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {resultsucces}");
 
         }
 
         private void Device_EvResetCabinet(object sender, string topic, RplResetCabinet data)
         {
-            addLog($"Ответ на запрос 'перезапуск устройства'");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ'");
         }
 
         private void Device_EvQuerySIMCardICCID(object sender, string topic, RplQuerySIMCardICCID data)
         {
-            addLog($"Ответ на запрос информации SIM-карты");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ SIM-пїЅпїЅпїЅпїЅпїЅ");
         }
 
         private void Device_EvQueryServer(object sender, string topic, RplQueryServer data)
         {
-            addLog($"Ответ на запрос информации сервера");
-            string serverType = data.RlType == 1 ? "Основной" : "Резервный";
-            addLog($"Тип сервера: {serverType}");
-            addLog($"Адрес сервера: {data.RlAdd}");
-            addLog($"Порт сервера: {data.RlPort}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
+            string serverType = data.RlType == 1 ? "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ" : "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+            addLog($"пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {serverType}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {data.RlAdd}");
+            addLog($"пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {data.RlPort}");
         }
 
         private void Device_EvQueryNetworkInfo(object sender, string topic, RplQueryNetworkInfo data)
         {
-            addLog($"Ответ на запрос информации сети");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ");
 
 
 
@@ -177,19 +177,19 @@ namespace GuiClient
             switch (data.RlType)
             {
                 case 1:
-                    networks = "предпочтительно WiFi";
+                    networks = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ WiFi";
                     break;
                 case 2:
-                    networks = "только WiFi";
+                    networks = "пїЅпїЅпїЅпїЅпїЅпїЅ WiFi";
                     break;
                 case 3:
-                    networks = "Предпочтительно 4G";
+                    networks = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 4G";
                     break;
                 default:
-                    networks = "только 4G";
+                    networks = "пїЅпїЅпїЅпїЅпїЅпїЅ 4G";
                     break;
             }
-            addLog($"Предпочтительный режим работы сети: {networks}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: {networks}");
 
             string networkMode;
             switch (data.RlMode)
@@ -198,24 +198,24 @@ namespace GuiClient
                     networkMode = "auto";
                     break;
                 case 1:
-                    networkMode = "предпочтительно 3G";
+                    networkMode = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 3G";
                     break;
                 case 2:
-                    networkMode = "только 2G";
+                    networkMode = "пїЅпїЅпїЅпїЅпїЅпїЅ 2G";
                     break;
                 case 3:
-                    networkMode = "только 3G";
+                    networkMode = "пїЅпїЅпїЅпїЅпїЅпїЅ 3G";
                     break;
                 case 4:
-                    networkMode = "только 4G";
+                    networkMode = "пїЅпїЅпїЅпїЅпїЅпїЅ 4G";
                     break;
                 default:
-                    networkMode = "неизвестно";
+                    networkMode = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
                     break;
             }
-            addLog($"Режим работы мобильной сети: {networkMode}");
-            string connectstatus = data.RlStatus == 0 ? "успешно" : "нет подключения";
-            addLog($"Результат подключения: {connectstatus}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: {networkMode}");
+            string connectstatus = data.RlStatus == 0 ? "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ" : "пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {connectstatus}");
 
 
             string currentMode;
@@ -234,24 +234,24 @@ namespace GuiClient
                     currentMode = "4G";
                     break;
                 default:
-                    currentMode = "неизвестно";
+                    currentMode = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
                     break;
             }
-            addLog($"Текущий режим подключения: {currentMode}");
-            addLog($"Качество сигнала мобильной сети CSQ 0..31 (для WiFi=0): {data.RlCsq}");
-            addLog($"Сила сигнала мобильной сети RSRP -140..-22 (для WiFi=0): {data.RlRsrp}");
-            addLog($"Соотношение сигнал/шум для мобильной сети SINR -20..30 (для WiFi=0): {data.RlSinr}");
-            addLog($"Сила сигнала WiFi RSSI (для мобильной сети=0): {data.RlWifi}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {currentMode}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ CSQ 0..31 (пїЅпїЅпїЅ WiFi=0): {data.RlCsq}");
+            addLog($"пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ RSRP -140..-22 (пїЅпїЅпїЅ WiFi=0): {data.RlRsrp}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ SINR -20..30 (пїЅпїЅпїЅ WiFi=0): {data.RlSinr}");
+            addLog($"пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ WiFi RSSI (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ=0): {data.RlWifi}");
         }
 
         private void Device_EvReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data)
         {
-            addLog($"Зарегистрировано возвращение повербанка в слот: {data.RlSlot}");
-            addLog($"Серийный номер: {data.RlPbid}");
-            string lockLevel = data.RlLock == 1 ? "Да" : "Нет";
-            addLog($"Заблокирован: {lockLevel}");
-            string charging = data.RlLimited == 1 ? "Да" : "Нет";
-            addLog($"Заряжается: {charging}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ: {data.RlSlot}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ: {data.RlPbid}");
+            string lockLevel = data.RlLock == 1 ? "пїЅпїЅ" : "пїЅпїЅпїЅ";
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {lockLevel}");
+            string charging = data.RlLimited == 1 ? "пїЅпїЅ" : "пїЅпїЅпїЅ";
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {charging}");
             string chargeLevel;
             switch (data.RlQoe)
             {
@@ -274,38 +274,38 @@ namespace GuiClient
                     chargeLevel = "100%";
                     break;
                 default:
-                    chargeLevel = "сбой получения данных о заряде";
+                    chargeLevel = "пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
                     break;
             }
-            addLog($"Процент заряда: {chargeLevel}");
-            string status = data.RlCode == 0 ? "Работоспособен" : "Неисправен";
-            addLog($"Статус: {data.RlCode}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: {chargeLevel}");
+            string status = data.RlCode == 0 ? "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ" : "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅ: {data.RlCode}");
             device.SrvReturnThePowerBank(data.RlSlot, 1, tbDeviceName.Text.Trim());
 
         }
 
         private void Device_EvReportCabinetLogin(object sender, string topic, RptReportCabinetLogin data)
         {
-            addLog($"Зарегистрировано устройство на сервере:");
-            addLog($"Поддерживаемое количество повербанков: {data.RlCount}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ:");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {data.RlCount}");
 
             string networks;
             switch (data.RlNetmode)
             {
                 case 1:
-                    networks = "только 4G";
+                    networks = "пїЅпїЅпїЅпїЅпїЅпїЅ 4G";
                     break;
                 case 2:
-                    networks = "только WiFi";
+                    networks = "пїЅпїЅпїЅпїЅпїЅпїЅ WiFi";
                     break;
                 case 3:
-                    networks = "4G и WiFi";
+                    networks = "4G пїЅ WiFi";
                     break;
                 default:
-                    networks = "неизвестно";
+                    networks = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
                     break;
             }
-            addLog($"Поддерживаемые сети: {networks}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: {networks}");
 
             string networkMode;
             switch (data.RlNetmode)
@@ -323,36 +323,36 @@ namespace GuiClient
                     networkMode = "4G";
                     break;
                 default:
-                    networkMode = "неизвестно";
+                    networkMode = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
                     break;
             }
-            addLog($"Режим работы сети: {networkMode}");
-            addLog($"Качество сигнала мобильной сети CSQ 0..31 (для WiFi=0): {data.RlCsq}");
-            addLog($"Сила сигнала мобильной сети RSRP -140..-22 (для WiFi=0): {data.RlRsrp}");
-            addLog($"Соотношение сигнал/шум для мобильной сети SINR -20..30 (для WiFi=0): {data.RlSinr}");
-            addLog($"Сила сигнала WiFi RSSI (для мобильной сети=0): {data.RlWifi}");
-            addLog($"Версия ПО: {data.RlCommsoftver}");
-            addLog($"Версия железа: {data.RlCommhardver}");
-            addLog($"ICCID SIM-карты: {data.RlIccid}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: {networkMode}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ CSQ 0..31 (пїЅпїЅпїЅ WiFi=0): {data.RlCsq}");
+            addLog($"пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ RSRP -140..-22 (пїЅпїЅпїЅ WiFi=0): {data.RlRsrp}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ SINR -20..30 (пїЅпїЅпїЅ WiFi=0): {data.RlSinr}");
+            addLog($"пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ WiFi RSSI (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ=0): {data.RlWifi}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ: {data.RlCommsoftver}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: {data.RlCommhardver}");
+            addLog($"ICCID SIM-пїЅпїЅпїЅпїЅпїЅ: {data.RlIccid}");
         }
 
         private void Device_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
         {
-            addLog($"Ответ на запрос инвентаризации");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             foreach (var pbank in data.RlBank1s)
             {
-                addLog($"--------- Повербанк номер {pbank.RlSlot.ToString()} ----------");
+                addLog($"--------- пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ {pbank.RlSlot.ToString()} ----------");
 
                 if (pbank.RlIdok == 1)
                 {
 
                     addLog($"S/N: {pbank.RlPbid}");
-                    string readIDok = pbank.RlIdok == 1 ? "удачно" : "неудачно";
-                    addLog($"readID прочитан {readIDok}");
-                    string lockLevel = pbank.RlLock == 1 ? "Да" : "Нет";
-                    addLog($"Заблокирован: {lockLevel}");
-                    string charging = pbank.RlCharge == 1 ? "Да" : "Нет";
-                    addLog($"Заряжается: {charging}");
+                    string readIDok = pbank.RlIdok == 1 ? "пїЅпїЅпїЅпїЅпїЅпїЅ" : "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+                    addLog($"readID пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ {readIDok}");
+                    string lockLevel = pbank.RlLock == 1 ? "пїЅпїЅ" : "пїЅпїЅпїЅ";
+                    addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {lockLevel}");
+                    string charging = pbank.RlCharge == 1 ? "пїЅпїЅ" : "пїЅпїЅпїЅ";
+                    addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {charging}");
                     string chargeLevel;
                     switch (pbank.RlQoe)
                     {
@@ -375,15 +375,15 @@ namespace GuiClient
                             chargeLevel = "100%";
                             break;
                         default:
-                            chargeLevel = "сбой получения данных о заряде";
+                            chargeLevel = "пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
                             break;
                     }
-                    addLog($"Процент заряда: {chargeLevel}");
+                    addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: {chargeLevel}");
 
                 }
                 else
                 {
-                    addLog($"*** Отсутствует ***");
+                    addLog($"*** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ***");
                 }
 
 
@@ -394,22 +394,22 @@ namespace GuiClient
 
         private void Device_EvPushPowerBank(object sender, string topic, RplPushPowerBank data)
         {
-            addLog($"Ответ на запрос выдачи повербанка");
-            addLog($"Номер слота: {data.RlSlot}");
-            addLog($"Серийный номер повербанка: {data.RlPbid}");
-            string resultsucces = data.RlResult == 1 ? "удачно" : "неудачно";
-            addLog($"Результат операции: {resultsucces}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
+            addLog($"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ: {data.RlSlot}");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {data.RlPbid}");
+            string resultsucces = data.RlResult == 1 ? "пїЅпїЅпїЅпїЅпїЅпїЅ" : "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {resultsucces}");
         }
 
         private void bPushPowerBank_Click(object sender, EventArgs e)
         {
-            addLog($"Команда: выдать повербанк");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             device.CmdPushPowerBank((uint)cbSlotNumber.SelectedIndex + 1, tbDeviceName.Text.Trim());
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            addLog("Запуск клиента");
+            addLog("пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             device = new Device();
             device.EvConnected += Connected;
             device.EvDisconnected += Disconnected;
@@ -427,7 +427,7 @@ namespace GuiClient
 
         private void bResetCabinet_Click(object sender, EventArgs e)
         {
-            addLog($"Команда: сброс кабинета");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             device.CmdResetCabinet(tbDeviceName.Text.Trim());
         }
 
@@ -443,13 +443,13 @@ namespace GuiClient
         private void bServerInfo_Click(object sender, EventArgs e)
         {
 
-            addLog($"Команда: запрос информации о сервере");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             device.CmdQueryServer(1, tbDeviceName.Text.Trim());
         }
 
         private void bInventory_Click(object sender, EventArgs e)
         {
-            addLog($"Команда: запрос инвентаризации");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             device.CmdQueryTheInventory(tbDeviceName.Text.Trim());
         }
 
@@ -462,7 +462,7 @@ namespace GuiClient
 
         private void bNetworkInfo_Click(object sender, EventArgs e)
         {
-            addLog($"Команда: запрос информации сети устройства");
+            addLog($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             device.CmdQueryNetworkInfo(tbDeviceName.Text.Trim());
         }
 

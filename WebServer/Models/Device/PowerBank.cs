@@ -23,6 +23,7 @@ namespace WebServer.Models.Device
             ClientTime = DateTimeOffset.MinValue;
             Price = 0;
             LastUpdate = DateTime.Now;
+            UserId = "0";
         }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
@@ -50,7 +51,10 @@ namespace WebServer.Models.Device
         public DateTime LastPutTime { get; set; }        
         public DateTimeOffset ClientTime { get; set; }
         public float Price { get; set; }
+        public float Cost { get; set; }
         public DateTime LastUpdate { get; set; }
+        public bool Taken { get; set; }
+        public string UserId { get; set; }
         [NotMapped]
         public bool Init { get; set; }
 
