@@ -110,8 +110,11 @@ namespace WebServer.Models.Device
 
         public void Connect()
         {
+            servermqtt.EvConnected -= Device_EvConnected;
             servermqtt.EvConnected += Device_EvConnected;
+            servermqtt.EvDisconnected -= Device_EvDisconnected;
             servermqtt.EvDisconnected += Device_EvDisconnected;
+            servermqtt.EvConnectError -= Device_EvConnectError;
             servermqtt.EvConnectError += Device_EvConnectError;
             servermqtt.Connect(this.Host, this.Port, this.Login, this.Password);
             //deviceSub.Connect(this.Host, this.Port, this.Login, this.Password);
@@ -121,6 +124,7 @@ namespace WebServer.Models.Device
         {
             if (this.Connected)
             {
+                servermqtt.EvSubSniffer -= Device_EvSubSniffer;
                 servermqtt.EvSubSniffer += Device_EvSubSniffer;
                 servermqtt.SubSniffer();
             }

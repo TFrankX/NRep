@@ -18,6 +18,7 @@ namespace SimnetLib.Network
 
         void Publish(string topic, byte[] payload, MessageAssurance assurance = MessageAssurance.UnReliable);
         void Subscribe(string topic);
+        void UnSubscribe(string topic);
 
         event MessageReceivedEventHandler MessageReceived;
         event ConnectedEventHandler Connected;

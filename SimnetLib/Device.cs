@@ -57,7 +57,7 @@ namespace SimnetLib
         private string deviceName;
         private string login;
         private string pass;
-        private string clientName="DeviceLibrary";
+        private string clientName="DeviceLibrary_" +  new System.Net.WebClient().DownloadString("https://api.ipify.org");
 
         public string Host { get { return host; } set { host = value; } }
         public uint Port { get { return port; } set { port = value; } }
@@ -86,8 +86,11 @@ namespace SimnetLib
         {
             bus = new MQTTBus();
             client = new SimnetClient(bus, clientName);
+            client.EvConnected -= Connected;
             client.EvConnected += Connected;
+            client.EvDisconnected -= Disconnected;
             client.EvDisconnected += Disconnected;
+            client.EvConnectError -= ConnectError;
             client.EvConnectError += ConnectError;
         }
 

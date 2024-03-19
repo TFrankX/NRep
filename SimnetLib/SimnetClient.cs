@@ -76,6 +76,18 @@ namespace SimnetLib
                     _subscriptions.Add(topic, new Subscription(typeof(T), handler));
                     _networkBus.Subscribe(topic);
                 }
+                else
+                {
+                    try
+                    {
+                        _networkBus.Subscribe(topic);
+                        _subscriptions.Remove(topic);
+                        _subscriptions.Add(topic, new Subscription(typeof(T), handler));
+                        
+                    }
+                    catch { }
+                }
+
             }
             catch (Exception e)
             {

@@ -228,9 +228,13 @@ namespace WebServer.Workers
                     if (!srv.Connected)
                     {
 
+                        srv.EvConnected -= Srv_EvConnected;
                         srv.EvConnected += Srv_EvConnected;
+                        srv.EvConnectError -= Srv_EvConnectError;
                         srv.EvConnectError += Srv_EvConnectError;
+                        srv.EvDisconnected -= Srv_EvDisconnected;
                         srv.EvDisconnected += Srv_EvDisconnected;
+                        srv.EvSubSniffer -= Srv_EvSniffer;
                         srv.EvSubSniffer += Srv_EvSniffer;
                         srv.Connect();
                         srv.RecentlyConnect = true;
@@ -257,6 +261,8 @@ namespace WebServer.Workers
                         }
                         else
                         {
+                            srv.EvSubSniffer -= Srv_EvSniffer;
+                            srv.EvSubSniffer += Srv_EvSniffer;
                             foreach (var dev in DevicesData.Devices)
                             {
                                 if ((dev.HostDeviceId == srv.Id) )
@@ -272,8 +278,16 @@ namespace WebServer.Workers
                                                 powerbank.Plugged = false;
                                             }
                                         }
+
+
+                                        srv.EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                                        srv.EvQueryTheInventory += Srv_EvQueryTheInventory;
+                                        srv.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                                        srv.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
+
                                     }
 
+                                    srv.SubScript(dev.DeviceName);
                                     srv.CmdQueryTheInventory(dev.DeviceName);
                                 }
 
@@ -311,7 +325,7 @@ namespace WebServer.Workers
                 return;
             }
 
-            if ((command == SimnetLib.Model.MessageTypes.ReportCabinetLogin) && (dev != ""))
+            if (((command == SimnetLib.Model.MessageTypes.ReportCabinetLogin)) && (dev != ""))
             {
                 if (DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev)) < 0)
                 {

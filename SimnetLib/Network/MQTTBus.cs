@@ -43,6 +43,7 @@ namespace SimnetLib.Network
                 options = new MqttClientOptionsBuilder()
                .WithTcpServer(host.ToString(), port)
                .WithClientId(clientId)
+               .WithCleanSession()
                .Build();
             }
             else
@@ -51,6 +52,7 @@ namespace SimnetLib.Network
                .WithTcpServer(host.ToString(), port)
                .WithClientId(clientId)
                .WithCredentials(username, password)
+               .WithCleanSession()
                .Build();
 
             }
@@ -127,9 +129,24 @@ namespace SimnetLib.Network
 
         public async void Subscribe(string topic)
         {
-            await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
+            try
+            {
+                await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
+            }
+            catch { }
         }
 
+        public async void UnSubscribe(string topic)
+        {
+            if (IsConnected())
+            {
+                try
+                {
+                    await _mqttClient.UnsubscribeAsync(topic);
+                }
+                catch { }
+            }
+        }
         public event MessageReceivedEventHandler MessageReceived;
         public event ConnectedEventHandler Connected;
         public event DisconnectedEventHandler Disconnected;
