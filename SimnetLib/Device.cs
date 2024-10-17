@@ -58,6 +58,10 @@ namespace SimnetLib
         private string login;
         private string pass;
         private string clientName="DeviceLibrary_" +  new System.Net.WebClient().DownloadString("https://api.ipify.org");
+        private string certCA;
+        private string certCli;
+        private string certPass;
+
 
         public string Host { get { return host; } set { host = value; } }
         public uint Port { get { return port; } set { port = value; } }
@@ -65,6 +69,10 @@ namespace SimnetLib
         public string Login { get { return login; } set { login = value; } }
         public string Pass { get { return pass; } set { pass = value; } }
         public string ClientName { get { return clientName; } set { clientName = value; } }
+        public string CertCA { get { return certCA; } set { certCA = value; } }
+        public string CertCli { get { return certCli; } set { certCli = value; } }
+        public string CertPass { get { return certPass; } set { certPass = value; } }
+
 
 
         public event dPushPowerBank EvPushPowerBank;
@@ -115,9 +123,15 @@ namespace SimnetLib
             this.pass = pass;
         }
 
+        public Device(string clientName, string host, uint port, string login, string pass, string certCA, string certCli) : this(clientName, host, port, login, pass)
+        {            
+            this.certCA = certCA;
+            this.certCli = certCli;
+        }
+
         public void Connect()
         {
-            client.Connect(this.host, this.port, this.login, this.pass);
+            client.Connect(this.host, this.port, this.login, this.pass,this.certCA,this.certCli,this.certPass);
             Thread.Sleep(1000);        
 
         }
@@ -136,6 +150,13 @@ namespace SimnetLib
             Connect( host,  port);
         }
 
+        public void Connect(string host, uint port, string login, string pass,string certCA, string certCli,string certPass)
+        {
+            this.certCA = certCA;
+            this.certCli = certCli;
+            this.certPass = certPass;
+            Connect(host, port, login, pass);
+        }
 
         public void SubSniffer()
         {
@@ -144,6 +165,26 @@ namespace SimnetLib
                 EvSubSniffer?.Invoke(sender,topic,message);
             });
         }
+
+        public void SubcribeLogin()
+        {
+           // rptReportCabinetLogin = $"cabinet/+/report/{MessageTypes.ReportCabinetLogin}";
+            rptReportCabinetLogin = $"cabinet/#";
+            if (client.IsConnected())
+            {
+
+                client.Subscribe<RptReportCabinetLogin>(rptReportCabinetLogin, (sender, topic, message) =>
+                {
+                    EvReportCabinetLogin?.Invoke(sender, topic, message);
+                });
+
+
+            }
+
+        }
+
+        
+
 
 
         public void Subcribe(string deviceName)
@@ -158,8 +199,8 @@ namespace SimnetLib
             rplQuerySIMCardICCID = $"cabinet/{deviceName}/reply/{MessageTypes.QuerySIMCardICCID}";
             rplResetCabinet = $"cabinet/{deviceName}/reply/{MessageTypes.ResetCabinet}";
             rptReturnThePowerBank = $"cabinet/{deviceName}/report/{MessageTypes.ReturnThePowerBank}";
-            rptReportCabinetLogin = $"cabinet/{deviceName}/report/{MessageTypes.ReportCabinetLogin}";
-
+            //rptReportCabinetLogin = $"cabinet/{deviceName}/report/{MessageTypes.ReportCabinetLogin}";
+            //rptReportCabinetLogin = $"cabinet/#/report/{MessageTypes.ReportCabinetLogin}";
             if (client.IsConnected())
             {
 
@@ -206,11 +247,6 @@ namespace SimnetLib
                 client.Subscribe<RptReturnThePowerBank>(rptReturnThePowerBank, (sender, topic, message) =>
                 {
                     EvReturnThePowerBank?.Invoke(sender, topic, message);
-                });
-
-                client.Subscribe<RptReportCabinetLogin>(rptReportCabinetLogin, (sender, topic, message) =>
-                {
-                    EvReportCabinetLogin?.Invoke(sender, topic, message);
                 });
 
             }

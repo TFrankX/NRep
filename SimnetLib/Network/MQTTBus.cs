@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using MQTTnet;
@@ -35,25 +38,74 @@ namespace SimnetLib.Network
            
         }
 
-        public async void Connect(IPAddress host, int port, string clientId, string username = "", string password = "")
+        public async void Connect(IPAddress host, int port, string clientId, string username = "", string password = "",string certCA="",string certCli="",string certPass="")
         {
             MqttClientOptions options;
             if (username == "")
             {
-                options = new MqttClientOptionsBuilder()
-               .WithTcpServer(host.ToString(), port)
-               .WithClientId(clientId)
-               .WithCleanSession()
-               .Build();
+
+                if (certCli == "")
+                {
+                    options = new MqttClientOptionsBuilder()                   
+                   .WithTcpServer(host.ToString(), port)
+                   .WithClientId(clientId)
+                   .WithCleanSession()
+                   .Build();
+
+                }
+                else
+                {
+
+                    options = new MqttClientOptionsBuilder()
+                    .WithTls(new MqttClientOptionsBuilderTlsParameters
+                    {
+                        UseTls = true,
+                        SslProtocol = System.Security.Authentication.SslProtocols.Tls12,
+                        Certificates = new List<X509Certificate>()
+                        {
+                            X509Certificate.CreateFromCertFile(certCA), new X509Certificate2(certCli,certPass)
+                        },
+                        CertificateValidationHandler = x => { return true; }
+                    })
+                    .WithTcpServer(host.ToString(), port)
+                    .WithClientId(clientId)
+                    .WithCredentials(username, password)
+                    .WithCleanSession()
+                    .Build();
+
+                }
+
             }
             else
             {
-                options = new MqttClientOptionsBuilder()
-               .WithTcpServer(host.ToString(), port)
-               .WithClientId(clientId)
-               .WithCredentials(username, password)
-               .WithCleanSession()
-               .Build();
+                if (certCli == "")
+                {
+
+                    options = new MqttClientOptionsBuilder()
+                   .WithTcpServer(host.ToString(), port)
+                   .WithClientId(clientId)
+                   .WithCredentials(username, password)
+                   .WithCleanSession()
+                   .Build();
+                }
+                else
+                {
+                    options = new MqttClientOptionsBuilder()
+                    .WithTls(new MqttClientOptionsBuilderTlsParameters {
+                        UseTls = true,
+                        SslProtocol = System.Security.Authentication.SslProtocols.Tls12,
+                        Certificates = new List<X509Certificate>()
+                        {
+                            X509Certificate.CreateFromCertFile(certCA), new X509Certificate2(certCli,certPass)
+                        },
+                        CertificateValidationHandler = x => { return true; }
+                    })
+                    .WithTcpServer(host.ToString(), port)
+                    .WithClientId(clientId)
+                    .WithCredentials(username, password)
+                    .WithCleanSession()
+                    .Build();
+                }
 
             }
             MqttClientConnectResultCode resultCode;
@@ -70,7 +122,7 @@ namespace SimnetLib.Network
 
             if (resultCode == MqttClientConnectResultCode.Success)
             {
-              //  Console.WriteLine("mqtt: connected!");
+                //  Console.WriteLine("mqtt: connected!");
 
                 _mqttClient.ApplicationMessageReceivedAsync += e =>
                 {

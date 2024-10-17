@@ -26,20 +26,19 @@ namespace WebServer.Controllers.Device
         }
 
         [HttpGet]
-        [AllowAnonymous]
-        [Authorize(Roles = "admin, manager, viewer, support")]
+        [Authorize]
         public IActionResult Servers()
         {
             return View();
         }
 
-        [Microsoft.AspNetCore.Mvc.HttpPost]
-        [AllowAnonymous]
+        [HttpPost]
+        [Authorize]
         public async Task<ActionResult> Refresh()
         {
             try
             {
-                var userId = userManager.GetUserId(User);
+                //var userId = userManager.GetUserId(User);
                 //var user = await userManager.FindByIdAsync(userId);
                 //var roles = await userManager.GetRolesAsync(user);
                 //var filterNotMoney = roles.Contains("support") || roles.Contains("manager");
@@ -47,7 +46,25 @@ namespace WebServer.Controllers.Device
                 //var allowAdminManagerSupport = roles.Contains("support") || roles.Contains("admin") || roles.Contains("manager");
                 //var allowAdmin = roles.Contains("admin");
 
-                DevicesData serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
+                // DevicesData serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
+
+
+                var userId = userManager.GetUserId(User);
+                var user = await userManager.FindByIdAsync(userId);
+                var roles = await userManager.GetRolesAsync(user);
+                DevicesData serversTable;
+
+                var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
+                if (allowAdminAndManager)
+                {
+                    serversTable = new DevicesData(scanDevices.DevicesData.Servers, null,null);
+                }
+                else
+                {
+                   serversTable = new DevicesData(null, null, null);
+                }
+
+
 
                 // serversTable.AddRange(new List<Server>
                 // {                                 
@@ -55,7 +72,7 @@ namespace WebServer.Controllers.Device
                 // });
 
                 //serversTable.Servers = serversTable.Servers.OrderBy(c => c.Host).ToList();
-                serversTable.Sort();
+                //serversTable.Sort();
                 return Json(serversTable.Servers, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)

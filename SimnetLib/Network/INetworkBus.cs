@@ -11,7 +11,7 @@ namespace SimnetLib.Network
     {
         // todo: add more connect possibilities (with pw / cert usw.)
         bool IsConnected();
-        void Connect(IPAddress host, int port, string clientId, string username = "", string password = "");
+        void Connect(IPAddress host, int port, string clientId, string username = "", string password = "", string certCA = "", string certCli = "",string certPass="");
 
         // todo: add retain flag for publish
         // todo: add remove-retain support (retain with empty payload)

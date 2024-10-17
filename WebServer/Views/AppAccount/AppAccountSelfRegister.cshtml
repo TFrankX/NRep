@@ -1,0 +1,44 @@
+﻿@model AppAccountsSelfRegister
+
+<h2>Registration</h2>
+
+<form asp-action="AppAccountSelfRegister" asp-controller="AppAccount" asp-route-returnUrl="@Model.ReturnUrl" asp-route-newStationId="@Model.NewStationId">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        @*<div>
+            <label asp-for="UserName">UserName</label><br />
+            <input type="text" asp-for="UserName" />
+            <span asp-validation-for="UserName"></span>
+        </div>*@
+        @*<div>
+            <label asp-for="Password">Password</label><br />
+            <input asp-for="Password" />
+            <span asp-validation-for="Password"></span>
+        </div>
+        <div>
+            <label asp-for="PasswordConfirm">Confirm password</label><br />
+            <input asp-for="PasswordConfirm" />
+            <span asp-validation-for="PasswordConfirm"></span>
+        </div>
+        <div>*@
+        <div>
+            <label asp-for="PhoneNumber">PhoneNumber</label><br />
+            <input asp-for="PhoneNumber" />
+            <span asp-validation-for="PhoneNumber"></span>
+        </div>
+
+
+        <input type="submit" value="Registration" />
+
+        @if (TempData["Message"] != null)
+        {
+            <script type="text/javascript">
+            window.onload = function () {
+                alert('@TempData["Message"]');
+            };
+            </script>
+        }
+    </div>
+    </div>
+</form>
+

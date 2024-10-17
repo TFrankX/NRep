@@ -39,13 +39,13 @@ namespace SimnetLib
             return _networkBus.IsConnected();
         }
 
-        public  void Connect(string hostname, uint port, string username = "", string password = "")
+        public void Connect(string hostname, uint port, string username = "", string password = "", string certCA = "", string certCli="",string certPass="")
         {
             try
             {
                 _networkBus.MessageReceived += NetworkBusOnMessageReceived;
                 IPAddress host = Dns.GetHostAddresses(hostname)[0];
-                _networkBus.Connect(host, (int)(port), ClientId, username, password);
+                _networkBus.Connect(host, (int)(port), ClientId, username, password,certCA,certCli,certPass);
             }
             catch (Exception e)
             {
@@ -138,37 +138,43 @@ namespace SimnetLib
         {
             //bool maskOk=false;
             string mask = "";
-            foreach (var key in _subscriptions)
+            try
             {
-                if (key.ToString().Contains('#'))
+                foreach (var key in _subscriptions)
                 {
-                    mask = key.ToString().Substring(1, key.ToString().IndexOf('#')-1);
-                    if (topic.Contains(mask))
+                    if (key.ToString().Contains('#'))
                     {
-                        var subscriptionmask = _subscriptions[$"{mask}#"];
-                        var handlermask = subscriptionmask.Delegate;
-                        // example, later use protobuf for serialisation
-                        object valuemask = null;
-                        if (subscriptionmask.Type == typeof(string))
+                        mask = key.ToString().Substring(1, key.ToString().IndexOf('#') - 1);
+                        if (topic.Contains(mask))
                         {
-                            valuemask = Encoding.UTF8.GetString(payload);
-                        }
-                        else if (subscriptionmask.Type.IsProto())
-                        {
-                            // protobuf message
-                            using (var stream = new MemoryStream(payload))
+                            var subscriptionmask = _subscriptions[$"{mask}#"];
+                            var handlermask = subscriptionmask.Delegate;
+                            // example, later use protobuf for serialisation
+                            object valuemask = null;
+                            if (subscriptionmask.Type == typeof(string))
                             {
-                                valuemask = Serializer.Deserialize(stream, Activator.CreateInstance(subscriptionmask.Type));
+                                valuemask = Encoding.UTF8.GetString(payload);
                             }
-                        }
+                            else if (subscriptionmask.Type.IsProto())
+                            {
+                                // protobuf message
+                                using (var stream = new MemoryStream(payload))
+                                {
+                                    valuemask = Serializer.Deserialize(stream, Activator.CreateInstance(subscriptionmask.Type));
+                                }
+                            }
 
-                        handlermask?.DynamicInvoke(this, topic, valuemask);
+                            handlermask?.DynamicInvoke(this, topic, valuemask);
 
-                        break;
-                    };
+                            break;
+                        };
+                    }
                 }
             }
+            catch
+            {
 
+            }
             if ((!_subscriptions.ContainsKey(topic))) return;
             
             var subscription = _subscriptions[topic];

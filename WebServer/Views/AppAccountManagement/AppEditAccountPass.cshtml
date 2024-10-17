@@ -6,20 +6,18 @@
 <div class="text-center"><h2>Edit password account</h2></div>
 
 <form asp-action="AppEditAccountPass" asp-controller="AppAccountManagement">
+
     <div asp-validation-summary="All" class="text-danger"></div>
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="UserName" />
-    <div class="form-group">
-        <label asp-for="OldPassword" class="control-label">Old Password</label>
-        <input type="password" asp-for="OldPassword" class="form-control" />
-    </div>
+
     <div class="form-group">
         <label asp-for="NewPassword" class="control-label">New Password</label>
         <input type="password" asp-for="NewPassword" class="form-control" />
     </div>
     <div class="text-center">
         <div class="btn-group" role="group">
-            <input class="btn btn-dark mr-2" type="submit" Value="Edit">
+            <input class="btn btn-dark mr-2" type="submit" Value="Save">
             <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark" role="button">Cancel</a>
         </div>
     </div>

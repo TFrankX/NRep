@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebServer.Models.Identity;
 using WebServer.Models.Device;
+using WebServer.Models.Action;
 using WebServer.Workers;
 using WebServer.Models.Settings;
 using Microsoft.Extensions.Hosting;
 using WebServer.Data;
+using ProtoBuf.Meta;
 
 namespace WebServer
 {
@@ -21,27 +23,61 @@ namespace WebServer
         {
             Configuration = configuration;
         }
-
-
+        private IServiceCollection Services;
+        private IServiceScopeFactory ScopeFactory;
 
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
             //IServiceScopeFactory scopeFactory;
 
-            services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
-            services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
-            services.AddDbContextPool<SettingsContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteSettings")));
+            //            services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
+            //            services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
+            //            services.AddDbContextPool<SettingsContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteSettings")));
+            //            //services.AddSingleton<IDevActionTable, DevActionTable>();
+            //            services.AddDbContextPool<ActionContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteActions")));
+
+
+            services.AddDbContextPool<DeviceContext>(options =>
+            {
+
+
+                options.UseNpgsql(Configuration.GetConnectionString("pgDevice"));
+
+            });
+            
+            services.AddDbContext<AppIdentityContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgAppAccounts")));
+            //services.AddDbContextPool<SettingsContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgSettings")));
+            //services.AddSingleton<IDevActionTable, DevActionTable>();
+            services.AddDbContextPool<ActionContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgActions")));
+
+
+
             services.AddSingleton<IDevicesData, DevicesData>();
             services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
             services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityContext>();
             //services.AddHostedService<ScanDevices>(serviceProvider =>
             //        new ScanDevices(Servers, serviceProvider.GetService<IServiceScopeFactory>()));
+            services.AddIdentityCore<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                 .AddEntityFrameworkStores<AppIdentityContext>()
+                 .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
             services.AddSingleton<ScanDevices>();
             services.AddHostedService<ScanDevices>(p => p.GetRequiredService<ScanDevices>());
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddDistributedMemoryCache();
+
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
             services.Configure<IdentityOptions>(options =>
             {
                 // Default SignIn settings.
@@ -74,11 +110,13 @@ namespace WebServer
             });
 
             services.AddRazorPages();
+            Services = services;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime hostAapplicationLifetime,IServiceScopeFactory scopeFactory)
         {
+            ScopeFactory = scopeFactory;
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -88,14 +126,15 @@ namespace WebServer
                 app.UseStatusCodePagesWithReExecute("/Errors/{0}");
                 app.UseHsts();
             }
+
+            hostAapplicationLifetime.ApplicationStopping.Register(OnShutDown);
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 //endpoints.MapControllerRoute(
@@ -126,6 +165,18 @@ namespace WebServer
                 // });
             });
         }
+
+        private void OnShutDown()
+        {
+            //var actionProcess = new ActionProcess(scopeFactory);
+            //var sp = Services.BuildServiceProvider();
+            //var service =  sp.GetService<ScanDevices>();
+
+            // ActSave();
+            var actionProcess = new ActionProcess(ScopeFactory);
+            actionProcess.ActionSave((int)ActionsDescription.ServiceShutdown, "System", 0, 0, 0,0, "");
+        }
+
 
     }
 }

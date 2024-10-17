@@ -25,32 +25,48 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 @if (User.Identity.IsAuthenticated)
-                    {
+                {
 
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="User" asp-action="User">User</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Servers" asp-action="Servers">Servers</a>
-                        </li>
+                           <li class="nav-item">
+                               <a class="nav-link text-light" asp-area="" asp-controller="Servers" asp-action="Servers">Servers</a>
+                           </li>
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="Devices" asp-action="Devices">Devices</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="PowerBanks" asp-action="PowerBanks">PowerBanks</a>
                         </li>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Actions" asp-action="ActionsAdmin">Actions</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Actions" asp-action="ActionsUser">Actions</a>
+                            </li>
+                        }
 
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Settings" asp-action="Settings">Settings</a>
-                        </li>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Settings" asp-action="Settings">Settings</a>
+                            </li>
+                        }
                     </ul>
-                    }
+                }
 
-                    <div class="navbar-collapse collapse d-md-inline-flex flex-md-row-reverse">
-                        <partial name="_LoginPartial" />
-                    </div>
+                <div class="navbar-collapse collapse d-md-inline-flex flex-md-row-reverse">
+                    <partial name="_LoginPartial" />
                 </div>
+            </div>
         </nav>
     </header>
     <div class="container-fluid">

@@ -1,0 +1,356 @@
+﻿
+
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<link href="~/jqwidgets/styles/jqx.base.css" rel="stylesheet" />
+<script src="~/jqwidgets/jqxcore.js"></script>
+<script src="~/jqwidgets/jqxdata.js"></script>
+
+<script src="~/jqwidgets/jqxbuttons.js"></script>
+<script src="~/jqwidgets/jqxscrollbar.js"></script>
+<script src="~/jqwidgets/jqxbuttons.js"></script>
+<script src="~/jqwidgets/jqxscrollbar.js"></script>
+<script src="~/jqwidgets/jqxgrid.js"></script>
+<script src="~/jqwidgets/jqxgrid.edit.js"></script>
+<script src="~/jqwidgets/jqxgrid.columnsresize.js"></script>
+<script src="~/jqwidgets/jqxgrid.filter.js"></script>
+<script src="~/jqwidgets/jqxgrid.selection.js"></script>
+<script src="~/jqwidgets/jqxgrid.sort.js"></script>
+<script src="~/jqwidgets/jqxgrid.pager.js"></script>
+<script src="~/jqwidgets/jqxgrid.aggregates.js"></script>
+<script src="~/jqwidgets/jqxgrid.grouping.js"></script>
+<script src="~/jqwidgets/jqxmenu.js"></script>
+<script src="~/jqwidgets/jqxlistbox.js"></script>
+<script src="~/jqwidgets/jqxdropdownlist.js"></script>
+<script src="~/jqwidgets/jqxwindow.js"></script>
+<script src="~/jqwidgets/jqxcore.js"></script>
+<script src="~/jqwidgets/jqxdata.js"></script>
+<script src="~/jqwidgets/jqxdraw.js"></script>
+<script src="~/jqwidgets/jqxchart.core.js"></script>
+<script src="~/jqwidgets/jqxchart.rangeselector.js"></script>
+
+
+
+<meta name="keywords" content="jQuery Window, Window Widget, Window" />
+<link rel="stylesheet" href="~/jqwidgets/styles/jqx.base.css" type="text/css" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1" />
+
+
+
+@model WebServer.Controllers.User.PayInfo
+
+
+
+@if (!User.Identity.IsAuthenticated)
+{
+    Layout = null;
+
+}
+
+
+@*  @{
+        ViewData["Title"] = "";
+
+    }  *@
+
+
+@{
+
+    // function Push30(){
+    //     obj = 'hello1';
+    //     var el = document.getElementById(obj);
+    //     el.style.display = 'none';
+    // }
+}
+
+
+
+<style>
+    .disable {
+        pointer-events: none;
+        background: #ccc;
+    }
+
+    .yellow {
+        background: orange;
+        border-color: orange;
+    }
+
+    .redCircle {
+        width: 24px;
+        height: 24px;
+        background: red;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .greenCircle {
+        width: 24px;
+        height: 24px;
+        background: green;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+
+    /* Preloader */
+
+    #p_prldr {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: #0066FF;
+        z-index: 30;
+    }
+
+    .contpre small {
+        font-size: 20px;
+        line-height: 24px;
+    }
+
+    .contpre {
+        width: 250px;
+        height: 100px;
+        position: absolute;
+        left: 50%;
+        top: 48%;
+        margin-left: -125px;
+        margin-top: -75px;
+        color: #fff;
+        font-size: 32px;
+        text-align: center;
+        line-height: 36px;
+    }
+
+    #p_prldr .svg_anm {
+        position: absolute;
+        width: 41px;
+        height: 41px;
+        background: url(/images/tail-spin.svg) center center no-repeat;
+        background-size: 41px;
+        margin: -16px 0 0 -16px;
+    }
+
+
+    /* Container needed to position the button. Adjust the width as needed */
+    .container {
+        position: relative;
+        width: 100%;
+    }
+
+        /* Make the image responsive */
+        .container img {
+            width: 100%;
+            height: auto;
+        }
+
+        /* Style the button and place it in the middle of the container/image */
+        .container .btn {
+            /* position: absolute;
+        top: 37%;
+        left: 50%;  */
+            transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            background-color: orange;
+            color: black;
+            font-size: 24px;
+            padding: 12px 24px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            flex: 1 1 auto;
+            margin: 10 0px;
+        }
+
+            .container .btn:hover {
+                background-color: black;
+            }
+
+    .hello1-container {
+        position: absolute;
+        top: 37%;
+        left: 50%;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        padding-top: 20px;
+        /* width: 90%; */
+        /* margin: 5 0px;*/
+    }
+
+    .hello2-container {
+        position: absolute;
+        top: 62%;
+        left: 50%;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        padding-top: 20px;
+        /* width: 90%; */
+        /* margin: 5 0px;*/
+    }
+
+    .hello3-container {
+        position: absolute;
+        top: 30%;
+        left: 5%;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        padding-top: 20px;
+        /* width: 90%; */
+        /* margin: 5 0px;*/
+    }
+
+    .hello4-container {
+        position: absolute;
+        top: 30%;
+        left: 50%;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        padding-top: 20px;
+        /* width: 90%; */
+        /* margin: 5 0px;*/
+    }
+
+    #paid {
+        position: relative;
+        left: -100px;
+    }
+    #nobank {
+        position: relative;
+        left: -100px;
+    }
+</style>
+
+
+
+@* <div id="hello3" class="container" style="display:block">
+        <button id="But_test" type="button" value="* zzzzzzzz " class="btn" onclick="Push40()" />
+    </div> *@
+
+<div id="hello1" class="container" style="display:block">
+    <img src="/images/backlayer.png" style="object-fit:scale-down; z-index:-1; width:100%; height:100%; border: solid 1px #CCC" alt="Snow" />
+    <div class="hello1-container">
+        <input id="But_30m" type="button" value="* 30 min - 1 euro " class="btn" onclick="Push30()" />
+        <input id="But_1h" type="button" value="* 1 hour - 2 euro " class="btn" />
+        <input id="But_1d" type="button" value="* all day - 5 euro " class="btn" />
+        <h2 id="paid">Last Paid: @Model.Cost </h2>
+    </div>
+
+</div>
+<div id="hello2" class="container" style="display:block">
+    <img src="/images/backlayer2.png" style="object-fit:scale-down; z-index:-1; width:100%; height:100%; border: solid 1px #CCC" alt="Snow" />
+    <div class="hello2-container">
+        <input id="But_Pay" type="button" top="60%" value=" Pay " class="btn" onclick="PushPB()" />
+    </div>
+</div>
+
+<div id="hello3" class="container" style="display:block">
+    <img src="/images/backlayer.png" style="object-fit:scale-down; z-index:-1; width:100%; height:100%; border: solid 1px #CCC" alt="Snow" />
+    <div class="hello3-container">
+        <h2>UserId: @Model.UserId</h2>
+        <h2>Time: @Model.Time</h2>
+        <h2>Pay: @Model.Cost</h2>
+    </div>
+</div>
+
+<div id="hello4" class="container" style="display:block">
+    <img src="/images/backlayer.png" style="object-fit:scale-down; z-index:-1; width:100%; height:100%; border: solid 1px #CCC" alt="Snow" />
+    <div class="hello4-container">
+        <h2 id="nobank">PBs is not avaliable</h2>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+
+         @*window.onload = function () {
+             Init(@Model.Taken);
+         };*@
+
+        Init(@Model.Taken,@Model.Available);
+        function Init(Taken,Available) {
+
+
+
+            obj1 = "hello1";
+            obj2 = "hello2";
+            obj3 = "hello3";
+            obj4 = "hello4";
+            var el1 = document.getElementById(obj1);
+            var el2 = document.getElementById(obj2);
+            var el3 = document.getElementById(obj3);
+            var el4 = document.getElementById(obj4);
+
+            if (Taken === 1) {
+                el1.style.display = "none";
+                el2.style.display = "none";
+                el3.style.display = "block";
+                el4.style.display = "none";
+            }
+            else {
+                if (Available > 0) {
+
+                    el1.style.display = "block";
+                    el2.style.display = "none";
+                    el3.style.display = "none";
+                    el4.style.display = "none";
+                }
+                else {
+                    el1.style.display = "none";
+                    el2.style.display = "none";
+                    el3.style.display = "none";
+                    el4.style.display = "block";
+                }
+
+                
+            }
+
+        }
+
+        function Push30() {
+
+            obj = "hello1";
+            var el = document.getElementById(obj);
+            el.style.display = "none";
+
+            obj1 = "hello2";
+            var el1 = document.getElementById(obj1);
+            el1.style.display = "block";
+        }
+
+        function PushPB(DeviceName,PBNumber) {
+             $.ajax({
+                 type: "POST",
+                 url: '@Url.Action("PushPB", "User")',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                DeviceName: "Dev01",
+                PowerBankNum: "0"
+                }),
+                success: function () {
+                location.href = document.location.origin + '@Url.Action("User", "User")';
+                }
+                });
+                }
+                // function Push40() {
+
+
+                //     obj = "hello1";
+                //     var el = document.getElementById(obj);
+                //     if (el.style.display === "none") {
+                //         el.style.display = "block";
+                //     } else {
+                //         el.style.display = "none";
+                //     }
+
+                // }
+</script>
+

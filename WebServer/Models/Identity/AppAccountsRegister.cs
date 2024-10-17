@@ -17,5 +17,9 @@ namespace WebServer.Models.Identity
         [DataType(DataType.Password)]
         [NotMapped]
         public string PasswordConfirm { get; set; }
+
+        //[RegularExpression(@"^((357|\+357)[\- ]?)?(\(?\d{3}\)?[\- ]?)?\d{3}\)?[\- ]?\d{2}$", ErrorMessage = "Not a valid phone number")]
+        ////TODO: Make it unique
+        //public string PhoneNumber { get; set; }
     }
 }

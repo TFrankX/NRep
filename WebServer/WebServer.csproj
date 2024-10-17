@@ -14,6 +14,11 @@
     <None Remove="Controllers\Settings\" />
     <None Remove="Models\Settings\" />
     <None Remove="Models\Statistic\" />
+    <None Remove="Utils\Requests\" />
+    <None Remove="Models\Action\" />
+    <None Remove="Views\Actions\" />
+    <None Remove="Controllers\Actions\" />
+    <None Remove="certs\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +34,7 @@
     <PackageReference Include="NLog.Config" Version="4.7.15" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.4" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.18" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,6 +63,15 @@
     <None Include="Views\Shared\_LoginPartial.cshtml" />
     <None Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
     <None Include="Views\Shared\_LoginPartial_orig.cshtml" />
+    <None Include="Views\AppAccountManagement\AppCheckPhoneNumber.cshtml" />
+    <None Include="Views\AppAccount\AppAccountSelfRegister.cshtml" />
+    <None Include="Views\AppAccountManagement\AppCreateSelfAccount.cshtml" />
+    <None Include="Views\AppAccountManagement\AppEditSelfAccountData.cshtml" />
+    <None Include="Views\AppAccountManagement\AppEditSelfAccountPass.cshtml" />
+    <None Include="Views\AppAccountManagement\AppResetPassCheckPhoneNumber.cshtml" />
+    <None Include="Views\AppAccountManagement\AppResetSelfAccountPass.cshtml" />
+    <None Include="Views\AppAccount\AppAccountLoginSMS.cshtml" />
+    <None Include="Views\AppAccount\AppLogCheckPhoneNumber.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,11 +80,23 @@
     <Folder Include="Controllers\Settings\" />
     <Folder Include="Models\Settings\" />
     <Folder Include="Models\Statistic\" />
+    <Folder Include="Utils\Requests\" />
+    <Folder Include="Models\Action\" />
+    <Folder Include="Views\Actions\" />
+    <Folder Include="Controllers\Actions\" />
+    <Folder Include="certs\" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Views\Shared\_LoginPartial %28копия%29.cshtml" />
     <Content Remove="Views\MarginSection\HandleErrorCode.cshtml" />
+    <Content Remove="Views\AppAccountManagement\AppCreateAccount %28копия%29.cshtml" />
+    <Content Remove="Views\AppAccount\AppAccountRegister %28копия%29.cshtml" />
+    <Content Remove="Views\AppAccountManagement\AppEditAccountData %28копия%29.cshtml" />
+    <Content Remove="Views\AppAccountManagement\AppEditAccountPass %28копия%29.cshtml" />
+    <Content Remove="Views\AppAccountManagement\AppCheckPhoneNumber %28копия%29.cshtml" />
+    <Content Remove="Views\AppAccount\AppAccountLogin %28копия%29.cshtml" />
+    <Content Remove="Views\AppAccount\AppLoginCheckPhoneNumber.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Properties\launchSettings.json">
@@ -77,5 +104,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="certs\ca.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="certs\client.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

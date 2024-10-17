@@ -16,9 +16,19 @@ using System.Net;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.AspNetCore.Http;
 using System.Security.Cryptography.Xml;
+using ProtoBuf.Meta;
+using WebServer.Data;
+using WebServer.Models.Device;
+using System.Data;
+using System;
 
 namespace WebServer.Controllers.User
 {
+
+    public class DeviceToGetPB
+    {
+        public string DeviceId { get; set; }
+    }
 
     public class PayInfo
     {
@@ -64,11 +74,21 @@ namespace WebServer.Controllers.User
             this._httpContextAccessor = httpContextAccessor;
         }
 
+
+
+
+        //[HttpGet("{deviceId}")]
         [HttpGet]
         [AllowAnonymous]
-        [Authorize(Roles = "admin, manager, viewer, support")]
-        public IActionResult User()
+
+        //[Authorize(Roles = "admin, manager, viewer, support")]
+        public async Task<IActionResult> Do(string deviceId)
         {
+
+            if (deviceId == null || string.IsNullOrEmpty(deviceId))
+            {
+                return StatusCode(403);
+            }
 
             //// read cookie from IHttpContextAccessor
             //string cookieValueFromContext = _httpContextAccessor.HttpContext.Request.Cookies["KeyCharge911"];
@@ -76,37 +96,227 @@ namespace WebServer.Controllers.User
             //string cookieValueFromReq = Request.Cookies["KeyCharge911"];
 
 
-            //read cookie from Request object  
-            string cookieValueFromReq = Request.Cookies["KeyCharge911"];
-            //bool taken = false;
+            //read cookie from Request object
 
-            PayInfo payInfo = new PayInfo();
-            foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
+
+
+            Models.Device.Device device;
+            try
             {
-                if (((int)pb.ChargeLevel > 3) && pb.Plugged && pb.IsOk)
-                {
-                    payInfo.Available++;
-                }
+                device = scanDevices.DevicesData.Devices[scanDevices.DevicesData.Devices.FindIndex(item => item.Id_str == deviceId)];
             }
+            catch
+            {
+                device = null;
+                Logger.LogInformation($"Trying to get invalid device with Id: {deviceId}\n");
+                return StatusCode(404);
+            }
+
+
+
+            string cookieValueFromReq = Request.Cookies["KeyCharge911"];
+            PayInfo payInfo = new PayInfo();
+            //foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
+            //{
+            //    if (((int)pb.ChargeLevel > 3) && pb.Plugged && pb.IsOk)
+            //    {
+            //        payInfo.Available++;
+            //    }
+            //}
+
+            var devicePbs = scanDevices.DevicesData.PowerBanks.Where(p => p.HostDeviceId == device.Id).ToList<WebServer.Models.Device.PowerBank>();
+
+            var userPbs = scanDevices.DevicesData.PowerBanks.Where(p => p.UserId == cookieValueFromReq).ToList<WebServer.Models.Device.PowerBank>();
+
+
+
             if (!string.IsNullOrEmpty(cookieValueFromReq))
             {
-
-                foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
+                foreach (PowerBank pb in userPbs)
                 {
-                    
-
-                    if ( pb.UserId == cookieValueFromReq)
+                    if ((pb.UserId == cookieValueFromReq) && (pb.Taken))
                     {
-                        //float cost = ((DateTime.Now - pb.LastGetTime).Minutes/60) * pb.Price;
-                        payInfo.Taken = pb.Taken ? 1:0;
+                        payInfo.Taken = pb.Taken ? 1 : 0;
                         payInfo.UserId = cookieValueFromReq;
-                        payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours*60).ToString()} min":"-";
+                        //payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
+                        payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes).ToString()} min" : "-";
                         payInfo.Cost = (float)Math.Round(pb.Taken ? ((DateTime.Now - pb.LastGetTime).Minutes * pb.Price / 60F) : pb.Cost, 2);
+                        return View(payInfo);
                     }
                 }
             }
-            //return View(Json(payInfo, new JsonSerializerOptions { PropertyNamingPolicy = null }));
+
+
+
+            if ((device.TypeOfUse != TypeOfUse.FreeTake)||(!device.Activated))
+            {
+                payInfo.Taken = 0;
+                payInfo.UserId = "Not registred/enabled device";
+                //payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
+                payInfo.Time =  "-";
+                payInfo.Cost = 0;
+                return View(payInfo);         
+            }   
+
+
+            bool taken = false;
+            foreach (PowerBank pb in devicePbs)
+            {
+                if (pb.Taken && pb.UserId == cookieValueFromReq)
+                {
+                    taken = true;
+                }
+            }
+
+
+            if (!taken)
+            {
+                var maxCharge = 0;
+                uint maxChargedSlot = 0;
+                foreach (PowerBank pb in devicePbs)
+                {
+                    if (!pb.Taken && pb.Plugged)
+                    {
+                        if ((int)pb.ChargeLevel > maxCharge)
+                        {
+                            maxCharge = (int)pb.ChargeLevel;
+                            maxChargedSlot = pb.HostSlot;
+                        }
+                       
+                    }
+                }
+
+
+
+
+
+                var userId = userManager.GetUserId(base.User);
+                List<string> roles = new List<string>();
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    Guid guid = Guid.NewGuid();
+                    userId = guid.ToString();
+                }
+                else
+                {
+                    var user = await userManager.FindByIdAsync(userId);
+                    var rolesTask = await userManager.GetRolesAsync(user);
+
+                    roles = rolesTask.ToList();
+                }
+
+
+
+
+                if (maxChargedSlot == 0)
+                    RedirectToAction("User", "User");
+
+
+                //if (string.IsNullOrEmpty(userId))
+                //{
+                //    userId = "unknown";
+
+                //}
+                //else
+                //{
+                //    var user = await userManager.FindByIdAsync(userId);
+                //    var rolesTask = await userManager.GetRolesAsync(user);
+                //    roles = rolesTask.ToList();
+                //}
+                var pbId = scanDevices.PushPowerBank(device.DeviceName, maxChargedSlot, userId, roles);
+                PowerBank pbPush=null;
+                try
+                {
+                    pbPush=scanDevices.DevicesData.PowerBanks[scanDevices.DevicesData.PowerBanks.FindIndex(item => item.Id == pbId)];
+                }
+                catch
+                {
+
+                }
+                if ((pbId > 1000) && (pbPush!=null))
+                {
+                    
+                    //set the key value in Cookie 
+                    Set("KeyCharge911", userId, 1500);
+
+                    payInfo.Taken = pbPush.Taken ? 1 : 0;
+                    payInfo.UserId = userId;
+                    payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
+                    payInfo.Cost = (float)Math.Round(pbPush.Taken ? ((DateTime.Now - pbPush.LastGetTime).Minutes * pbPush.Price / 60F) : pbPush.Cost, 2);
+                    return View(payInfo);
+
+                };
+                Thread.Sleep(100);
+            }
+
+            payInfo.Cost = 0;
             return View(payInfo);
+
+
+
+            //if (device.TypeOfUse == TypeOfUse.FreeTake)
+            //{
+            //    Guid guid = Guid.NewGuid();
+            //    string UserId = guid.ToString();
+            //    var userId = userManager.GetUserId(base.User);
+            //    var userName = userManager.GetUserName(base.User);
+            //    List<string> roles = new List<string>();
+            //    if (string.IsNullOrEmpty(userId))
+            //    {
+            //        userId = "unknown";
+
+            //    }
+            //    else
+            //    {
+            //        var user = await userManager.FindByIdAsync(userId);
+            //        var rolesTask = await userManager.GetRolesAsync(user);
+            //        roles = rolesTask.ToList();
+            //    }
+
+            //    if (scanDevices.PushPowerBank(device.DeviceName, 0, userName, roles) == 200)
+            //    {
+            //        //set the key value in Cookie 
+            //        Set("KeyCharge911", UserId, 1500);
+            //        return StatusCode(200);
+            //    };
+
+            //    return StatusCode(503);
+            //}
+            //return StatusCode(403);
+
+
+
+
+            //PayInfo payInfo = new PayInfo();
+            //foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
+            //{
+            //    if (((int)pb.ChargeLevel > 3) && pb.Plugged && pb.IsOk)
+            //    {
+            //        payInfo.Available++;
+            //    }
+            //}
+            //if (!string.IsNullOrEmpty(cookieValueFromReq))
+            //{
+
+            //    foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
+            //    {
+
+
+            //        if (pb.UserId == cookieValueFromReq)
+            //        {
+            //            payInfo.Taken = pb.Taken ? 1 : 0;
+            //            payInfo.UserId = cookieValueFromReq;
+            //            payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
+            //            payInfo.Cost = (float)Math.Round(pb.Taken ? ((DateTime.Now - pb.LastGetTime).Minutes * pb.Price / 60F) : pb.Cost, 2);
+            //        }
+            //    }
+            //}
+
+            //return View(payInfo);
+
+
+
             //return View();
             //set the key value in Cookie  
             //Set("KeyCharge911", "Hello from cookie1", 1500);
@@ -135,9 +345,9 @@ namespace WebServer.Controllers.User
 
 
         [Microsoft.AspNetCore.Mvc.HttpPost]
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost]
-        public IActionResult PushPB([FromBody] PowerBankToPush powerBankToPush)
+        public async Task <IActionResult> PushPB([FromBody] PowerBankToPush powerBankToPush)
         {
 
 
@@ -160,7 +370,22 @@ namespace WebServer.Controllers.User
                 if (powerBankToPush == null || string.IsNullOrEmpty(powerBankToPush.DeviceName) || string.IsNullOrEmpty(powerBankToPush.PowerBankNum))
                     RedirectToAction("User", "User");
 
-                if (scanDevices.PushPowerBank(powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum), UserId) == 200)
+                var userId = userManager.GetUserId(base.User);
+                var userName = userManager.GetUserName(base.User);
+                List<string> roles = new List<string>();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    userId = "unknown";
+
+                }
+                else
+                {
+                    var user = await userManager.FindByIdAsync(userId);
+                    var rolesTask = await userManager.GetRolesAsync(user);
+                    roles = rolesTask.ToList();
+                }
+
+                if (scanDevices.PushPowerBank(powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum), userName,roles) == 200)
                 {
                     //set the key value in Cookie 
                     Set("KeyCharge911", UserId, 1500);

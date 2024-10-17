@@ -8,11 +8,9 @@ namespace WebServer.Models.Identity
 
         public string UserName { get; set; }
 
-        [DataType(DataType.Password)]
+        [DataType(DataType.Password)]   
         public string NewPassword { get; set; }
 
-        [DataType(DataType.Password)]
-        public string OldPassword { get; set; }
     }
 
 }

@@ -2,7 +2,7 @@
 <h2>Charging system login</h2>
 
 <form method="post" asp-controller="AppAccount" asp-action="AppAccountLogin"
-      asp-route-returnUrl="@Model.ReturnUrl">
+     asp-route-returnUrl="@Model.ReturnUrl" asp-route-newStationId="@Model.NewStationId">
     <div asp-validation-summary="ModelOnly"></div>
     <div>
         <label asp-for="UserName">User Name</label><br />
@@ -16,5 +16,18 @@
     </div>
     <div>
         <input class="btn btn-dark my-3" type="submit" value="Log in" />
+        <input class="btn btn-dark my-3" type="submit" onclick="location.href='@Url.Action("AppAccountLoginSMS", "AppAccount",new { NewStationId=Model.NewStationId })';return false;" value="Log in with SMS" </>
+        <input class="btn btn-dark my-3" type="submit" onclick="location.href='@Url.Action("AppCreateSelfAccount", "AppAccountManagement",new { NewStationId=Model.NewStationId })';return false;" value="Register new account" </>
+    </div>
+    <div>
+        @if (@Model.NewStationId > 0)
+        {
+            <a>
+                New station ID:
+            </a>
+            <a>
+                @Html.DisplayFor(Model => Model.NewStationId)
+            </a>
+        }
     </div>
 </form>

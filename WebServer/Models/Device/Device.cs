@@ -12,7 +12,7 @@ namespace WebServer.Models.Device
 
         public Device(string deviceName,ulong hostDeviceId, bool online)
         { 
-            Id = GetGUID(deviceName);
+            Id = GetGUID(deviceName);           
             DeviceName = deviceName;
             HostDeviceId = hostDeviceId;
             Online = online;
@@ -27,6 +27,9 @@ namespace WebServer.Models.Device
             Slots = 0;
             DevMainServer = "";
             DevResServer = "";
+            Registered = false;
+            CanRegister = false;
+            SimId = "";
             //PowerBanks = powerBanks;
             LastUpdate = DateTime.Now;
             ActivateTime = DateTime.MinValue;          
@@ -34,11 +37,11 @@ namespace WebServer.Models.Device
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
-        public ulong Id { get; set; }
+        public ulong Id { get { return GetGUID(DeviceName); } set { } }
         [NotMapped]
         public string Id_str 
         {
-            get { return Id.ToString(); }
+            get { return GetGUID(DeviceName).ToString(); }
         }
         public string DeviceName { get; set; }
         public ulong HostDeviceId { get; set; }
@@ -49,10 +52,16 @@ namespace WebServer.Models.Device
         }
         public bool Online { get; set; }
         public bool Activated { get; set; }
+        public bool CanRegister { get; set; }
+        public bool Registered { get; set; }
         public uint Slots {  get; set; }
+        public TypeOfUse TypeOfUse { get; set; }
         public string IP { get; set; } = "";
         public string DevMainServer { get; set; }
         public string DevResServer { get; set; }
+        public string Owners { get; set; }
+        public string SimId { get; set; }
+
         //public PowerBank[] PowerBanks { get; set; }
         public string Error { get; set; }
         public DateTime ActivateTime { get; set; }

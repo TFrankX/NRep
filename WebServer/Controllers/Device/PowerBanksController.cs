@@ -9,6 +9,8 @@ using WebServer.Models.Device;
 using WebServer.Models.Identity;
 using WebServer.Workers;
 using WebServer.Data;
+using System.Data;
+
 namespace WebServer.Controllers.Device
 {
 
@@ -27,29 +29,51 @@ namespace WebServer.Controllers.Device
         }
 
         [HttpGet]
-        [AllowAnonymous]
-        [Authorize(Roles = "admin, manager, viewer, support")]
+        [Authorize]
         public IActionResult PowerBanks()
         {
             return View();
         }
 
-        [Microsoft.AspNetCore.Mvc.HttpPost]
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost]
-        public IActionResult PushPB([FromBody] PowerBankToPush powerBankToPush)
+        public async Task<IActionResult> PushPB([FromBody] PowerBankToPush powerBankToPush)
         {
 
             if (powerBankToPush == null || string.IsNullOrEmpty(powerBankToPush.DeviceName) || string.IsNullOrEmpty(powerBankToPush.PowerBankNum))
                 RedirectToAction("Devices");
 
-            scanDevices.PushPowerBank( powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum),"");
+            var userId = userManager.GetUserId(User);
+            var userName = userManager.GetUserName(User);
+            List<string> roles=new List<string>();
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = "unknown";
+
+            }
+            else
+            {
+                var user = await userManager.FindByIdAsync(userId);
+                var rolesTask = await userManager.GetRolesAsync(user);
+                roles = rolesTask.ToList();
+            }
+
+            scanDevices.PushPowerBank( powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum), userName, roles);
             Thread.Sleep(100);
 
             //return RedirectToAction("ServerDetails", "ServerDetails");
             return RedirectToAction("Devices", "Devices");
         }
 
+        //[Authorize]
+        //[HttpPost]
+        //public IActionResult RemovePB([FromBody] PowerBankToPush powerBankToPush)
+        //{
+            
+        //}
+
+
+            [Authorize]
         public async Task<ActionResult> Refresh()
         {
             try
@@ -62,7 +86,30 @@ namespace WebServer.Controllers.Device
                 //var allowAdminManagerSupport = roles.Contains("support") || roles.Contains("admin") || roles.Contains("manager");
                 //var allowAdmin = roles.Contains("admin");
 
-                DevicesData serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
+
+                var userId = userManager.GetUserId(User);
+                var user = await userManager.FindByIdAsync(userId);
+                var roles = await userManager.GetRolesAsync(user);
+                DevicesData serversTable;
+
+                var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
+                if (allowAdminAndManager)
+                {
+                    serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
+                }
+                else
+                {
+                    var deviceList = scanDevices.DevicesData.Devices.Where(p => p.Owners == user.UserName).ToList<WebServer.Models.Device.Device>();
+                    var powerBankList = scanDevices.DevicesData.PowerBanks.Where(p => deviceList.Select(b => b.DeviceName).Contains(p.HostDeviceName)).ToList<WebServer.Models.Device.PowerBank>();
+                    //foreach (var device in deviceList)
+                    //{
+                    //    foreach
+                    //}
+                    serversTable = new DevicesData(null, deviceList, powerBankList);
+                }
+
+
+                //DevicesData serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
 
                 // serversTable.AddRange(new List<Server>
                 // {                                 

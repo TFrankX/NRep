@@ -1,0 +1,480 @@
+﻿<script src="~/jqwidgets/jqxbuttons.js"></script>
+<script src="~/jqwidgets/jqxscrollbar.js"></script>
+<script src="~/jqwidgets/jqxgrid.js"></script>
+<script src="~/jqwidgets/jqxgrid.edit.js"></script>
+<script src="~/jqwidgets/jqxgrid.columnsresize.js"></script>
+<script src="~/jqwidgets/jqxgrid.filter.js"></script>
+<script src="~/jqwidgets/jqxgrid.selection.js"></script>
+<script src="~/jqwidgets/jqxgrid.sort.js"></script>
+<script src="~/jqwidgets/jqxgrid.pager.js"></script>
+<script src="~/jqwidgets/jqxgrid.aggregates.js"></script>
+<script src="~/jqwidgets/jqxgrid.grouping.js"></script>
+<script src="~/jqwidgets/jqxmenu.js"></script>
+<script src="~/jqwidgets/jqxlistbox.js"></script>
+<script src="~/jqwidgets/jqxdropdownlist.js"></script>
+<script src="~/jqwidgets/jqxwindow.js"></script>
+<script src="~/jqwidgets/jqxcore.js"></script>
+<script src="~/jqwidgets/jqxdata.js"></script>
+<script src="~/jqwidgets/jqxdraw.js"></script>
+<script src="~/jqwidgets/jqxchart.core.js"></script>
+<script src="~/jqwidgets/jqxchart.rangeselector.js"></script>
+
+
+
+<meta name="keywords" content="jQuery Window, Window Widget, Window" />
+<link rel="stylesheet" href="~/jqwidgets/styles/jqx.base.css" type="text/css" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1" />
+
+@{
+    ViewData["Title"] = "";
+}
+
+@section scripts
+{
+    <script type="text/javascript">
+
+
+        function cellsrenderer(row, column, value) {
+            var jsonmod = source.localdata;
+            var backcolor = "#FFFFFF";
+            var text = value;
+
+            if ((jsonmod[row].Online !== null) && (jsonmod[row].Online == false)) {
+                backcolor = "#FFA07A";
+            }
+            var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
+
+
+
+            // if ((jsonmod[row].Connected !== null) && (jsonmod[row].Connected == false)) {
+
+            //     if (column === 'Host') {
+            //         // MergerColspan(row, column);
+            //         return divstartstyle +
+            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //             value +
+            //             "<br>" +
+            //             "</span>" +
+            //             "</div>";
+            //     }
+
+            //     if (column === 'Port') {
+            //         // MergerColspan(row, column);
+            //         return divstartstyle +
+            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //             value +
+            //             "<br>" +
+            //             "</span>" +
+            //             "</div>";
+            //     }
+            //     if (column === 'Error') {
+            //         // MergerColspan(row, column);
+            //         return divstartstyle +
+            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //             value +
+            //             "<br>" +
+            //             "</span>" +
+            //             "</div>";
+            //     }
+            //     if (column === 'ReconnectTime') {
+            //         // MergerColspan(row, column);
+            //         return divstartstyle +
+            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //             value +
+            //             "<br>" +
+            //             "</span>" +
+            //             "</div>";
+            //     }
+            //     if (column === 'ConnectTime') {
+            //         // MergerColspan(row, column);
+            //         return divstartstyle +
+            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //             value +
+            //             "<br>" +
+            //             "</span>" +
+            //             "</div>";
+            //     }
+            //     if (column === 'DisconnectTime') {
+            //         // MergerColspan(row, column);
+            //         return divstartstyle +
+            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //             value +
+            //             "<br>" +
+            //             "</span>" +
+            //             "</div>";
+            //     }
+
+
+            //     return divstartstyle;
+            // }
+
+
+            //alert(column);
+            if (column === 'ActionTime') {
+
+                function checkZero(data) {
+                    if (data < 10) {
+                        data = "0" + data;
+                    }
+                    return data;
+                }
+                var year = value.getFullYear();
+                var month = checkZero(value.getMonth() + 1);
+                var day = checkZero(value.getDate());
+                var hour = checkZero(value.getHours());
+                var min = checkZero(value.getMinutes());
+                var sec = checkZero(value.getSeconds());
+
+                var svalue = year + '/' + month + '/' + day + " " + hour + ":" + min + ":" + sec;
+
+
+
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    svalue +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ActionCode') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'UserId') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ActionServerId') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ActionServerId') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ActionStationId') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ActionPowerBankId') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ActionPowerBankSlot') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            } else if (column === 'ActionText') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    value +
+                    "</span>" +
+                    "</div>";
+            }
+            return divstartstyle +
+                "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                value +
+                "</span>" +
+                "</div>";
+        }
+
+
+        function refresh() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Refresh", "Actions")',
+                contentType: 'application/json',
+                data: JSON.stringify({ cnt: 0 }),
+                success: function(Data) {
+                    var strData = JSON.stringify(Data,
+                        function(key, value) {
+                            if (value && typeof value === 'object') {
+                                var replacement = {};
+                                for (var k in value) {
+                                    if (Object.hasOwnProperty.call(value, k)) {
+                                        replacement[k && k.charAt(0).toUpperCase() + k.substring(1)] = value[k];
+                                    }
+                                }
+                                return replacement;
+                            }
+                            return value;
+                        });
+                    source.localdata = Data;
+                    if (!newdata) {
+                        $("#jqxgrid").jqxGrid({ source: source });
+                        $('#jqxgrid').jqxGrid('sortby', 'Time', 'desc');
+                        newdata = true;
+                    }
+
+                    //
+                    //$("#jqxgrid").trigger('reloadGrid');
+                    $("#jqxgrid").jqxGrid('refresh');
+                    $("#jqxgrid").jqxGrid('updatebounddata', 'sort');
+                    //$('#jqxgrid').jqxGrid('sortby', 'Time', 'desc');
+                    //$("#jqxgrid").jqxGrid('updatebounddata', 'filter');
+                    //alert('x');
+                }
+            });
+        }
+
+
+        function sleep(milliseconds) {
+            const date = Date.now();
+            let currentDate = null;
+            do {
+                currentDate = Date.now();
+            } while (currentDate - date < milliseconds);
+        }
+
+
+        var minDateVal = null;
+        var maxDateVal = null;
+        var serverData;
+        var newdata = false;
+        var prevChartData = "";
+        var grid = $("#jqxgrid"),
+            intervalId = setInterval(refresh, 3000);
+
+        var source =
+        {
+            datatype: "json",
+            //sortcolumn: 'ActionTime',
+            //sortdirection: 'desc',
+            datafields: [
+//                { name: 'ActionTime', type: 'date', format: "yyyy-MM-ddTHH:mm:ss.fff"},
+                { name: 'ActionTime', type: 'date' },
+                { name: 'ActionCode', type: 'numeric' },
+                { name: 'UserId', type: 'string' },
+                { name: 'ActionServerId_Str', type: 'string' },
+                { name: 'ActionStationId_Str', type: 'string' },
+                { name: 'ActionPowerBankId_Str', type: 'string' },
+                { name: 'ActionPowerBankSlot', type: 'string' },
+                { name: 'ActionText', type: 'string' }
+            ]
+
+        };
+
+
+        var dataAdapter = new $.jqx.dataAdapter(source);
+
+
+        $(document).ready(function() {
+
+
+            $("#jqxgrid").jqxGrid(
+                {
+
+                    //width: '100%',
+                    //source: dataAdapterAdvocate,
+                    ////theme: 'energyblue',
+                    //sortable: true,
+                    //filterable: true,
+                    ////showfilterrow: true,
+                    ////autorowheight: true,
+                    //rowsheight: 48,
+                    //enablebrowserselection: true,
+                    //selectionmode: 'multiplecellsadvanced',
+                    ////autorowheight: true,
+                    ////autoheight: true,
+                    ////pageable: true,
+                    //height: 720,
+                    //columnsresize: true,
+
+
+                    width: '100%',
+                    source: dataAdapter,
+                    //theme: 'energyblue',
+                    sortable: true,
+                    filterable: true,
+                    //showfilterrow: true,
+                    //autorowheight: true,
+                    rowsheight: 48,
+                    enablebrowserselection: true,
+                    selectionmode: 'multiplecellsadvanced',
+                    //autorowheight: true,
+                    //autoheight: true,
+                    //pageable: false,
+                    height: 720,
+                    columnsresize: true,
+                    columns: [
+                        { text: "Time", datafield: "ActionTime", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Action Code", datafield: "ActionCode", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "User", datafield: "UserId", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Server Id", datafield: "ActionServerId_Str", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Station Id", datafield: "ActionStationId_Str", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "PowerBank Id", datafield: "ActionPowerBankId_Str", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "PowerBank Slot", datafield: "ActionPowerBankSlot", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "ActionText", datafield: "ActionText", width: "55%", cellsrenderer: cellsrenderer },
+                     ]
+                });
+            refresh();
+            _createWindow();
+            $("#jqxWidget").css('display', 'block');
+
+
+
+        });
+
+
+        function addElement(parentId, elementTag, elementId, html) {
+            // Adds an element to the document
+            var p = document.getElementById(parentId);
+            var newElement = document.createElement(elementTag);
+            newElement.setAttribute('id', elementId);
+            newElement.innerHTML = html;
+            p.appendChild(newElement);
+        }
+
+        function removeElement(elementId) {
+            // Removes an element from the document
+            var element = document.getElementById(elementId);
+            element.parentNode.removeChild(element);
+        }
+
+        function _createWindow() {
+            var jqxWidget = $('#jqxWidget');
+            var offset = jqxWidget.offset();
+            $('#chartWindow').jqxWindow({
+                position: { x: offset.left + 50, y: offset.top + 50 },
+                showCollapseButton: true,
+                maxHeight: 600,
+                maxWidth: 900,
+                minHeight: 200,
+                minWidth: 400,
+                height: 600,
+                width: 900,
+                initContent: function() {
+                    //$('#tab').jqxTabs({ height: '100%', width:  '100%' });
+                    $('#chartWindow').jqxWindow('focus');
+                },
+                autoOpen: false
+            });
+
+
+            // $('#chartWindow').jqxWindow('close');
+        };
+
+    </script>
+
+}
+
+
+
+<body class="default">
+    <div id="jqxWidget">
+        <div style="display: none; width: 100%; height: 650px; margin-top: 50px;" id="mainWinContainer">
+            <div id="chartWindow">
+
+                <div id="windowHeader">
+                    <span>
+                        Chart
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+
+
+<style>
+    .disable {
+        pointer-events: none;
+        background: #ccc;
+    }
+
+    .yellow {
+        background: orange;
+        border-color: orange;
+    }
+
+    .redCircle {
+        width: 24px;
+        height: 24px;
+        background: red;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .greenCircle {
+        width: 24px;
+        height: 24px;
+        background: green;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .grayCircle {
+        width: 24px;
+        height: 24px;
+        background: gray;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Preloader */
+
+    #p_prldr {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: #0066FF;
+        z-index: 30;
+    }
+
+    .contpre small {
+        font-size: 20px;
+        line-height: 24px;
+    }
+
+    .contpre {
+        width: 250px;
+        height: 100px;
+        position: absolute;
+        left: 50%;
+        top: 48%;
+        margin-left: -125px;
+        margin-top: -75px;
+        color: #fff;
+        font-size: 32px;
+        text-align: center;
+        line-height: 36px;
+    }
+
+    #p_prldr .svg_anm {
+        position: absolute;
+        width: 41px;
+        height: 41px;
+        background: url(/images/tail-spin.svg) center center no-repeat;
+        background-size: 41px;
+        margin: -16px 0 0 -16px;
+    }
+</style>
+
+
+
+<div class="text-center">
+    <h2>Actions log</h2>
+</div>
+<div id="jqxgrid"></div>
+
+

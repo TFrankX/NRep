@@ -14,5 +14,6 @@ namespace WebServer.Models.Identity
         public bool RememberMe { get; set; }
 
         public string? ReturnUrl { get; set; }
+        public ulong NewStationId { get; set; }
     }
 }

@@ -39,7 +39,8 @@ namespace WebServer.Models.Device
         public event dReturnThePowerBank EvReturnThePowerBank;
         public event dReportCabinetLogin EvReportCabinetLogin;
         public event dSubSniffer EvSubSniffer;
-        public Server(string host, uint port,string login,string password, uint reconnectTime)
+        
+        public Server(string host, uint port,string login,string password, uint reconnectTime, string certCA, string certCli,string certPass)
         {
             
             Host= host;
@@ -59,7 +60,12 @@ namespace WebServer.Models.Device
             DevicesCount = 0;
             NotAuthDevicesCount = 0;
             OnlineTimeOut = 20;
+            CertCA = certCA;
+            CertCli = certCli;
+            CertPass = certPass;
         }
+
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public ulong Id { get; set; }
@@ -67,10 +73,16 @@ namespace WebServer.Models.Device
         [NotMapped]
         public bool RecentlyConnect { get; set; }
         [NotMapped]
-        public string Id_str
+        public string Id_str        
         {
             get { return Id.ToString(); }
         }
+        public string CertCA { get; set; }
+        public string CertCli { get; set; }
+        public string CertPass { get; set; }
+
+
+
         public string Host { get; set; }
         public uint Port { get; set; }
         public string Login { get; set; }
@@ -86,6 +98,7 @@ namespace WebServer.Models.Device
         public DateTime DisconnectTime { get; set; }
         public  DateTime LastUpdate { get; private set; }
         public bool Connected { get; set; }
+
 
         [NotMapped]
         public bool Init { get; set; }
@@ -116,7 +129,7 @@ namespace WebServer.Models.Device
             servermqtt.EvDisconnected += Device_EvDisconnected;
             servermqtt.EvConnectError -= Device_EvConnectError;
             servermqtt.EvConnectError += Device_EvConnectError;
-            servermqtt.Connect(this.Host, this.Port, this.Login, this.Password);
+            servermqtt.Connect(this.Host, this.Port, this.Login, this.Password,this.CertCA,this.CertCli,this.CertPass);
             //deviceSub.Connect(this.Host, this.Port, this.Login, this.Password);
         }
 
@@ -130,12 +143,21 @@ namespace WebServer.Models.Device
             }
         }
 
+        public void SubScriptLogin()
+        {
+            servermqtt.EvReportCabinetLogin -= Device_EvReportCabinetLogin;
+            servermqtt.EvReportCabinetLogin += Device_EvReportCabinetLogin;
+            servermqtt.SubcribeLogin();
+        }
+
         public void SubScript(string dev)
         {
             //device.EvPushPowerBank += Device_EvPushPowerBank;
             //device.EvPushPowerBankForce += Device_EvPushPowerBankForce;
             servermqtt.EvQueryTheInventory -= Device_EvQueryTheInventory;
             servermqtt.EvQueryTheInventory += Device_EvQueryTheInventory;
+            //servermqtt.EvReportCabinetLogin -= Device_EvReportCabinetLogin;
+            //servermqtt.EvReportCabinetLogin += Device_EvReportCabinetLogin;
             //device.EvReportCabinetLogin += Device_EvReportCabinetLogin;
             servermqtt.EvReturnThePowerBank -= Device_EvReturnThePowerBank;
             servermqtt.EvReturnThePowerBank += Device_EvReturnThePowerBank;
@@ -149,6 +171,11 @@ namespace WebServer.Models.Device
         private void Device_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
         {
             EvQueryTheInventory?.Invoke(this, topic, data);
+        }
+
+        private void Device_EvReportCabinetLogin (object sender, string topic, RptReportCabinetLogin data)
+        {
+            EvReportCabinetLogin?.Invoke(this, topic, data);
         }
 
         private void Device_EvReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data)

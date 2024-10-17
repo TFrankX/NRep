@@ -11,5 +11,12 @@
         ChargeLev100 = 6,
     }
 
+    public enum TypeOfUse : uint
+    {
+        FreeTake = 1,
+        OwnerAuth = 2,
+        PayByCard = 3,        
+    }
+
 
 }

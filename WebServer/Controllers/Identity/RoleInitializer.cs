@@ -28,7 +28,10 @@ namespace WebServer.Controllers.Identity
             {
                 await roleManager.CreateAsync(new IdentityRole("viewer"));
             }
-
+            if (await roleManager.FindByNameAsync("operator") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("operator"));
+            }
             if (await roleManager.FindByNameAsync("guest") == null)
             {
                 await roleManager.CreateAsync(new IdentityRole("guest"));

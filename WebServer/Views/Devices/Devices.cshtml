@@ -43,10 +43,91 @@
                      PowerBankNum: PBNumber
                  }),
                  success: function () {
-                    location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                  // location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
                  }
              });
-         }
+        }
+
+
+        function CanReg(DeviceId) {
+             $.ajax({
+                 type: "POST",
+                 url: '@Url.Action("CanReg", "Devices")',
+                 contentType: 'application/json',
+                 data: JSON.stringify({
+                     DeviceId: DeviceId,
+                 }),
+                 success: function () {
+                  //  location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                 }
+             });
+        }
+        function Register(DeviceId) {
+             $.ajax({
+                 type: "POST",
+                 url: '@Url.Action("Register", "Devices")',
+                 contentType: 'application/json',
+                 data: JSON.stringify({
+                     DeviceId: DeviceId,
+                 }),
+                 success: function () {
+                  //  location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                 }
+             });
+        }
+        function Activate(DeviceId) {
+             $.ajax({
+                 type: "POST",
+                 url: '@Url.Action("Activate", "Devices")',
+                 contentType: 'application/json',
+                 data: JSON.stringify({
+                     DeviceId: DeviceId,
+                 }),
+                 success: function () {
+                  //  location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                 }
+             });
+        }
+        function SetOwner(DeviceId,Owner) {
+             $.ajax({
+                 type: "POST",
+                 url: '@Url.Action("SetOwner", "Devices")',
+                 contentType: 'application/json',
+                 data: JSON.stringify({
+                     DeviceId: DeviceId,
+                     Owner: Owner,
+                 }),
+                 success: function () {
+                  //  location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                 }
+             });
+        }
+
+
+        function SetTypeOfUse(DeviceId,row,OldTypeOfUse) {
+        //function SetTypeOfUse(SelObj) {
+            var el = document.getElementById("TypeOfUse" + row);
+            var TypeOfUse = el.options[el.selectedIndex].value;
+            console.log('TypeOfUse:' + TypeOfUse +' OldTypeOfUse:'+OldTypeOfUse);
+            
+
+            if (TypeOfUse !== OldTypeOfUse) {
+                source.localdata[row].TypeOfUse = TypeOfUse
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("SetTypeOfUse", "Devices")',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        DeviceId: DeviceId,
+                        TypeOfUse: TypeOfUse,
+                    }),
+                    success: function () {
+                        //  location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
+                    }
+                });
+                sleep(1000);
+            }
+        }
         function GoToDetails(serverIP) {
 
             if (serverIP == null)
@@ -148,17 +229,32 @@
 
         }
 
+        function StopRender() { 
+            noRender = 1;
+        }
 
         function cellsrenderer(row, column, value) {
+            if (stoprefresh) { return }
+            if (noRender == row) {return }
             var jsonmod = source.localdata;
             var backcolor = "#FFFFFF";
             var text = value;
 
+            if ((jsonmod[row].Activated !== null) && (jsonmod[row].Activated == false)) {
+                backcolor = "#FFFF99";
+            }
+
+
             if ((jsonmod[row].Online !== null) && (jsonmod[row].Online == false)) {
                 backcolor = "#FFA07A";
+
             }
+
+
+
+
             var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
-           
+
 
 
             // if ((jsonmod[row].Connected !== null) && (jsonmod[row].Connected == false)) {
@@ -252,22 +348,22 @@
             } else if (column === 'Slots') {
 
                 if (value & 1) {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' class='greenCircle'; title=' 1 '>   1</span>";
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "1" + "');  title=' 1 '>   1</span>";
                 } else {
                     text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' class='grayCircle'; title=' 1 '>   1</span>";
                 }
                 if (value & 2) {
-                    text = text+"<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='greenCircle'; title=' 2 '>   2</span>";
+                    text = text + "<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "2" + "'); title=' 2 '>   2</span>";
                 } else {
                     text = text+"<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='grayCircle'; title=' 2 '>   2</span>";
                 }
                 if (value & 4) {
-                    text = text + "<span style='margin-top: 5px; margin-left: 73px; position: absolute;' class='greenCircle'; title=' 3 '>   3</span>";
+                    text = text + "<span style='margin-top: 5px; margin-left: 73px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "3" + "'); title=' 3 '>   3</span>";
                 } else {
                     text = text + "<span style='margin-top: 5px; margin-left: 73px; position: absolute;' class='grayCircle'; title=' 3 '>   3</span>";
                 }
                 if (value & 8) {
-                    text = text + "<span style='margin-top: 5px; margin-left: 103px; position: absolute;' class='greenCircle'; title=' 4 '>   4</span>";
+                    text = text + "<span style='margin-top: 5px; margin-left: 103px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "4" + "'); title=' 4 '>   4</span>";
                 } else {
                     text = text + "<span style='margin-top: 5px; margin-left: 103px; position: absolute;' class='grayCircle'; title=' 4 '>   4</span>";
                 }
@@ -276,13 +372,54 @@
                     text +
                     "</span>" +
                     "</div>";
-            } else if (column === 'LastOnlineTime') {
+
+
+            } else if (column === 'Activated') {
+
+
+                if (value) {
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='greenCircle'; onclick=Activate('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
+                } else {
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='grayCircle'; onclick=Activate('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
+                }
+
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
+                    text +
                     "</span>" +
                     "</div>";
-            } else if (column === 'Connected') {
+
+            } else if (column === 'CanRegister') {
+
+
+                if (value) {
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='greenCircle'; onclick=CanReg('" + jsonmod[row].Id_str + "');  title='  '>   </span>";
+                } else {
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='grayCircle'; onclick=CanReg('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
+                }
+
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    text +
+                    "</span>" +
+                    "</div>";
+
+            } else if (column === 'Registered') {
+
+
+                if (value) {
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='greenCircle'; onclick=Register('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
+                } else {
+                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='grayCircle'; onclick=Register('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
+                }
+
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    text +
+                    "</span>" +
+                    "</div>";
+
+            } else if (column === 'LastOnlineTime') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
                     value +
@@ -293,13 +430,31 @@
                      "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
                      "<input style='height:30px;' type='button' " +
                      "class='btn btn-success btn-lg btn-block btn-sm' " +
-                    "onclick=PushPB('"  + jsonmod[row].DeviceName + "','" +"0" +
-                      "'); " +
+                     "onclick=PushPB('"  + jsonmod[row].DeviceName + "','" +"0" + "'); " +
                      "href='javascript: void (0);' value='" +
-                     "Push PowerBank" +
+                     "Push PB" +
                      "' /> " +
                      "</span>" +
                      "</div>";
+            } else if (column === 'TypeOfUse') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    "<select class='selectD' id='TypeOfUse" + row + "' onchange=\"SetTypeOfUse('" + jsonmod[row].Id_str + "','" + row + "','" + value + "')\" >" +
+
+                    "<option value='0' " + ((value == 0) ? "selected='selected'" : "") + " >-----</option>" +
+                    "<option value='1'" + ((value == 1) ? "selected='selected'" : "") + " >Free Take</option>" +
+                    "<option value='2'" + ((value == 2) ? "selected='selected'" : "") + " >Owner Auth</option>" +
+                    "<option value='3'" + ((value == 3) ? "selected='selected'" : "") + " >Pay By Card</option>" +
+                    "</select >" +
+                    "</span>" +
+                    "</div>";
+
+            } else if (column === 'Owners') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                    "<input type='text' value='1000' id='Owner" + row + "' onfocus=\"StopRender()\" >" +                    
+                    "</span>" +
+                    "</div>";
             }
             return divstartstyle +
                 "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
@@ -355,6 +510,16 @@
         }
 
 
+        //function pauserefresh(milliseconds) {
+        //    const date = Date.now();
+        //    let currentDate = null;
+        //    do {
+        //        currentDate = Date.now();
+        //    } while (currentDate - date < milliseconds);
+        //}
+
+        var stoprefresh = false;
+        var noRender = -1;
         var minDateVal = null;
         var maxDateVal = null;
         var serverData;
@@ -372,6 +537,12 @@
                 { name: 'HostDeviceId_str', type: 'string' },
                 { name: 'Online', type: 'boolean' },
                 { name: 'Slots', type: 'number' },
+                { name: 'Activated', type: 'boolean' },
+                { name: 'CanRegister', type: 'boolean' },
+                { name: 'Registered', type: 'boolean' },
+                { name: 'TypeOfUse', type: 'number' },
+                { name: 'Owners', type: 'string' },
+                { name: 'SimId', type: 'string' },
                 { name: 'LastOnlineTime', type: 'date' },
             ]
 
@@ -395,6 +566,8 @@
                     //autorowheight: true,
                     //rowsheight: 48,
                     autorowheight: true,
+                    enablebrowserselection: true,
+                    selectionmode: 'multiplecellsadvanced',   
                     //autoheight: true,
                     pageable: true,
                     height: 720,
@@ -405,8 +578,15 @@
                         { text: "Host Device Id", datafield: "HostDeviceId_str", width: "10%", cellsrenderer: cellsrenderer },
                         { text: "Online", datafield: "Online", width: "5%", cellsrenderer: cellsrenderer },
                         { text: "Slots", datafield: "Slots", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Activated", datafield: "Activated", width: "3%", cellsrenderer: cellsrenderer },
+                        { text: "CanRegister", datafield: "CanRegister", width: "3%", cellsrenderer: cellsrenderer },
+                        { text: "Registered", datafield: "Registered", width: "3%", cellsrenderer: cellsrenderer },
+                        { text: "TypeOfUse", datafield: "TypeOfUse", width: "3%", cellsrenderer: cellsrenderer },
+                        { text: "Owners", datafield: "Owners", width: "3%", cellsrenderer: cellsrenderer },
+                        { text: "SimId", datafield: "SimId", width: "3%", cellsrenderer: cellsrenderer },
                         { text: "Last connected time", datafield: "LastOnlineTime", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Push PB", datafield: "PushPB", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Push PB", datafield: "PushPB", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Can Reg", datafield: "CanReg", width: "5%", cellsrenderer: cellsrenderer },
                      ]
                 });
             refresh();
@@ -480,6 +660,12 @@
 
 
     <style>
+
+        .selectD {
+            font-size: 0.9rem;
+            padding: 2px 5px;
+        }
+
         .disable {
             pointer-events: none;
             background: #ccc;

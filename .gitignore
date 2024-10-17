@@ -436,6 +436,7 @@ webdockmon/internal-nlog.txt
 ## Database
 *.db-shm
 *.db-wal
+*.db
 
 ## Log
 internal-nlog.txt

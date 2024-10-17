@@ -11,11 +11,12 @@ namespace WebServer.Models.Device
         public PowerBank(ulong id, string hostDeviceName, uint hostSlot, bool locked, bool plugged, bool charging, PowerBankChargeLevel chargeLevel)
         {
             Id = id;
-            //HostDeviceId = hostDeviceId;
-            HostDeviceName= hostDeviceName;
+            HostDeviceId = GetGUID(hostDeviceName);
+            HostDeviceName = hostDeviceName;
             HostSlot = hostSlot;
             Locked = locked;
             Plugged = plugged;
+            Restricted = false;
             Charging = charging;
             ChargeLevel = chargeLevel;
             LastGetTime = DateTime.MinValue;
@@ -23,7 +24,7 @@ namespace WebServer.Models.Device
             ClientTime = DateTimeOffset.MinValue;
             Price = 0;
             LastUpdate = DateTime.Now;
-            UserId = "0";
+            UserId = "";
         }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
@@ -36,16 +37,19 @@ namespace WebServer.Models.Device
 
         //public ulong HostDeviceId { get; set; }
         public string HostDeviceName { get; set; }
-        //[NotMapped]
-        //public string HostDeviceId_str 
-        //{
-        //    get { return HostDeviceName.ToString(); }
-        //}
+        [NotMapped]
+        public ulong HostDeviceId { get { return GetGUID(HostDeviceName); } set { } }
+        [NotMapped]
+        public string HostDeviceId_str 
+        {
+            get { return GetGUID(HostDeviceName).ToString();}           
+        }
         public uint HostSlot { get; set; }
         public bool Locked { get; set; }
         public bool Plugged { get; set; }
         public bool Charging { get; set; }
         public bool IsOk { get; set; }
+        public bool Restricted { get; set; }
         public PowerBankChargeLevel ChargeLevel { get; set; }
         public DateTime LastGetTime { get; set; }
         public DateTime LastPutTime { get; set; }        

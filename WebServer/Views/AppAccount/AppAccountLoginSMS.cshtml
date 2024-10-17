@@ -1,0 +1,29 @@
+﻿@model AppAccountsLoginSMS
+<h2>Charging system login</h2>
+
+<form method="post" asp-controller="AppAccount" asp-action="SendCodeLogin"
+     asp-route-returnUrl="@Model.ReturnUrl" asp-route-newStationId="@Model.NewStationId">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <label asp-for="PhoneNumber">Phone number</label><br />
+        <input asp-for="PhoneNumber" />
+        <span asp-validation-for="PhoneNumber"></span>
+    </div>
+
+    <div>
+        <input class="btn btn-dark my-3" type="submit" value="Log in with SMS" />
+        <input class="btn btn-dark my-3" type="submit" onclick="location.href='@Url.Action("AppAccountLogin", "AppAccount",new { NewStationId=Model.NewStationId })';return false;" value="Log in with with User/Password" </>
+        <a class="btn btn-dark my-3" asp-controller="AppAccountManagement" asp-action="AppCreateSelfAccount">Register new account</a>
+
+    </div>
+    <div>
+        @if (@Model.NewStationId > 0)
+        {
+            <a>
+                New station ID:
+            </a>
+            <a>
+                @Html.DisplayFor(Model => Model.NewStationId)
+            </a>
+        }
+</form>

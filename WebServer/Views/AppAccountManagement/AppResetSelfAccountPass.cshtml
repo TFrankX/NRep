@@ -1,0 +1,25 @@
+﻿@model AppAccountSelfPassReset
+@{
+    ViewBag.Title = "Reset password account";
+}
+
+<div class="text-center"><h2>Reset password account</h2></div>
+
+<form asp-action="SendCodePassReset" asp-controller="AppAccountManagement">
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="UserName" />
+    <input type="hidden" asp-for="PhoneNumber" />
+
+    <div class="form-group">
+        <label asp-for="NewPassword" class="control-label">New Password</label>
+        <input type="password" asp-for="NewPassword" class="form-control" />
+    </div>
+    <div class="text-center">
+        <div class="btn-group" role="group">
+            <input class="btn btn-dark mr-2" type="submit" Value="Save">
+            <a asp-action="AppEditSelfAccountData" asp-controller="AppAccountManagement" class="btn btn-dark" role="button">Cancel</a>
+        </div>
+    </div>
+</form>

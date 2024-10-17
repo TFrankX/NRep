@@ -8,7 +8,14 @@ namespace WebServer.Models.Identity
         public AppIdentityContext(DbContextOptions<AppIdentityContext> options)
             : base(options)
         {
-            Database.EnsureCreated();
+            try
+            {
+                Database.EnsureCreated();
+            }
+            catch
+            {
+
+            }
         }
     }
 }

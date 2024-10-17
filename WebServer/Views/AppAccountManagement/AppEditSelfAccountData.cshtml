@@ -1,0 +1,63 @@
+﻿@model AppAccountDataEdit
+@{
+    ViewBag.Title = "Edit data account";
+}
+
+
+@section scripts
+{
+
+    <script type="text/javascript">
+
+
+        function Ack() {
+
+            if (confirm("Do you want to reset password with SMS?")) {
+                window.location.href = "/AppAccountManagement/AppResetSelfAccountPass";                        
+            } 
+        }
+
+
+    </script>
+}
+
+<div class="text-center"><h2>Edit data account</h2></div>
+
+<form asp-action="AppEditSelfAccountData" asp-controller="AppAccountManagement">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="form-group">
+        <input type="hidden" asp-for="Id" />
+    </div>
+    <div class="form-group">
+        <label asp-for="UserName" class="control-label">User name</label>
+        <input type="text" asp-for="UserName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label class="control-label">Phone number</label>
+        <input type="text" asp-for="PhoneNumber" class="form-control" readonly />
+    </div>
+    <br>
+    <br>
+    <input asp-action="AppEditSelfAccountPass" asp-controller="AppAccountManagement" type='submit' class="btn btn-dark mr-2" value="Edit Password" />
+
+
+    @*<input asp-action="SendCodePassReset" asp-controller="AppAccountManagement" type='submit' class="btn btn-dark mr-2" value="Reset Password" />*@
+    @*<input type='submit' class="btn btn-dark mr-2" onclick=Ask() value="Reset Password" />
+        @*<a class="btn btn-dark mr-2" onclick="Ack()">Reset Password</a>*@
+
+        <input type="button" role="button" class="btn btn-dark mr-2" onclick="Ack()" value="Reset Password" />
+
+    <div class="text-center">
+        <div class="btn-group" role="group">
+            <input class="btn btn-dark mr-2" type="submit" Value="Save">
+            <a asp-action="Devices" asp-controller="Devices" class="btn btn-dark" role="button">Cancel</a>
+        </div>
+    </div>
+</form>
+
+
+
+<!--<form method="get" action="/AppAccountManagement/AppEditAccountPass">-->
+@*<input type='hidden' name='Id' value='" + UserId + "' />" +*@
+<!--<input class='btn btn-dark mr-2' type='submit' value='Edit Password' />
+</form>-->
