@@ -4,16 +4,10 @@
 <div class="navbar-nav">
     @if (User.Identity.IsAuthenticated)
     {
-
-
+        
         <div class="nav-item">
             <a class="nav-link btn btn-dark text-light" title="Registered user">User: @User.Identity.Name</a>
         </div>
-
-
-
-
-
         <div class="nav-item">
             <form class="form-inline" asp-controller="AppAccount" asp-action="LogOff" asp-route-returnUrl="@Url.Action("AppAccountLogin", "AppAccount")">
                 <button type="submit" class="nav-link btn btn-dark text-light">Logout</button>
@@ -25,12 +19,12 @@
     }
     else
     {
-        @*<div class="nav-item">
-                <a class="nav-link btn btn-dark text-light" asp-controller="AppAccount" asp-action="AppAccountRegister">Register</a>
-            </div>*@
-        <div class="nav-item">
-            <a class="nav-link btn btn-dark text-light" asp-controller="AppAccount" asp-action="AppAccountLogin">Login</a>
-        </div>
+    @*<div class="nav-item">
+        <a class="nav-link btn btn-dark text-light" asp-controller="AppAccount" asp-action="AppAccountRegister">Register</a>
+    </div>*@
+    <div class="nav-item">
+        <a class="nav-link btn btn-dark text-light" asp-controller="AppAccount" asp-action="AppAccountLogin">Login</a>
+    </div>
     }
 
 </div>

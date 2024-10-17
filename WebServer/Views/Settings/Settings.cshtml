@@ -1,0 +1,58 @@
+﻿<div class="row">
+    <div class="col-md-3">
+        <div class="" id="accordion">
+            <!--<div class="btn-group-vertical btn-block">-->
+            <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark btn-block" role="button">Настройки доступа</a>
+
+            <a id="chevrone1" class="btn btn-dark btn-block text-light" data-toggle="collapse" data-parent="#accordion" onclick='panelButtonPress("1")' href="#collapse1">
+                Начало работы
+                <span><em id="icon1" class="fa fa-chevron-down"></em></span>
+            </a>
+            <div id="collapse1" class="collapse">
+                <div class="btn-group-vertical btn-block">
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light">1</a>
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light">Cancel2</a>
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light">Cancel3</a>
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light">Cancel4</a>
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light">Cancel5</a>
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light">Cancel6</a>
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light">Cancel7</a>
+                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light">Cancel8</a>
+                </div>
+            </div>
+            <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark btn-block">Главная</a>
+            <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark btn-block">Главная</a>
+
+            <a id="chevrone2" class="btn btn-dark btn-block text-light" data-toggle="collapse" data-parent="#accordion" onclick='panelButtonPress("2")' href="#collapse2">
+                Начало работы
+                <span><em id="icon2" class="fa fa-chevron-down"></em></span>
+            </a>
+            <div id="collapse2" class="collapse">
+                <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light btn-block" role="button">>Cancel1</a>
+                <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-light btn-block" role="button">>Cancel2</a>
+            </div>
+            <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark btn-block">Главная</a>
+        </div>
+        <!--</div>-->
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+
+    </div>
+</div>
+
+<script>function panelButtonPress(panelNumber) {
+        var panelId = "#chevrone" + panelNumber;
+        var iconId = "icon" + panelNumber;
+        if (document.getElementById(iconId).className === "fa fa-chevron-down") {
+            $(panelId + " i").removeClass("fa fa-chevron-down").addClass("fa fa-chevron-right");
+            $(panelId).button('refresh');
+
+        } else {
+            $(panelId + " i").removeClass("fa fa-chevron-right").addClass("fa fa-chevron-down").button('refresh');
+            $(panelId).button('refresh');
+
+        }
+    }</script>

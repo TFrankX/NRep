@@ -50,7 +50,7 @@ namespace WebServer.Controllers.Identity
        
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult AppAccountLogin(string returnUrl = null)
+        public IActionResult AppAccountLogin(string? returnUrl = null)
         {
             return View(new AppAccountsLogin { ReturnUrl = returnUrl });
         }
@@ -59,6 +59,7 @@ namespace WebServer.Controllers.Identity
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AppAccountLogin(AppAccountsLogin model)
         {
+            var errors = ModelState.Values.SelectMany(v => v.Errors);
             if (ModelState.IsValid)
             {
                 var result =

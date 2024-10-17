@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -16,17 +18,21 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom box-shadow mb-auto">
             <div class="container-fluid">
-@*                <a class="navbar-brand" asp-area="" asp-controller="Statistic" asp-action="Statistic">Main</a>*@
-                <a class="nav-link text-light" asp-area="" asp-controller="Servers" asp-action="Servers">Servers</a>
+                @*                <a class="navbar-brand" asp-area="" asp-controller="Statistic" asp-action="Statistic">Main</a>*@
+
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-md-inline-flex flex-md-row-reverse">
-                    <partial name="_LoginPartial" />
+                @if (User.Identity.IsAuthenticated)
+                    {
+
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="User" asp-action="User">User</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Servers" asp-action="Servers">Servers</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="Devices" asp-action="Devices">Devices</a>
@@ -34,15 +40,17 @@
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="PowerBanks" asp-action="PowerBanks">PowerBanks</a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Servers" asp-action="Servers">Servers</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="MarginSection" asp-action="MarginSection">Settings</a>
+                            <a class="nav-link text-light" asp-area="" asp-controller="Settings" asp-action="Settings">Settings</a>
                         </li>
                     </ul>
+                    }
+
+                    <div class="navbar-collapse collapse d-md-inline-flex flex-md-row-reverse">
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
-            </div>
         </nav>
     </header>
     <div class="container-fluid">
@@ -51,11 +59,11 @@
         </main>
     </div>
 
-    
-<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
 
-@RenderSection("Scripts", required: false)
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
     <hr />
 </body>
 </html>

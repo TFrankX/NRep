@@ -39,7 +39,7 @@ namespace WebServer.Controllers.Device
         {
             try
             {
-                //var userId = userManager.GetUserId(User);
+                var userId = userManager.GetUserId(User);
                 //var user = await userManager.FindByIdAsync(userId);
                 //var roles = await userManager.GetRolesAsync(user);
                 //var filterNotMoney = roles.Contains("support") || roles.Contains("manager");

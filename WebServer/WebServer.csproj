@@ -10,6 +10,10 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
   <ItemGroup>
     <None Remove="C:\Users\User\.nuget\packages\nlog.config\4.7.15\contentFiles\any\any\NLog.config" />
+    <None Remove="Views\Settings\" />
+    <None Remove="Controllers\Settings\" />
+    <None Remove="Models\Settings\" />
+    <None Remove="Models\Statistic\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,12 +56,21 @@
     <None Include="Views\Shared\_Layout_orig.cshtml" />
     <None Include="Views\Shared\_LoginPartial.cshtml" />
     <None Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
+    <None Include="Views\Shared\_LoginPartial_orig.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Controllers\Misc\" />
+    <Folder Include="Views\Settings\" />
+    <Folder Include="Controllers\Settings\" />
+    <Folder Include="Models\Settings\" />
+    <Folder Include="Models\Statistic\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="Views\Shared\_LoginPartial %28копия%29.cshtml" />
+    <Content Remove="Views\MarginSection\HandleErrorCode.cshtml" />
+  </ItemGroup>
   <ItemGroup>
     <Content Update="Properties\launchSettings.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>

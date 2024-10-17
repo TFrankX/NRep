@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using WebServer.Models.Identity;
 using WebServer.Models.Device;
 using WebServer.Workers;
+using WebServer.Models.Settings;
 using Microsoft.Extensions.Hosting;
 using WebServer.Data;
 
@@ -32,6 +33,7 @@ namespace WebServer
 
             services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
             services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
+            services.AddDbContextPool<SettingsContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteSettings")));
             services.AddSingleton<IDevicesData, DevicesData>();
             services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
             services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityContext>();
@@ -96,9 +98,15 @@ namespace WebServer
 
             app.UseEndpoints(endpoints =>
             {
+                //endpoints.MapControllerRoute(
+                //    name: "default",
+                //    pattern: "{controller=Servers}/{action=Servers}");
+
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Servers}/{action=Servers}");
+                    pattern: "{controller=AppAccount}/{action=AppAccountLogin}");
+
+
 
                 //                endpoints.MapControllerRoute(
                 //                    name: "default",
