@@ -65,7 +65,7 @@ internal class Program
         var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
         if (string.IsNullOrEmpty(environmentName))
-            environmentName = "Production";
+            environmentName = "Development";
 
         Console.WriteLine($"Environment: {environmentName}");
 

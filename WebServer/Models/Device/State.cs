@@ -14,8 +14,9 @@
     public enum TypeOfUse : uint
     {
         FreeTake = 1,
-        OwnerAuth = 2,
-        PayByCard = 3,        
+        FreeMultiTake = 2,
+        OwnerAuth = 3,
+        PayByCard = 4,        
     }
 
 

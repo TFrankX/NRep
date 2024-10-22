@@ -234,8 +234,8 @@
         }
 
         function cellsrenderer(row, column, value) {
-            if (stoprefresh) { return }
-            if (noRender == row) {return }
+            //if (stoprefresh) { return }
+            //if (noRender == row) {return }
             var jsonmod = source.localdata;
             var backcolor = "#FFFFFF";
             var text = value;
@@ -322,11 +322,11 @@
 
             //alert(column);
             if (column === 'DeviceName') {
-                    // return divstartstyle +
-                    //     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    // value + ":" + jsonmod[row].Port
-                    //     "</span>" +
-                    //     "</div>";
+                // return divstartstyle +
+                //     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+                // value + ":" + jsonmod[row].Port
+                //     "</span>" +
+                //     "</div>";
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
                     "<input style='height:30px;' type='button' " +
@@ -355,7 +355,7 @@
                 if (value & 2) {
                     text = text + "<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "2" + "'); title=' 2 '>   2</span>";
                 } else {
-                    text = text+"<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='grayCircle'; title=' 2 '>   2</span>";
+                    text = text + "<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='grayCircle'; title=' 2 '>   2</span>";
                 }
                 if (value & 4) {
                     text = text + "<span style='margin-top: 5px; margin-left: 73px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "3" + "'); title=' 3 '>   3</span>";
@@ -425,29 +425,35 @@
                     value +
                     "</span>" +
                     "</div>";
-             } else if (column === 'PushPB') {
-                 return divstartstyle +
-                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
-                     "<input style='height:30px;' type='button' " +
-                     "class='btn btn-success btn-lg btn-block btn-sm' " +
-                     "onclick=PushPB('"  + jsonmod[row].DeviceName + "','" +"0" + "'); " +
-                     "href='javascript: void (0);' value='" +
-                     "Push PB" +
-                     "' /> " +
-                     "</span>" +
-                     "</div>";
+            } else if (column === 'PushPB') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
+                    "<input style='height:30px;' type='button' " +
+                    "class='btn btn-success btn-lg btn-block btn-sm' " +
+                    "onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "0" + "'); " +
+                    "href='javascript: void (0);' value='" +
+                    "Push PB" +
+                    "' /> " +
+                    "</span>" +
+                    "</div>";
             } else if (column === 'TypeOfUse') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
                     "<select class='selectD' id='TypeOfUse" + row + "' onchange=\"SetTypeOfUse('" + jsonmod[row].Id_str + "','" + row + "','" + value + "')\" >" +
-
                     "<option value='0' " + ((value == 0) ? "selected='selected'" : "") + " >-----</option>" +
                     "<option value='1'" + ((value == 1) ? "selected='selected'" : "") + " >Free Take</option>" +
-                    "<option value='2'" + ((value == 2) ? "selected='selected'" : "") + " >Owner Auth</option>" +
-                    "<option value='3'" + ((value == 3) ? "selected='selected'" : "") + " >Pay By Card</option>" +
+                    "<option value='2'" + ((value == 2) ? "selected='selected'" : "") + " >Free Multi Take</option>" +
+                    "<option value='3'" + ((value == 3) ? "selected='selected'" : "") + " >Owner Auth</option>" +
+                    "<option value='4'" + ((value == 4) ? "selected='selected'" : "") + " >Pay By Card</option>" +
                     "</select >" +
                     "</span>" +
                     "</div>";
+            //} else if (column === 'Description') {
+            //    return divstartstyle +
+            //        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
+            //        "<input type='text' value='"+value +"' id='Desc" + row + "' onchange=\"SetDescription('" + jsonmod[row].Id_str + "','" + row + "','" + value + "')\" >" +
+            //        "</span>" +
+            //        "</div>";
 
             } else if (column === 'Owners') {
                 return divstartstyle +
@@ -492,8 +498,9 @@
 
                     //
                     //$("#jqxgrid").trigger('reloadGrid');
-                    $("#jqxgrid").jqxGrid('refresh');
-                    $("#jqxgrid").jqxGrid('updatebounddata', 'sort');
+                    //!$("#jqxgrid").jqxGrid('refresh');
+                    //$("#jqxgrid").jqxGrid('updatebounddata', 'sort');
+                    $("#jqxgrid").jqxGrid('updatebounddata', 'cells');
                     //$("#jqxgrid").jqxGrid('updatebounddata', 'filter');
                     //alert('x');
                 }
@@ -541,6 +548,7 @@
                 { name: 'CanRegister', type: 'boolean' },
                 { name: 'Registered', type: 'boolean' },
                 { name: 'TypeOfUse', type: 'number' },
+                { name: 'Description', type: 'string' },
                 { name: 'Owners', type: 'string' },
                 { name: 'SimId', type: 'string' },
                 { name: 'LastOnlineTime', type: 'date' },
@@ -564,12 +572,12 @@
                     filterable: true,
                     //showfilterrow: true,
                     //autorowheight: true,
-                    //rowsheight: 48,
-                    autorowheight: true,
+                    rowsheight: 48,
+                    //autorowheight: true,
                     enablebrowserselection: true,
                     selectionmode: 'multiplecellsadvanced',   
                     //autoheight: true,
-                    pageable: true,
+                    //pageable: true,
                     height: 720,
                     columnsresize: true,
                     columns: [
@@ -581,8 +589,9 @@
                         { text: "Activated", datafield: "Activated", width: "3%", cellsrenderer: cellsrenderer },
                         { text: "CanRegister", datafield: "CanRegister", width: "3%", cellsrenderer: cellsrenderer },
                         { text: "Registered", datafield: "Registered", width: "3%", cellsrenderer: cellsrenderer },
-                        { text: "TypeOfUse", datafield: "TypeOfUse", width: "3%", cellsrenderer: cellsrenderer },
-                        { text: "Owners", datafield: "Owners", width: "3%", cellsrenderer: cellsrenderer },
+                        { text: "TypeOfUse", datafield: "TypeOfUse", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "Description", datafield: "Description", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Owners", datafield: "Owners", width: "3%", cellsrenderer: cellsrenderer, columntype: 'textbox' },
                         { text: "SimId", datafield: "SimId", width: "3%", cellsrenderer: cellsrenderer },
                         { text: "Last connected time", datafield: "LastOnlineTime", width: "10%", cellsrenderer: cellsrenderer },
                         { text: "Push PB", datafield: "PushPB", width: "5%", cellsrenderer: cellsrenderer },
@@ -590,7 +599,7 @@
                      ]
                 });
             refresh();
-            _createWindow();
+            //_createWindow();
             $("#jqxWidget").css('display', 'block');
 
 

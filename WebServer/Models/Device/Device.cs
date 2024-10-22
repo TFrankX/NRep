@@ -68,10 +68,11 @@ namespace WebServer.Models.Device
         public DateTime LastOnlineTime { get; set; }
         public DateTime FirstOnlineTime { get; set; }
         public DateTime LastUpdate { get; private set; }
-
+        public string Description { get; set; }
         [NotMapped]
         public bool Init { get; set; }
-
+        [NotMapped]
+        public long LastInventoryTime { get; set; }
         [NotMapped]
         public bool Stored { get; set; }
 

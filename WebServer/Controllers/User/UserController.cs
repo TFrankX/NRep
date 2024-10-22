@@ -130,7 +130,7 @@ namespace WebServer.Controllers.User
 
 
 
-            if (!string.IsNullOrEmpty(cookieValueFromReq))
+            if (!string.IsNullOrEmpty(cookieValueFromReq) && (device.TypeOfUse != TypeOfUse.FreeMultiTake))
             {
                 foreach (PowerBank pb in userPbs)
                 {
@@ -148,7 +148,7 @@ namespace WebServer.Controllers.User
 
 
 
-            if ((device.TypeOfUse != TypeOfUse.FreeTake)||(!device.Activated))
+            if ((device.TypeOfUse != TypeOfUse.FreeTake && device.TypeOfUse != TypeOfUse.FreeMultiTake) ||(!device.Activated))
             {
                 payInfo.Taken = 0;
                 payInfo.UserId = "Not registred/enabled device";
@@ -169,7 +169,7 @@ namespace WebServer.Controllers.User
             }
 
 
-            if (!taken)
+            if ((!taken)||(device.TypeOfUse == TypeOfUse.FreeMultiTake))
             {
                 var maxCharge = 0;
                 uint maxChargedSlot = 0;

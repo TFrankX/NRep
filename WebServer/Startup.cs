@@ -42,20 +42,35 @@ namespace WebServer
             //            //services.AddSingleton<IDevActionTable, DevActionTable>();
             //            services.AddDbContextPool<ActionContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteActions")));
 
+            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (string.IsNullOrEmpty(environmentName))
+                environmentName = "Development";
 
-            services.AddDbContextPool<DeviceContext>(options =>
+            if (environmentName == "Development")
             {
+                            services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
+                            services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
+                //            services.AddDbContextPool<SettingsContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteSettings")));
+                //            //services.AddSingleton<IDevActionTable, DevActionTable>();
+                            services.AddDbContextPool<ActionContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteActions")));
+            }
+
+            if (environmentName == "Production")
+            {
+                services.AddDbContextPool<DeviceContext>(options =>
+                {
+                    options.UseNpgsql(Configuration.GetConnectionString("pgDevice"));
+                });
+                services.AddDbContext<AppIdentityContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgAppAccounts")));
+                services.AddDbContextPool<ActionContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgActions")));
+
+            }
 
 
-                options.UseNpgsql(Configuration.GetConnectionString("pgDevice"));
 
-            });
-            
-            services.AddDbContext<AppIdentityContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgAppAccounts")));
+
             //services.AddDbContextPool<SettingsContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgSettings")));
             //services.AddSingleton<IDevActionTable, DevActionTable>();
-            services.AddDbContextPool<ActionContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgActions")));
-
 
 
             services.AddSingleton<IDevicesData, DevicesData>();

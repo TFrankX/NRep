@@ -352,7 +352,7 @@
 
                     //
                     //$("#jqxgrid").trigger('reloadGrid');
-                    $("#jqxgrid").jqxGrid('refresh');
+                    //$("#jqxgrid").jqxGrid('refresh');
                     $("#jqxgrid").jqxGrid('updatebounddata', 'sort');
                     //$("#jqxgrid").jqxGrid('updatebounddata', 'filter');
                     //alert('x');
@@ -415,10 +415,12 @@
                     filterable: true,
                     //showfilterrow: true,
                     //autorowheight: true,
-                    //rowsheight: 48,
-                    autorowheight: true,
+                    rowsheight: 48,
+                    //autorowheight: true,
                     //autoheight: true,
-                    pageable: true,
+                    enablebrowserselection: true,
+                    selectionmode: 'multiplecellsadvanced',   
+                    //pageable: true,
                     height: 720,
                     columnsresize: true,
                     columns: [

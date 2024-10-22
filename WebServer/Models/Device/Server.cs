@@ -59,7 +59,7 @@ namespace WebServer.Models.Device
             //Connect();
             DevicesCount = 0;
             NotAuthDevicesCount = 0;
-            OnlineTimeOut = 20;
+            OnlineTimeOut = 360;
             CertCA = certCA;
             CertCli = certCli;
             CertPass = certPass;

@@ -192,7 +192,14 @@ namespace SimnetLib
                 // protobuf message
                 using (var stream = new MemoryStream(payload))
                 {
-                    value = Serializer.Deserialize(stream, Activator.CreateInstance(subscription.Type));
+                    try
+                    {
+                        value = Serializer.Deserialize(stream, Activator.CreateInstance(subscription.Type));
+                    }
+                    catch
+                    {
+
+                    }
                 }
             }
 

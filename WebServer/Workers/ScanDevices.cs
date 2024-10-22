@@ -40,6 +40,9 @@ namespace WebServer.Workers
         private IConfiguration config;
         private ActionProcess actionProcess;
         private readonly UserManager<AppUser> userManager;
+        public long scanDevicePeriod = 300;//300 sec
+
+                                      
         // DeviceContext dbDevice;
 
         //  public ScanDevices(List<Server> Servers, ILogger<ScanDevices> logger, IServiceScopeFactory scopeFactory)
@@ -182,6 +185,7 @@ namespace WebServer.Workers
 
 
             InitDevices();
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 ReconnectServers();
@@ -274,7 +278,7 @@ namespace WebServer.Workers
                         srv.Connected = false;
                         srv.Stored = false;
                         DevicesData.Servers.Add(srv);
-                        actionProcess.ActionSave((int)ActionsDescription.ServiceInitServer, "System", srv.Id, 0, 0, 0, "");
+                       //- actionProcess.ActionSave((int)ActionsDescription.ServiceInitServer, "System", srv.Id, 0, 0, 0, "");
 
                     }
                     ReconnectServers();
@@ -294,7 +298,7 @@ namespace WebServer.Workers
                         dev.Online = false;
 
                         DevicesData.Devices.Add(dev);
-                        actionProcess.ActionSave((int)ActionsDescription.ServiceInitDevice, "System", dev.HostDeviceId, dev.Id, 0, 0, "");
+                        //- actionProcess.ActionSave((int)ActionsDescription.ServiceInitDevice, "System", dev.HostDeviceId, dev.Id, 0, 0, "");
 
 
                     }
@@ -316,7 +320,7 @@ namespace WebServer.Workers
                             //powerbank.Plugged = false;
                             var servId = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == powerbank.HostDeviceId)].HostDeviceId;
                             //var servHost = DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == devId)].Id;
-                            actionProcess.ActionSave((int)ActionsDescription.ServiceInitPowerBank, "System", servId, powerbank.HostDeviceId, powerbank.Id, powerbank.HostSlot, "");
+                           //- actionProcess.ActionSave((int)ActionsDescription.ServiceInitPowerBank, "System", servId, powerbank.HostDeviceId, powerbank.Id, powerbank.HostSlot, "");
                         }
                     }
 
@@ -451,7 +455,11 @@ namespace WebServer.Workers
                                     }
 
                                     srv.SubScript(dev.DeviceName);
-                                    srv.CmdQueryTheInventory(dev.DeviceName);
+                                    if (dev.LastInventoryTime + (scanDevicePeriod * TimeSpan.TicksPerSecond) < DateTime.Now.Ticks)
+                                    {
+                                        dev.LastInventoryTime = DateTime.Now.Ticks;
+                                        srv.CmdQueryTheInventory(dev.DeviceName);
+                                    }
                                 }
 
                             }
