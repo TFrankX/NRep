@@ -46,7 +46,7 @@ namespace WebServer
             if (string.IsNullOrEmpty(environmentName))
                 environmentName = "Development";
 
-            if (environmentName == "Development")
+            if (environmentName == "Production")
             {
                             services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
                             services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
@@ -55,7 +55,7 @@ namespace WebServer
                             services.AddDbContextPool<ActionContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteActions")));
             }
 
-            if (environmentName == "Production")
+            if (environmentName == "Development")
             {
                 services.AddDbContextPool<DeviceContext>(options =>
                 {

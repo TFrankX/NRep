@@ -305,10 +305,10 @@ namespace WebServer.Workers
 
 
                 }
-                catch
+                catch (Exception ex)
                 {
 
-
+                    Logger.LogInformation($"Device cannot add from the db: {ex.ToString()} \n");
                 }
                 try
                 {
@@ -325,9 +325,9 @@ namespace WebServer.Workers
                     }
 
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    Logger.LogInformation($"Powerbank cannot add from the db: {ex.ToString()}\n");
                 }
 
                 try
