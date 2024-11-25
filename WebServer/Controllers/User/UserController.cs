@@ -21,6 +21,9 @@ using WebServer.Data;
 using WebServer.Models.Device;
 using System.Data;
 using System;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Security.Claims;
+using WebServer.Utils.Requests;
 
 namespace WebServer.Controllers.User
 {
@@ -130,7 +133,11 @@ namespace WebServer.Controllers.User
 
 
 
-            if (!string.IsNullOrEmpty(cookieValueFromReq) && (device.TypeOfUse != TypeOfUse.FreeMultiTake))
+
+
+
+
+            if (!string.IsNullOrEmpty(cookieValueFromReq) && (device.TypeOfUse != TypeOfUse.FreeMultiTake) )
             {
                 foreach (PowerBank pb in userPbs)
                 {
@@ -148,7 +155,10 @@ namespace WebServer.Controllers.User
 
 
 
-            if ((device.TypeOfUse != TypeOfUse.FreeTake && device.TypeOfUse != TypeOfUse.FreeMultiTake) ||(!device.Activated))
+
+
+
+            if ((device.TypeOfUse != TypeOfUse.FreeTake && device.TypeOfUse != TypeOfUse.FreeMultiTake && device.TypeOfUse != TypeOfUse.SMSTake) ||(!device.Activated))
             {
                 payInfo.Taken = 0;
                 payInfo.UserId = "Not registred/enabled device";
@@ -157,6 +167,9 @@ namespace WebServer.Controllers.User
                 payInfo.Cost = 0;
                 return View(payInfo);         
             }   
+
+
+
 
 
             bool taken = false;
@@ -213,17 +226,29 @@ namespace WebServer.Controllers.User
                     RedirectToAction("User", "User");
 
 
-                //if (string.IsNullOrEmpty(userId))
-                //{
-                //    userId = "unknown";
+                if (device.TypeOfUse == TypeOfUse.SMSTake)
+                {
+                    return View("DoSMS",new UserSMS { StationId=device.Id});
+                }
 
-                //}
-                //else
-                //{
-                //    var user = await userManager.FindByIdAsync(userId);
-                //    var rolesTask = await userManager.GetRolesAsync(user);
-                //    roles = rolesTask.ToList();
-                //}
+
+
+                    //if (string.IsNullOrEmpty(userId))
+                    //{
+                    //    userId = "unknown";
+
+                    //}
+                    //else
+                    //{
+                    //    var user = await userManager.FindByIdAsync(userId);
+                    //    var rolesTask = await userManager.GetRolesAsync(user);
+                    //    roles = rolesTask.ToList();
+                    //}
+
+
+
+
+
                 var pbId = scanDevices.PushPowerBank(device.DeviceName, maxChargedSlot, userId, roles);
                 PowerBank pbPush=null;
                 try
@@ -255,93 +280,176 @@ namespace WebServer.Controllers.User
 
 
 
-            //if (device.TypeOfUse == TypeOfUse.FreeTake)
-            //{
-            //    Guid guid = Guid.NewGuid();
-            //    string UserId = guid.ToString();
-            //    var userId = userManager.GetUserId(base.User);
-            //    var userName = userManager.GetUserName(base.User);
-            //    List<string> roles = new List<string>();
-            //    if (string.IsNullOrEmpty(userId))
-            //    {
-            //        userId = "unknown";
-
-            //    }
-            //    else
-            //    {
-            //        var user = await userManager.FindByIdAsync(userId);
-            //        var rolesTask = await userManager.GetRolesAsync(user);
-            //        roles = rolesTask.ToList();
-            //    }
-
-            //    if (scanDevices.PushPowerBank(device.DeviceName, 0, userName, roles) == 200)
-            //    {
-            //        //set the key value in Cookie 
-            //        Set("KeyCharge911", UserId, 1500);
-            //        return StatusCode(200);
-            //    };
-
-            //    return StatusCode(503);
-            //}
-            //return StatusCode(403);
+        }
+        [HttpPost("{phoneNumber}")]
+        [Route("SendSMSCode")]
+        [AllowAnonymous]
+        public async Task<ActionResult> SendSMSCode(UserSMS model)
+        {
+            //!!!!!!!!!!
+            WebServer.Models.Identity.AppUser user;
 
 
+                model.Message = "Piska";
+                model.CodeReq = true;
+
+                try
+                {
+
+                    SMS sms = new SMS();
+                    string cd = sms.Gen4Code();
+                    //HttpContext.Session.SetString("cd", cd);
+                    TempData["cd"] = cd;
+                    var phone = sms.TunePhoneNumber(model.PhoneNumber);
+
+                    if (phone.Length != 11)
+                    {
+                        ModelState.AddModelError("", $"Wrong phone number format");
+                        return View("DoSMS", model);
+                }
+
+                    sms.Send(phone, "takecharger", cd);
+                    return View("DoCheckSMSCode", model);
+                }
+                catch
+                {
+                    ModelState.AddModelError("", $"Problem with sms-gate");
+                    return View("DoSMS", model);
+                }
 
 
-            //PayInfo payInfo = new PayInfo();
-            //foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
-            //{
-            //    if (((int)pb.ChargeLevel > 3) && pb.Plugged && pb.IsOk)
-            //    {
-            //        payInfo.Available++;
-            //    }
-            //}
-            //if (!string.IsNullOrEmpty(cookieValueFromReq))
-            //{
-
-            //    foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
-            //    {
+            
 
 
-            //        if (pb.UserId == cookieValueFromReq)
-            //        {
-            //            payInfo.Taken = pb.Taken ? 1 : 0;
-            //            payInfo.UserId = cookieValueFromReq;
-            //            payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
-            //            payInfo.Cost = (float)Math.Round(pb.Taken ? ((DateTime.Now - pb.LastGetTime).Minutes * pb.Price / 60F) : pb.Cost, 2);
-            //        }
-            //    }
-            //}
-
-            //return View(payInfo);
-
-
-
-            //return View();
-            //set the key value in Cookie  
-            //Set("KeyCharge911", "Hello from cookie1", 1500);
-            //Delete the cookie object  
-            //Remove("Key");
-            //return View();
         }
 
-        //public async Task<ActionResult> Refresh()
-        //{
-        //    try
-        //    {
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckSMSCode(UserSMS model)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors);
+            if (ModelState.IsValid)
+            {
 
 
-        //        DevicesData serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
+                WebServer.Models.Identity.AppUser user;
 
-        //        serversTable.Sort();
-        //        return Json(serversTable.Devices, new JsonSerializerOptions { PropertyNamingPolicy = null });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Logger.LogError(ex, $"{nameof(UserController)} -> {nameof(Refresh)} throw Exception");
-        //        return null;
-        //    }
-        //}
+                SMS chSMS = new SMS();
+                model.PhoneNumber = chSMS.TunePhoneNumber(model.PhoneNumber);
+
+                //try
+                //{
+                //    user = userManag.Users.Where(x => x.PhoneNumber == model.PhoneNumber).First();
+                //}
+                //catch
+                //{
+                //    user = null;
+                //}
+
+                //var user = await userManag.FindByNameAsync(model.PhoneNumber);
+                if (model.SMSCode == TempData["cd"].ToString().Trim())
+                {
+
+
+                    PayInfo payInfo = new PayInfo();
+                    //foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
+                    //{
+                    //    if (((int)pb.ChargeLevel > 3) && pb.Plugged && pb.IsOk)
+                    //    {
+                    //        payInfo.Available++;
+                    //    }
+                    //}
+
+                    var devicePbs = scanDevices.DevicesData.PowerBanks.Where(p => p.HostDeviceId == model.StationId).ToList<WebServer.Models.Device.PowerBank>();
+
+                    //var userPbs = scanDevices.DevicesData.PowerBanks.Where(p => p.UserId == cookieValueFromReq).ToList<WebServer.Models.Device.PowerBank>();
+
+
+
+                    Models.Device.Device device;
+                    try
+                    {
+                        device = scanDevices.DevicesData.Devices[scanDevices.DevicesData.Devices.FindIndex(item => item.Id == model.StationId)];
+                    }
+                    catch
+                    {
+                        device = null;
+                        Logger.LogInformation($"Trying to get invalid device with Id: {model.StationId}\n");
+                        return StatusCode(404);
+                    }
+
+
+                    Models.Device.Device matches;
+                    try
+                    {
+                        matches = scanDevices.DevicesData.Devices.Where(p => p.Id == model.StationId).FirstOrDefault();
+                    }
+                    catch
+                    {
+                        matches = null;
+                    }
+                    if (matches != null)
+                    {
+
+                        var maxCharge = 0;
+                        uint maxChargedSlot = 0;
+                        foreach (PowerBank pb in devicePbs)
+                        {
+                            if (!pb.Taken && pb.Plugged)
+                            {
+                                if ((int)pb.ChargeLevel > maxCharge)
+                                {
+                                    maxCharge = (int)pb.ChargeLevel;
+                                    maxChargedSlot = pb.HostSlot;
+                                }
+
+                            }
+                        }
+
+                        if (maxChargedSlot == 0)
+                            RedirectToAction("User", "User");
+
+                        var pbId = scanDevices.PushPowerBank(device.DeviceName, maxChargedSlot, model.PhoneNumber, new List<string>{"Guest"});
+                        PowerBank pbPush = null;
+                        try
+                        {
+                            pbPush = scanDevices.DevicesData.PowerBanks[scanDevices.DevicesData.PowerBanks.FindIndex(item => item.Id == pbId)];
+                        }
+                        catch
+                        {
+
+                        }
+                        if ((pbId > 1000) && (pbPush != null))
+                        {
+
+                            //set the key value in Cookie 
+                            Set("KeyCharge911", model.PhoneNumber, 1500);
+
+                            payInfo.Taken = pbPush.Taken ? 1 : 0;
+                            payInfo.UserId = model.PhoneNumber;
+                            payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
+                            payInfo.Cost = (float)Math.Round(pbPush.Taken ? ((DateTime.Now - pbPush.LastGetTime).Minutes * pbPush.Price / 60F) : pbPush.Cost, 2);
+                            return View("User",payInfo);
+
+                        };
+                        Thread.Sleep(100);
+
+                    }
+
+
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Incorrect SMS code");
+                    return View("DoSMS", model);
+                }
+
+                // return RedirectToAction("Servers", "Servers");
+
+            }
+            return View("DoSMS", model);
+        }
 
 
         [Microsoft.AspNetCore.Mvc.HttpPost]

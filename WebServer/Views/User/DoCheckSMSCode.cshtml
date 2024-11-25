@@ -1,0 +1,54 @@
+﻿@model UserSMS
+
+@{
+    ViewBag.Title = "Enter code from SMS";
+}
+
+
+
+<div class="row">
+    @*<div class="col-md-2">
+            <div class="position-fixed">
+                <br><br>
+                @Html.Partial("NavVertical")
+            </div>
+        </div>*@
+
+
+    <div class="col-md-10">
+        <div class="text-center"><h2>Check SMS code</h2></div>
+
+        <form asp-action="CheckSMSCode" asp-controller="User">
+            @Html.HiddenFor(model => model.StationId)
+            @Html.HiddenFor(model => model.PhoneNumber)
+            @Html.HiddenFor(model => model.Message)
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="form-group">
+                <label class="control-label">Phone number</label>
+                <input type="text" asp-for="PhoneNumber" class="form-control" readonly />
+            </div>
+            <div class="form-group">
+                <label asp-for="SMSCode">SMS Code</label><br />
+                <input autoFocus type="text" asp-for="SMSCode" class="form-control" />
+                <span asp-validation-for="SMSCode"></span>
+            </div>
+            @*<div class="form-group">
+            <label asp-for="Password">Password</label><br />
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="PasswordConfirm">Confirm password</label><br />
+            <input asp-for="PasswordConfirm" class="form-control" />
+            <span asp-validation-for="PasswordConfirm"></span>
+        </div>*@
+            <div class="text-center">
+                <div class="btn-group" role="group">
+                    <input class="btn btn-dark mr-2" type="submit" Value="Send">
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+

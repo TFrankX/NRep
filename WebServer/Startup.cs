@@ -13,6 +13,8 @@ using WebServer.Models.Settings;
 using Microsoft.Extensions.Hosting;
 using WebServer.Data;
 using ProtoBuf.Meta;
+using NLog;
+using NLog.Web;
 
 namespace WebServer
 {
@@ -27,6 +29,8 @@ namespace WebServer
         private IServiceScopeFactory ScopeFactory;
 
         public IConfiguration Configuration { get; }
+
+
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -46,7 +50,9 @@ namespace WebServer
             if (string.IsNullOrEmpty(environmentName))
                 environmentName = "Development";
 
-            if (environmentName == "Production")
+
+            //environmentName = "Production";
+            if (environmentName == "Development")
             {
                             services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
                             services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
@@ -55,7 +61,7 @@ namespace WebServer
                             services.AddDbContextPool<ActionContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteActions")));
             }
 
-            if (environmentName == "Development")
+            if (environmentName == "Production")
             {
                 services.AddDbContextPool<DeviceContext>(options =>
                 {
@@ -83,9 +89,12 @@ namespace WebServer
                  .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
             services.AddSingleton<ScanDevices>();
             services.AddHostedService<ScanDevices>(p => p.GetRequiredService<ScanDevices>());
+
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddDistributedMemoryCache();
+
+            
 
             services.AddSession(options =>
             {
@@ -123,7 +132,6 @@ namespace WebServer
                 o.EnableDetailedErrors = true;
                 o.MaximumReceiveMessageSize = null; // bytes
             });
-
             services.AddRazorPages();
             Services = services;
         }

@@ -30,6 +30,8 @@ namespace WebServer.Models.Device
             Registered = false;
             CanRegister = false;
             SimId = "";
+            Owners = "";
+            Description = "";
             //PowerBanks = powerBanks;
             LastUpdate = DateTime.Now;
             ActivateTime = DateTime.MinValue;          

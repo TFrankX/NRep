@@ -17,8 +17,8 @@ internal class Program
     {
         //var logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 
-        var logger = NLog.LogManager.Setup().LoadConfigurationFromFile(args).GetCurrentClassLogger();
-
+        //var logger = NLog.LogManager.Setup().LoadConfigurationFromFile(args).GetCurrentClassLogger();
+        var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
         var host = CreateHostBuilder(args).Build();
         try
         {
@@ -38,7 +38,7 @@ internal class Program
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, "An error occurred while seeding the database.");
+                    logger.Error(ex, "An error in the initialisation");
                 }
             }
 
@@ -67,6 +67,7 @@ internal class Program
         if (string.IsNullOrEmpty(environmentName))
             environmentName = "Development";
 
+        //environmentName = "Production";
         Console.WriteLine($"Environment: {environmentName}");
 
         return new ConfigurationBuilder()
