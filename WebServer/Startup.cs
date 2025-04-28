@@ -15,6 +15,8 @@ using WebServer.Data;
 using ProtoBuf.Meta;
 using NLog;
 using NLog.Web;
+using Microsoft.Extensions.Configuration;
+using System.Configuration;
 
 namespace WebServer
 {
@@ -46,32 +48,35 @@ namespace WebServer
             //            //services.AddSingleton<IDevActionTable, DevActionTable>();
             //            services.AddDbContextPool<ActionContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteActions")));
 
-            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (string.IsNullOrEmpty(environmentName))
-                environmentName = "Development";
+            ////var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            ////if (string.IsNullOrEmpty(environmentName))
+            ////    environmentName = "Development";
 
 
+
+            var dbType = Configuration.GetConnectionString("DB");
             //environmentName = "Production";
-            if (environmentName == "Development")
+            if (dbType == "sqlight")
             {
-                            services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDevice")));
-                            services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteAppAccounts")));
+                services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("DbDevice")));
+                services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("DbAppAccounts")));
                 //            services.AddDbContextPool<SettingsContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteSettings")));
                 //            //services.AddSingleton<IDevActionTable, DevActionTable>();
-                            services.AddDbContextPool<ActionContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteActions")));
+                services.AddDbContextPool<ActionContext>(options => options.UseSqlite(Configuration.GetConnectionString("DbActions")));
             }
-
-            if (environmentName == "Production")
+            else if (dbType == "postgress")
             {
-                services.AddDbContextPool<DeviceContext>(options =>
-                {
-                    options.UseNpgsql(Configuration.GetConnectionString("pgDevice"));
-                });
-                services.AddDbContext<AppIdentityContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgAppAccounts")));
-                services.AddDbContextPool<ActionContext>(options => options.UseNpgsql(Configuration.GetConnectionString("pgActions")));
+                services.AddDbContextPool<DeviceContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DbDevice")));
+                services.AddDbContext<AppIdentityContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DbAppAccounts")));
+                services.AddDbContextPool<ActionContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DbActions")));
 
             }
+            else
+            {
+                System.Environment.Exit(1);
+            }
 
+   
 
 
 

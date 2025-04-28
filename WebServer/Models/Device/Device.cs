@@ -32,6 +32,8 @@ namespace WebServer.Models.Device
             SimId = "";
             Owners = "";
             Description = "";
+            UpdateInt = false;
+            UpdateExt = false;
             //PowerBanks = powerBanks;
             LastUpdate = DateTime.Now;
             ActivateTime = DateTime.MinValue;          
@@ -71,6 +73,8 @@ namespace WebServer.Models.Device
         public DateTime FirstOnlineTime { get; set; }
         public DateTime LastUpdate { get; private set; }
         public string Description { get; set; }
+        public bool UpdateInt { get; set; }
+        public bool UpdateExt { get; set; }
         [NotMapped]
         public bool Init { get; set; }
         [NotMapped]

@@ -63,6 +63,8 @@ namespace WebServer.Models.Device
             CertCA = certCA;
             CertCli = certCli;
             CertPass = certPass;
+            UpdateInt = false;
+            UpdateExt = false;
         }
 
 
@@ -98,6 +100,8 @@ namespace WebServer.Models.Device
         public DateTime DisconnectTime { get; set; }
         public  DateTime LastUpdate { get; private set; }
         public bool Connected { get; set; }
+        public bool UpdateInt { get; set; }
+        public bool UpdateExt { get; set; }
 
 
         [NotMapped]

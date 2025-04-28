@@ -15,9 +15,6 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        //var logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-
-        //var logger = NLog.LogManager.Setup().LoadConfigurationFromFile(args).GetCurrentClassLogger();
         var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
         var host = CreateHostBuilder(args).Build();
         try
@@ -35,6 +32,7 @@ internal class Program
                     var rolesManager = services.GetRequiredService<RoleManager<IdentityRole>>();
                     t = RoleInitializer.InitializeAsync(userManager, rolesManager, defAdminPass);
                     t.Wait();
+
                 }
                 catch (Exception ex)
                 {
@@ -66,8 +64,6 @@ internal class Program
 
         if (string.IsNullOrEmpty(environmentName))
             environmentName = "Development";
-
-        //environmentName = "Production";
         Console.WriteLine($"Environment: {environmentName}");
 
         return new ConfigurationBuilder()

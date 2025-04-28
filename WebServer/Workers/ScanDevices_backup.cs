@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Identity;
 using WebServer.Models.Identity;
 using System.Threading.Tasks;
 
-namespace WebServer.Workers
+namespace WebServer.Workers_backup
 {
     //public delegate void dReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data);
     public delegate void dReturnThePowerBank(string deviceName, ulong pbId, uint slot, float cost);

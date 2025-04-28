@@ -8,6 +8,10 @@
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Stage' " />
   <ItemGroup>
     <None Remove="C:\Users\User\.nuget\packages\nlog.config\4.7.15\contentFiles\any\any\NLog.config" />
     <None Remove="Views\Settings\" />
@@ -20,6 +24,9 @@
     <None Remove="Controllers\Actions\" />
     <None Remove="certs\" />
     <None Remove="Models\User\" />
+    <None Remove="certs\Stage\" />
+    <None Remove="certs\Prod\" />
+    <None Remove="certs\Development\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +43,7 @@
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.4" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.18" />
+    <PackageReference Include="Stripe.net" Version="48.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -89,6 +97,9 @@
     <Folder Include="Controllers\Actions\" />
     <Folder Include="certs\" />
     <Folder Include="Models\User\" />
+    <Folder Include="certs\Stage\" />
+    <Folder Include="certs\Prod\" />
+    <Folder Include="certs\Development\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -117,6 +128,24 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="certs\client.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="certs\Prod\ca.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="certs\Prod\client.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="certs\Stage\client.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="certs\Stage\ca.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="certs\Development\ca.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="certs\Development\client.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

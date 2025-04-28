@@ -25,6 +25,8 @@ namespace WebServer.Models.Device
             Price = 0;
             LastUpdate = DateTime.Now;
             UserId = "";
+            UpdateInt = false;
+            UpdateExt = false;
         }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
@@ -59,6 +61,8 @@ namespace WebServer.Models.Device
         public DateTime LastUpdate { get; set; }
         public bool Taken { get; set; }
         public string UserId { get; set; }
+        public bool UpdateInt { get; set; }
+        public bool UpdateExt { get; set; }
         [NotMapped]
         public bool Init { get; set; }
 
