@@ -15106,3 +15106,10 @@
 2026-03-29 22:47:19.5777 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
 2026-03-29 22:47:19.5831 Info Configuration initialized.
 2026-03-29 22:47:19.9897 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-03-29 23:02:08.9895 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-03-29 23:02:09.0216 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-03-29 23:02:09.0216 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-03-29 23:02:09.0620 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-03-29 23:02:09.1581 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-03-29 23:02:09.1640 Info Configuration initialized.
+2026-03-29 23:02:09.5969 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config

@@ -415,6 +415,9 @@ namespace WebServer.Controllers.Device
 
                 serversTable.Sort();
 
+                // Get fresh powerbanks data
+                var allPowerBanks = scanDevices.DevicesData.PowerBanks;
+
                 // Create extended device data with slot charge levels
                 var devicesWithSlots = serversTable.Devices.Select(d => new {
                     d.Id_str,
@@ -430,8 +433,8 @@ namespace WebServer.Controllers.Device
                     d.Owners,
                     d.SimId,
                     d.LastOnlineTime,
-                    // Add slot charge levels
-                    SlotInfo = GetSlotInfo(d.DeviceName, serversTable.PowerBanks)
+                    // Add slot charge levels from fresh data
+                    SlotInfo = GetSlotInfo(d.DeviceName, allPowerBanks)
                 }).ToList();
 
                 return Json(devicesWithSlots, new JsonSerializerOptions { PropertyNamingPolicy = null });
