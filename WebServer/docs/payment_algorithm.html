@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Алгоритм работы с платежами - ShareCharging</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #27ae60;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .flow-box {
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            background: #ecf0f1;
+        }
+        .flow-box h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .arrow {
+            text-align: center;
+            font-size: 24px;
+            color: #3498db;
+            margin: 10px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        .danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Алгоритм работы с платежами (Stripe)</h1>
+<p><strong>Система:</strong> ShareCharging - аренда powerbank'ов<br>
+<strong>Дата:</strong> Март 2026</p>
+
+<h2>1. Пользователь берёт powerbank</h2>
+
+<div class="flow-box">
+    <h4>Пользователь сканирует QR &rarr; Do(deviceId) в UserController</h4>
+</div>
+
+<p>Если <code>device.TypeOfUse</code> — один из PayByCard вариантов:</p>
+
+<ol>
+    <li><strong>Резервируется powerbank</strong> — <code>pbTake.Reserved = true</code></li>
+    <li><strong>Создаётся Stripe Checkout Session</strong> с <code>capture_method: "manual"</code> (hold):
+        <pre>Amount = pricingPlan.HoldAmount  (например, 25 EUR)</pre>
+    </li>
+    <li>Пользователь вводит карту на странице Stripe</li>
+    <li>После успешной оплаты &rarr; redirect на <code>AlreadyPaid</code></li>
+    <li><strong>Деньги заблокированы на карте</strong> (не списаны!)</li>
+    <li>Powerbank выдаётся, <code>pbPush.SessionId = session_Id</code></li>
+</ol>
+
+<h2>2. Пока powerbank у пользователя</h2>
+
+<p><strong>Фоновый сервис <code>ScanDevices</code></strong> периодически проверяет:</p>
+
+<pre>
+if (powbank.SessionId != "" && powbank.SessionId != "\"\"")
+{
+    // Рассчитываем текущую стоимость
+    powbank.Cost = _pricingService.CalculateCost(
+        typeOfUse, powbank.LastGetTime, powbank.Taken);
+
+    // Если прошло MaxDaysBeforeCapture дней — списываем ВСЮ сумму
+    if ((DateTime.Now - powbank.LastGetTime).Days >= pricingPlan.MaxDaysBeforeCapture)
+    {
+        stripeRoutines.MakePostPayment(pricingPlan.HoldAmount);
+        powbank.SessionId = "";  // Больше не отслеживаем
+    }
+}
+</pre>
+
+<div class="highlight danger">
+    <strong>Важно:</strong> Если пользователь не вернул powerbank в течение MaxDaysBeforeCapture дней,
+    система автоматически списывает полную сумму hold (считаем powerbank потерянным).
+</div>
+
+<h2>3. Пользователь возвращает powerbank</h2>
+
+<p>Когда powerbank вставлен обратно в станцию:</p>
+
+<pre>
+pb.Cost = _pricingService.CalculateCost(
+    device.TypeOfUse, pb.LastGetTime, pb.Taken);
+
+if (pb.Cost > 0)
+{
+    // Списываем только фактическую стоимость
+    stripeRoutines.MakePostPayment(pb.Cost);  // Capture частичной суммы
+}
+else
+{
+    // Если вернули за < 1 минуту — отменяем hold
+    stripeRoutines.ReleaseHeldPayment();  // Cancel PaymentIntent
+}
+pb.SessionId = "";
+</pre>
+
+<h2>Расчёт стоимости (PricingService.CalculateCost)</h2>
+
+<div class="highlight">
+    <strong>Формула:</strong><br><br>
+    Если &lt; 1 минуты &rarr; <strong>0 EUR</strong> (бесплатно)<br><br>
+    <strong>Первый день:</strong><br>
+    <code>cost = BaseFee + ceil(hours) &times; HourlyRate</code><br><br>
+    <strong>Со второго дня:</strong><br>
+    <code>cost = (BaseFee + 24 &times; HourlyRate) + days &times; DailyRate</code><br><br>
+    <strong>Максимум:</strong> HoldAmount (cap)
+</div>
+
+<h3>Пример для PayByCard (стандартный план)</h3>
+
+<table>
+    <tr>
+        <th>Время аренды</th>
+        <th>Расчёт</th>
+        <th>Стоимость</th>
+    </tr>
+    <tr>
+        <td>30 секунд</td>
+        <td>бесплатно</td>
+        <td><strong>0 EUR</strong></td>
+    </tr>
+    <tr>
+        <td>1 час</td>
+        <td>2 + 1&times;2</td>
+        <td><strong>4 EUR</strong></td>
+    </tr>
+    <tr>
+        <td>3 часа</td>
+        <td>2 + 3&times;2</td>
+        <td><strong>8 EUR</strong></td>
+    </tr>
+    <tr>
+        <td>12 часов</td>
+        <td>2 + 12&times;2 = 26</td>
+        <td><strong>25 EUR</strong> (cap)</td>
+    </tr>
+    <tr>
+        <td>2 дня</td>
+        <td>(2 + 24&times;2) + 1&times;12 = 62</td>
+        <td><strong>25 EUR</strong> (cap)</td>
+    </tr>
+</table>
+
+<h2>Схема денежного потока</h2>
+
+<div class="flow-box">
+    <h4>БЕРЁТ POWERBANK</h4>
+    <p>Карта &rarr; Stripe Hold 25 EUR<br>
+    <em>(деньги заморожены на карте, но НЕ списаны)</em></p>
+</div>
+
+<div class="arrow">&darr;</div>
+
+<div class="flow-box">
+    <h4>ВРЕМЯ АРЕНДЫ ИДЁТ</h4>
+    <p>Если прошло &ge; 3 дней (MaxDaysBeforeCapture):<br>
+    &rarr; <strong>Capture 25 EUR</strong> (полное списание, считаем powerbank потерянным)</p>
+</div>
+
+<div class="arrow">&darr;</div>
+
+<div class="flow-box">
+    <h4>ВОЗВРАЩАЕТ POWERBANK</h4>
+    <p><strong>Вариант A:</strong> &lt; 1 минуты<br>
+    &rarr; Cancel hold (0 EUR списано)</p>
+    <p><strong>Вариант B:</strong> 1 мин - 3 дня<br>
+    &rarr; Capture фактической стоимости (например, 6 EUR)<br>
+    &rarr; Остаток (19 EUR) автоматически размораживается</p>
+</div>
+
+<h2>Тарифные планы (appsettings.json)</h2>
+
+<table>
+    <tr>
+        <th>План</th>
+        <th>Hold</th>
+        <th>Base Fee</th>
+        <th>Hourly</th>
+        <th>Daily</th>
+        <th>Max Days</th>
+    </tr>
+    <tr>
+        <td><strong>PayByCard</strong></td>
+        <td>25 EUR</td>
+        <td>2 EUR</td>
+        <td>2 EUR</td>
+        <td>12 EUR</td>
+        <td>3</td>
+    </tr>
+    <tr>
+        <td><strong>PayByCard2</strong></td>
+        <td>25 EUR</td>
+        <td>2 EUR</td>
+        <td>2 EUR</td>
+        <td>12 EUR</td>
+        <td>3</td>
+    </tr>
+    <tr>
+        <td><strong>PayByCard3</strong></td>
+        <td>30 EUR</td>
+        <td>1.5 EUR</td>
+        <td>1.5 EUR</td>
+        <td>10 EUR</td>
+        <td>5</td>
+    </tr>
+    <tr>
+        <td><strong>PayByCard4</strong></td>
+        <td>50 EUR</td>
+        <td>3 EUR</td>
+        <td>3 EUR</td>
+        <td>15 EUR</td>
+        <td>7</td>
+    </tr>
+</table>
+
+<h2>Ключевые файлы</h2>
+
+<table>
+    <tr>
+        <th>Файл</th>
+        <th>Назначение</th>
+    </tr>
+    <tr>
+        <td><code>Services/Pricing/PricingService.cs</code></td>
+        <td>Расчёт стоимости аренды</td>
+    </tr>
+    <tr>
+        <td><code>Services/Pricing/PricingConfig.cs</code></td>
+        <td>Модели тарифных планов</td>
+    </tr>
+    <tr>
+        <td><code>Stripe/StipeRoutines.cs</code></td>
+        <td>Работа со Stripe API (hold/capture/release)</td>
+    </tr>
+    <tr>
+        <td><code>Controllers/User/UserController.cs</code></td>
+        <td>Логика выдачи powerbank</td>
+    </tr>
+    <tr>
+        <td><code>Workers/ScanDevices.cs</code></td>
+        <td>Фоновая обработка возвратов и auto-capture</td>
+    </tr>
+    <tr>
+        <td><code>appsettings.json</code></td>
+        <td>Конфигурация тарифов (секция Pricing)</td>
+    </tr>
+</table>
+
+</body>
+</html>

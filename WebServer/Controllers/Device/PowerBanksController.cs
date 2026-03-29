@@ -73,7 +73,7 @@ namespace WebServer.Controllers.Device
         //}
 
 
-            [Authorize]
+        [Authorize]
         public async Task<ActionResult> Refresh()
         {
             try

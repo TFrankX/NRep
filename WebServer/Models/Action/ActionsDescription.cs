@@ -65,7 +65,21 @@ namespace WebServer.Models.Action
         [Description("found the new powerbank")]
         PowerBankFindNew = 0x330,
 
+        // Payment
+        [Description("payment hold")]
+        PaymentHold = 0x4010,
 
+        [Description("payment capture")]
+        PaymentCapture = 0x4020,
+
+        [Description("payment release")]
+        PaymentRelease = 0x4030,
+
+        [Description("payment refund")]
+        PaymentRefund = 0x4040,
+
+        [Description("payment failed")]
+        PaymentFailed = 0x4050,
 
     }
 

@@ -27,9 +27,15 @@
     <None Remove="certs\Stage\" />
     <None Remove="certs\Prod\" />
     <None Remove="certs\Development\" />
+    <None Remove="Controllers\Stripe\" />
+    <None Remove="Models\Stripe\" />
+    <None Remove="Views\StripeTest\" />
+    <None Remove="Views\Checkout\" />
+    <None Remove="Stripe\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.11" />
@@ -83,6 +89,7 @@
     <None Include="Views\AppAccount\AppLogCheckPhoneNumber.cshtml" />
     <None Include="Views\User\DoSMS.cshtml" />
     <None Include="Views\User\DoCheckSMSCode.cshtml" />
+    <None Include="Views\User\DoPayCard.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -100,6 +107,11 @@
     <Folder Include="certs\Stage\" />
     <Folder Include="certs\Prod\" />
     <Folder Include="certs\Development\" />
+    <Folder Include="Controllers\Stripe\" />
+    <Folder Include="Models\Stripe\" />
+    <Folder Include="Views\StripeTest\" />
+    <Folder Include="Views\Checkout\" />
+    <Folder Include="Stripe\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -115,6 +127,7 @@
     <Content Remove="Views\User\AppCreateAccount.cshtml" />
     <Content Remove="Views\User\AppCreateSelfAccount.cshtml" />
     <Content Remove="Views\User\AppResetPassCheckPhoneNumber.cshtml" />
+    <Content Remove="Views\User\DoSMS %28копия%29.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Properties\launchSettings.json">

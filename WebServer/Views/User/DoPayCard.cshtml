@@ -1,0 +1,28 @@
+﻿@using WebServer.Models.User
+@model UserPayCard
+
+
+<form id="payment-form">
+    <div class="form-group pt-2">
+        <label for="productName" id="productName">Redirecting to payment page...</label>      
+    </div>
+    
+</form>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script type="text/javascript">
+   // var stripe = Stripe('pk_test_51RBiyVPqFqBNcrc302KNl0PZoEb9LOSXxNagulZva9H8UhHvEpeomIZTBCbeLwJKaRO6znWMdsdEePr35JYRIpGp00TM2OBd2c');
+   var stripe = Stripe('pk_live_51QU70kBhJvOZdZCER6xV0TT7n2YZ41JCB5LrODrNWqNvIaKN1iPJ6ZS85nt0xGOQIefkU6jILYzf112MZ2A627Rm00HI9Xrxjd');
+    window.onload = function () {
+        document.getElementById('productName').textContent = "Redirecting to payment page...";
+        var sessionId = '@Model.SessionId';
+        if (sessionId) {
+            stripe.redirectToCheckout({ sessionId: sessionId });
+            } else {
+            console.error('SessionId is not defined or invalid.');
+        }
+    }
+
+</script>
+
+

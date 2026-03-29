@@ -15,9 +15,12 @@
     {
         FreeTake = 1,
         FreeMultiTake = 2,
-        SMSTake=3,
+        SMSTake = 3,
         OwnerAuth = 4,
-        PayByCard = 5,        
+        PayByCard = 5,
+        PayByCard2 = 6,
+        PayByCard3 = 7,
+        PayByCard4 = 8,
     }
 
 

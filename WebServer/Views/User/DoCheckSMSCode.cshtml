@@ -1,4 +1,5 @@
-﻿@model UserSMS
+﻿@using WebServer.Models.User
+@model UserSMS
 
 @{
     ViewBag.Title = "Enter code from SMS";
@@ -33,15 +34,15 @@
                 <span asp-validation-for="SMSCode"></span>
             </div>
             @*<div class="form-group">
-            <label asp-for="Password">Password</label><br />
-            <input asp-for="Password" class="form-control" />
-            <span asp-validation-for="Password"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="PasswordConfirm">Confirm password</label><br />
-            <input asp-for="PasswordConfirm" class="form-control" />
-            <span asp-validation-for="PasswordConfirm"></span>
-        </div>*@
+                    <label asp-for="Password">Password</label><br />
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PasswordConfirm">Confirm password</label><br />
+                    <input asp-for="PasswordConfirm" class="form-control" />
+                    <span asp-validation-for="PasswordConfirm"></span>
+                </div>*@
             <div class="text-center">
                 <div class="btn-group" role="group">
                     <input class="btn btn-dark mr-2" type="submit" Value="Send">

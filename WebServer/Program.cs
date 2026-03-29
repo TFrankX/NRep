@@ -8,15 +8,26 @@ using WebServer.Models.Identity;
 using WebServer.Controllers.Identity;
 using System.Net;
 using WebServer;
+using WebServer.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using Stripe;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
         var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
-        var host = CreateHostBuilder(args).Build();
+        IHost host;
+        try
+        {
+            host = CreateHostBuilder(args).Build();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"FATAL: Failed to build host: {ex}");
+            throw;
+        }
         try
         {
 
@@ -25,6 +36,10 @@ internal class Program
                 var services = scope.ServiceProvider;
                 try
                 {
+                    // Run database migrations
+                    var migrator = services.GetRequiredService<IDatabaseMigrator>();
+                    migrator.MigrateAsync().Wait();
+
                     Task t;
                     var configuration = GetConfiguration();
                     var defAdminPass = configuration.GetSection("DefaultAdminPass").Get<string>();
@@ -45,8 +60,8 @@ internal class Program
         }
         catch (Exception exception)
         {
-
             //NLog: catch setup errors
+            Console.WriteLine($"FATAL ERROR: {exception}");
             logger.Error(exception, "Stopped program because of exception");
             throw;
         }
@@ -70,11 +85,17 @@ internal class Program
             .SetBasePath(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location))
             .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile($"appsettings.{environmentName}.json", optional: false)
+            .AddSecretsConfiguration()
             .Build();
     }
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                // Add secrets configuration to the main pipeline
+                config.AddSecretsConfiguration();
+            })
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 var configuration = GetConfiguration();

@@ -1,0 +1,26 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WebServer.Models.User
+{
+    public class UserPayCard
+    {
+
+        [DataType(DataType.PhoneNumber)]
+        [Display(Name = "Phone Number")]
+        [RegularExpression(@"^((357|\+357)[\- ]?)?(\(?\d{3}\)?[\- ]?)?\d{3}\)?[\- ]?\d{2}$", ErrorMessage = "Not a valid phone number")]
+        //TODO: Make it unique
+        public string PhoneNumber { get; set; }
+
+        public string Message { get; set; }
+
+        public bool CodeReq { get; set; }
+
+        public string SMSCode { get; set; }
+
+        public ulong StationId { get; set; }
+        public ulong PowerBankId { get; set; }
+        public string? ReturnUrl { get; set; }
+        public string SessionId { get; set; }
+    }
+
+}

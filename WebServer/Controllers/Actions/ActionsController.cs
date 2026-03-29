@@ -46,6 +46,15 @@ namespace WebServer.Controllers.Device
             return View();
         }
 
+        [HttpGet]
+        [Authorize]
+        public IActionResult StationActions(string stationId, string stationName)
+        {
+            ViewBag.StationId = stationId;
+            ViewBag.StationName = stationName;
+            return View();
+        }
+
 
 
 
@@ -161,5 +170,165 @@ namespace WebServer.Controllers.Device
         }
 
 
+
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult> RefreshStation(string stationId)
+        {
+            try
+            {
+                Logger.LogInformation($"RefreshStation called with stationId: {stationId}");
+
+                if (string.IsNullOrEmpty(stationId) || !ulong.TryParse(stationId, out ulong stationIdNum))
+                {
+                    Logger.LogWarning($"Invalid stationId: {stationId}");
+                    return Json(new List<object>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
+                }
+
+                Logger.LogInformation($"Parsed stationIdNum: {stationIdNum}");
+
+                var userId = userManager.GetUserId(User);
+                var user = await userManager.FindByIdAsync(userId);
+                var roles = await userManager.GetRolesAsync(user);
+                var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
+
+                // Get actions for last month
+                var oneMonthAgo = DateTime.Now.AddMonths(-1);
+
+                // First check total count in DB
+                var totalCount = db.Actions.Count();
+                var stationCount = db.Actions.Count(a => a.ActionStationId == stationIdNum);
+                Logger.LogInformation($"Total actions in DB: {totalCount}, Actions for station {stationIdNum}: {stationCount}");
+
+                var actionsQuery = db.Actions
+                    .Where(a => a.ActionStationId == stationIdNum && a.ActionTime >= oneMonthAgo)
+                    .OrderByDescending(a => a.ActionTime);
+
+                // Check permissions
+                if (!allowAdminAndManager)
+                {
+                    var device = scanDevices.DevicesData.Devices.FirstOrDefault(d => d.Id == stationIdNum);
+                    if (device == null || device.Owners != user.UserName)
+                    {
+                        return Json(new List<object>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
+                    }
+                }
+
+                var actionsTable = actionsQuery.ToList();
+
+                foreach (var actLine in actionsTable)
+                {
+                    db.FillText(actLine);
+                }
+
+                return Json(actionsTable, new JsonSerializerOptions { PropertyNamingPolicy = null });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"{nameof(ActionsController)} -> {nameof(RefreshStation)} throw Exception");
+                return Json(new List<object>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "admin,manager")]
+        public IActionResult Finance()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "admin,manager")]
+        public async Task<ActionResult> RefreshFinance()
+        {
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var user = await userManager.FindByIdAsync(userId);
+                var roles = await userManager.GetRolesAsync(user);
+                var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
+
+                if (!allowAdminAndManager)
+                {
+                    return Json(new List<object>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
+                }
+
+                // Payment action codes
+                const int PaymentCapture = 0x4020;  // 16416 - реально списанные деньги
+                const int PaymentRefund = 0x4040;   // 16448 - возвраты
+
+                var now = DateTime.Now;
+                var startOfMonth = new DateTime(now.Year, now.Month, 1);
+                var startOfYear = new DateTime(now.Year, 1, 1);
+
+                // Get all capture and refund actions
+                var paymentActions = db.Actions
+                    .Where(a => a.ActionCode == PaymentCapture || a.ActionCode == PaymentRefund)
+                    .ToList();
+
+                // Group by station
+                var stationIds = paymentActions.Select(a => a.ActionStationId).Distinct().ToList();
+
+                var result = new List<object>();
+
+                foreach (var stationId in stationIds)
+                {
+                    var stationActions = paymentActions.Where(a => a.ActionStationId == stationId).ToList();
+
+                    // Get station name from devices
+                    var device = scanDevices.DevicesData.Devices.FirstOrDefault(d => d.Id == stationId);
+                    var stationName = device?.DeviceName ?? stationId.ToString();
+
+                    // Calculate earnings (captures - refunds)
+                    float monthEarnings = stationActions
+                        .Where(a => a.ActionTime >= startOfMonth)
+                        .Sum(a => a.ActionCode == PaymentCapture ? (a.PaymentAmount ?? 0) : -(a.PaymentAmount ?? 0));
+
+                    float yearEarnings = stationActions
+                        .Where(a => a.ActionTime >= startOfYear)
+                        .Sum(a => a.ActionCode == PaymentCapture ? (a.PaymentAmount ?? 0) : -(a.PaymentAmount ?? 0));
+
+                    float totalEarnings = stationActions
+                        .Sum(a => a.ActionCode == PaymentCapture ? (a.PaymentAmount ?? 0) : -(a.PaymentAmount ?? 0));
+
+                    // Count transactions
+                    int monthTransactions = stationActions.Count(a => a.ActionTime >= startOfMonth && a.ActionCode == PaymentCapture);
+                    int yearTransactions = stationActions.Count(a => a.ActionTime >= startOfYear && a.ActionCode == PaymentCapture);
+                    int totalTransactions = stationActions.Count(a => a.ActionCode == PaymentCapture);
+
+                    result.Add(new
+                    {
+                        StationId = stationId.ToString(),
+                        StationName = stationName,
+                        MonthEarnings = monthEarnings,
+                        YearEarnings = yearEarnings,
+                        TotalEarnings = totalEarnings,
+                        MonthTransactions = monthTransactions,
+                        YearTransactions = yearTransactions,
+                        TotalTransactions = totalTransactions
+                    });
+                }
+
+                // Add totals row
+                result.Add(new
+                {
+                    StationId = "",
+                    StationName = "TOTAL",
+                    MonthEarnings = result.Sum(r => ((dynamic)r).MonthEarnings),
+                    YearEarnings = result.Sum(r => ((dynamic)r).YearEarnings),
+                    TotalEarnings = result.Sum(r => ((dynamic)r).TotalEarnings),
+                    MonthTransactions = result.Sum(r => ((dynamic)r).MonthTransactions),
+                    YearTransactions = result.Sum(r => ((dynamic)r).YearTransactions),
+                    TotalTransactions = result.Sum(r => ((dynamic)r).TotalTransactions)
+                });
+
+                return Json(result, new JsonSerializerOptions { PropertyNamingPolicy = null });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"{nameof(ActionsController)} -> {nameof(RefreshFinance)} throw Exception");
+                return Json(new List<object>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
+            }
+        }
     }
 }

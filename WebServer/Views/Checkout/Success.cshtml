@@ -1,0 +1,48 @@
+﻿@using WebServer.Models.Stripe
+@model StripeCheckout
+@{
+    ViewData["Title"] = "Payment Successful";    
+    var redirectUrl = Url.Action("User", "AlreadyPaid");
+}
+<h2>Payment Successful</h2>
+<p id="maintext">Thank you for your purchase! Your payment has been successfully processed.<br>You will be redirected after <span id="countdown">3</span> seconds to powerbank page...</p>
+
+<script type="text/javascript">
+    window.onload = function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        const stationId = urlParams.get('stationId');
+        const powerBankId = urlParams.get('powerBankId');
+
+
+        if (sessionId) {
+           console.log("Session ID:", sessionId);
+           // Здесь можно показать sessionId пользователю или запросить детали с сервера
+        } else {
+           var countdownElement = document.getElementById('maintext');
+            countdownElement.textContent = "Session number not found, please contact the project administrators."
+            return; // Остановим редирект
+        }
+
+        var countdownElement = document.getElementById('countdown');
+        var seconds = 3;
+
+        var interval = setInterval(function () {
+            seconds--;
+            countdownElement.textContent = seconds;
+
+            if (seconds <= 0) {
+                clearInterval(interval);
+
+                //window.location.href = '/User/AlreadyPaid?session_id=' + encodeURIComponent(sessionId);
+
+                // Переход с передачей всех нужных параметров
+                window.location.href = `/User/AlreadyPaid?session_id=${encodeURIComponent(sessionId)}&stationId=${encodeURIComponent(stationId)}&powerBankId=${encodeURIComponent(powerBankId)}`;
+           
+
+                //window.location.href = '@redirectUrl';
+            }
+        }, 1000);
+
+
+}</script>

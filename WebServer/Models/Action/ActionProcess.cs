@@ -17,10 +17,8 @@ namespace WebServer.Models.Action
         {
             using (var dbActions = scope.ServiceProvider.GetRequiredService<ActionContext>())
             {
-                //var dbActions = scope.ServiceProvider.GetRequiredService<ActionContext>();
                 try
                 {
-
                     var action = new WebServer.Models.Action.Action(DateTime.Now, actionCode, userID, actionServerId, actionStationId, actionPowerBankId, actionPowerBankSlot, "");
 
                     dbActions.Actions.Add(action);
@@ -29,9 +27,36 @@ namespace WebServer.Models.Action
                 catch (Exception ex)
                 {
                     var z = ex.Message;
-
                 }
+            }
+        }
 
+        public void ActionSavePayment(int actionCode, string userID, ulong? actionStationId, ulong? actionPowerBankId, float paymentAmount, string paymentInfo)
+        {
+            using (var dbActions = scope.ServiceProvider.GetRequiredService<ActionContext>())
+            {
+                try
+                {
+                    var action = new WebServer.Models.Action.Action(
+                        DateTime.Now,
+                        actionCode,
+                        userID,
+                        0,  // serverId
+                        actionStationId ?? 0,
+                        actionPowerBankId ?? 0,
+                        0,  // slot
+                        "",
+                        paymentAmount,
+                        paymentInfo
+                    );
+
+                    dbActions.Actions.Add(action);
+                    dbActions.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    var z = ex.Message;
+                }
             }
         }
     }

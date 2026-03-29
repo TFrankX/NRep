@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebServer.Models.Identity
+namespace WebServer.Models.User
 {
     public class UserSMS
     {

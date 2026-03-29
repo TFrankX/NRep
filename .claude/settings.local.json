@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/usr/local/share/dotnet/dotnet build:*)",
+      "Bash(/Users/tomfrank/repository/ShareCharging/SecId_go/getid_mac_arm64 debug:*)",
+      "Bash(/Users/tomfrank/repository/ShareCharging/TestSecrets/TestSecrets.csproj:*)",
+      "Bash(/usr/local/share/dotnet/dotnet run:*)",
+      "Bash(/usr/local/share/dotnet/dotnet add:*)",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development /usr/local/share/dotnet/dotnet run)",
+      "Bash(/Users/tomfrank/repository/ShareCharging/SecId_go/getid_mac_arm64 setsec:*)",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development /usr/local/share/dotnet/dotnet run --project /Users/tomfrank/repository/ShareCharging/WebServer/WebServer.csproj 2>&1)",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development /usr/local/share/dotnet/dotnet run --project /Users/tomfrank/repository/ShareCharging/WebServer/WebServer.csproj --verbosity detailed)",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development /usr/local/share/dotnet/dotnet WebServer.dll)",
+      "Bash(ls:*)",
+      "Bash(find /Users/tomfrank/repository/ShareCharging/WebServer -name *.html -o -name *signalr* -o -name *hub*)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --print-to-pdf=\"/Users/tomfrank/repository/ShareCharging/WebServer/docs/payment_algorithm.pdf\" --no-margins \"/Users/tomfrank/repository/ShareCharging/WebServer/docs/payment_algorithm.html\" 2>&1)"
+    ]
+  }
+}

@@ -22,11 +22,14 @@ namespace WebServer.Models.Device
             LastGetTime = DateTime.MinValue;
             LastPutTime = DateTime.Now;
             ClientTime = DateTimeOffset.MinValue;
-            Price = 0;
+            Price = 12;
+            Reserved = false;
             LastUpdate = DateTime.Now;
             UserId = "";
             UpdateInt = false;
             UpdateExt = false;
+            PaymentInfo = "";
+            SessionId = "";
         }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
@@ -63,6 +66,10 @@ namespace WebServer.Models.Device
         public string UserId { get; set; }
         public bool UpdateInt { get; set; }
         public bool UpdateExt { get; set; }
+        public bool Reserved { get; set; }
+        public DateTime? ReserveTime { get; set; }
+        public string PaymentInfo { get; set; }
+        public string SessionId { get; set; }
         [NotMapped]
         public bool Init { get; set; }
 

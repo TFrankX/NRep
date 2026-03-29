@@ -8,11 +8,11 @@ namespace WebServer.Models.Action
 
 	public class Action
 	{
-
+        // Empty constructor for EF Core
+        public Action() { }
 
         public Action(DateTime actionTime, int actionCode, string userId, ulong actionServerId, ulong actionStationId, ulong actionPowerBankId, uint actionPowerBankSlot, string actionText)
         {
-            //ActionTime = DateTime.Now;
             ActionTime = actionTime;
             ActionCode = actionCode;
             UserId = userId;
@@ -21,6 +21,22 @@ namespace WebServer.Models.Action
             ActionPowerBankId = actionPowerBankId;
             ActionPowerBankSlot = actionPowerBankSlot;
             ActionText = actionText;
+            PaymentAmount = 0;
+            PaymentInfo = "";
+        }
+
+        public Action(DateTime actionTime, int actionCode, string userId, ulong actionServerId, ulong actionStationId, ulong actionPowerBankId, uint actionPowerBankSlot, string actionText, float paymentAmount, string paymentInfo)
+        {
+            ActionTime = actionTime;
+            ActionCode = actionCode;
+            UserId = userId;
+            ActionServerId = actionServerId;
+            ActionStationId = actionStationId;
+            ActionPowerBankId = actionPowerBankId;
+            ActionPowerBankSlot = actionPowerBankSlot;
+            ActionText = actionText;
+            PaymentAmount = paymentAmount;
+            PaymentInfo = paymentInfo;
         }
 
 
@@ -51,6 +67,8 @@ namespace WebServer.Models.Action
         }
         public uint ActionPowerBankSlot { get; set; }
         public string ActionText { get; set; }
+        public float? PaymentAmount { get; set; }
+        public string? PaymentInfo { get; set; }
     }
 
 

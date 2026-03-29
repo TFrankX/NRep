@@ -17,6 +17,10 @@ using NLog;
 using NLog.Web;
 using Microsoft.Extensions.Configuration;
 using System.Configuration;
+using Stripe;
+using WebServer.Services.Stripe;
+using WebServer.Services.Pricing;
+using WebServer.Services;
 
 namespace WebServer
 {
@@ -56,7 +60,7 @@ namespace WebServer
 
             var dbType = Configuration.GetConnectionString("DB");
             //environmentName = "Production";
-            if (dbType == "sqlight")
+            if (dbType == "sqlite")
             {
                 services.AddDbContextPool<DeviceContext>(options => options.UseSqlite(Configuration.GetConnectionString("DbDevice")));
                 services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(Configuration.GetConnectionString("DbAppAccounts")));
@@ -95,11 +99,18 @@ namespace WebServer
             services.AddSingleton<ScanDevices>();
             services.AddHostedService<ScanDevices>(p => p.GetRequiredService<ScanDevices>());
 
+
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddDistributedMemoryCache();
 
-            
+
+            Stripe.StripeConfiguration.ApiKey = Configuration["Stripe:SecretKey"];
+            services.Configure<StripeSettings>(Configuration.GetSection("Stripe"));
+
+            services.AddScoped<IStripeRoutines, StripeRoutines>();
+            services.AddSingleton<IPricingService, PricingService>();
+            services.AddSingleton<IDatabaseMigrator, DatabaseMigrator>();
 
             services.AddSession(options =>
             {

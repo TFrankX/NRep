@@ -1,4 +1,4 @@
-﻿  <script src="~/jqwidgets/jqxbuttons.js"></script>
+﻿<script src="~/jqwidgets/jqxbuttons.js"></script>
 <script src="~/jqwidgets/jqxscrollbar.js"></script>
 <script src="~/jqwidgets/jqxgrid.js"></script>
 <script src="~/jqwidgets/jqxgrid.edit.js"></script>
@@ -103,13 +103,33 @@
              });
         }
 
+        function SetDescription(DeviceId, Description) {
+            $("#jqxgrid").jqxGrid('clearselection');
+            isUserEditing = false;
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SetDescription", "Devices")',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    DeviceId: DeviceId,
+                    Description: Description,
+                }),
+                success: function () {
+                    console.log('Description saved');
+                }
+            });
+        }
+
 
         function SetTypeOfUse(DeviceId,row,OldTypeOfUse) {
         //function SetTypeOfUse(SelObj) {
             var el = document.getElementById("TypeOfUse" + row);
             var TypeOfUse = el.options[el.selectedIndex].value;
             console.log('TypeOfUse:' + TypeOfUse +' OldTypeOfUse:'+OldTypeOfUse);
-            
+
+            // Clear grid selection to prevent highlight issues
+            $("#jqxgrid").jqxGrid('clearselection');
+            isUserEditing = false;
 
             if (TypeOfUse !== OldTypeOfUse) {
                 source.localdata[row].TypeOfUse = TypeOfUse
@@ -125,22 +145,28 @@
                         //  location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
                     }
                 });
-                sleep(1000);
             }
         }
-        function GoToDetails(serverIP) {
-
-            if (serverIP == null)
+        function GoToDetails(deviceName) {
+            if (deviceName == null)
                 return;
 
+            // Find device ID by name
+            var device = source.localdata.find(d => d.DeviceName === deviceName);
+            if (device) {
+                window.location.href = '@Url.Action("StationActions", "Actions")' +
+                    '?stationId=' + device.Id_str +
+                    '&stationName=' + encodeURIComponent(deviceName);
+                return;
+            }
+
+            // Fallback to old behavior if device not found
             $.ajax({
                 type: "POST",
-                // url: '@Url.Action("GoToDetails", "Devices")',
                 url: '@Url.Action("SetFilter", "Devices")',
                 contentType: 'application/json',
                 data: JSON.stringify({
-                    // ServerIP: serverIP
-                    Filter: serverIP
+                    Filter: deviceName
                 }),
                 success: function () {
                     //location.href = document.location.origin + '@Url.Action("ServerDetails", "ServerDetails")';
@@ -229,7 +255,7 @@
 
         }
 
-        function StopRender() { 
+        function StopRender() {
             noRender = 1;
         }
 
@@ -439,27 +465,37 @@
             } else if (column === 'TypeOfUse') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    "<select class='selectD' id='TypeOfUse" + row + "' onchange=\"SetTypeOfUse('" + jsonmod[row].Id_str + "','" + row + "','" + value + "')\" >" +
+                    "<select class='selectD' id='TypeOfUse" + row + "' " +
+                    "onfocus='isUserEditing=true' onblur='isUserEditing=false' " +
+                    "onmousedown='isUserEditing=true' " +
+                    "onchange=\"SetTypeOfUse('" + jsonmod[row].Id_str + "','" + row + "','" + value + "')\" >" +
                     "<option value='0' " + ((value == 0) ? "selected='selected'" : "") + " >-----</option>" +
                     "<option value='1'" + ((value == 1) ? "selected='selected'" : "") + " >Free Take</option>" +
                     "<option value='2'" + ((value == 2) ? "selected='selected'" : "") + " >Free Multi Take</option>" +
                     "<option value='3'" + ((value == 3) ? "selected='selected'" : "") + " >SMS Take</option>" +
                     "<option value='4'" + ((value == 4) ? "selected='selected'" : "") + " >Owner Auth</option>" +
-                    "<option value='5'" + ((value == 5) ? "selected='selected'" : "") + " >Pay By Card</option>" +
+                    "<option value='5'" + ((value == 5) ? "selected='selected'" : "") + " >Pay By Card1</option>" +
+                    "<option value='6'" + ((value == 6) ? "selected='selected'" : "") + " >Pay By Card2</option>" +
+                    "<option value='7'" + ((value == 7) ? "selected='selected'" : "") + " >Pay By Card3</option>" +
+                    "<option value='8'" + ((value == 8) ? "selected='selected'" : "") + " >Pay By Card4</option>" +
                     "</select >" +
                     "</span>" +
                     "</div>";
-            //} else if (column === 'Description') {
-            //    return divstartstyle +
-            //        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-            //        "<input type='text' value='"+value +"' id='Desc" + row + "' onchange=\"SetDescription('" + jsonmod[row].Id_str + "','" + row + "','" + value + "')\" >" +
-            //        "</span>" +
-            //        "</div>";
+            } else if (column === 'Description') {
+                return divstartstyle +
+                    "<span style='margin-top: 5px; margin-left: 10px; margin-right: 10px; position: absolute; left: 0; right: 0;'>" +
+                    "<input type='text' style='width: calc(100% - 10px); box-sizing: border-box;' value='" + (value || '') + "' id='Desc" + row + "' " +
+                    "onfocus='isUserEditing=true' " +
+                    "onkeydown='if(event.keyCode==13){this.blur();}' " +
+                    "onblur='isUserEditing=false; SetDescription(\"" + jsonmod[row].Id_str + "\", this.value)' >" +
+                    "</span>" +
+                    "</div>";
 
             } else if (column === 'Owners') {
                 return divstartstyle +
                     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    "<input type='text' value='1000' id='Owner" + row + "' onfocus=\"StopRender()\" >" +                    
+                    "<input type='text' value='" + (value || '1000') + "' id='Owner" + row + "' " +
+                    "onfocus='isUserEditing=true' onblur='isUserEditing=false; SetOwner(\"" + jsonmod[row].Id_str + "\", this.value)' >" +
                     "</span>" +
                     "</div>";
             }
@@ -472,12 +508,22 @@
 
 
         function refresh() {
+            // Skip refresh if user is currently editing a field
+            if (isUserEditing) {
+                return;
+            }
+
             $.ajax({
                 type: "POST",
                 url: '@Url.Action("Refresh", "Devices")',
                 contentType: 'application/json',
                 data: JSON.stringify({ cnt: 0 }),
                 success: function(Data) {
+                    // Double-check user isn't editing before updating
+                    if (isUserEditing) {
+                        return;
+                    }
+
                     var strData = JSON.stringify(Data,
                         function(key, value) {
                             if (value && typeof value === 'object') {
@@ -527,6 +573,7 @@
         //}
 
         var stoprefresh = false;
+        var isUserEditing = false;  // Flag to pause refresh when user is editing
         var noRender = -1;
         var minDateVal = null;
         var maxDateVal = null;
@@ -535,6 +582,20 @@
         var prevChartData = "";
         var grid = $("#jqxgrid"),
             intervalId = setInterval(refresh, 3000);
+
+        // Track focus on input elements to pause refresh
+        $(document).on('focus', 'select.selectD, input[type="text"]', function() {
+            isUserEditing = true;
+        });
+
+        $(document).on('blur', 'select.selectD, input[type="text"]', function() {
+            isUserEditing = false;
+        });
+
+        // Also pause on mousedown on select (before focus)
+        $(document).on('mousedown', 'select.selectD', function() {
+            isUserEditing = true;
+        });
 
         var source =
         {
@@ -576,7 +637,7 @@
                     rowsheight: 48,
                     //autorowheight: true,
                     enablebrowserselection: true,
-                    selectionmode: 'multiplecellsadvanced',   
+                    selectionmode: 'multiplecellsadvanced',
                     //autoheight: true,
                     //pageable: true,
                     height: 720,
@@ -625,7 +686,7 @@
         function _createWindow() {
             var jqxWidget = $('#jqxWidget');
             var offset = jqxWidget.offset();
-            $('#chartWindow').jqxWindow({
+            $('#deviceSettings').jqxWindow({
                 position: { x: offset.left + 50, y: offset.top + 50 },
                 showCollapseButton: true,
                 maxHeight: 600,
@@ -636,22 +697,26 @@
                 width: 900,
                 initContent: function() {
                     //$('#tab').jqxTabs({ height: '100%', width:  '100%' });
-                    $('#chartWindow').jqxWindow('focus');
+                    $('#deviceSettings').jqxWindow('focus');
                 },
                 autoOpen: false
             });
 
+            $('#jqxgrid').on('rowclick', function (event) {
+                // event.args.rowindex is a bound index.
+                alert("Row with bound index: " + event.args.rowindex + " has been clicked.");
+            });
 
             // $('#chartWindow').jqxWindow('close');
         };
 
     </script>
 
-    }
+}
 
 
 
-    <body class="default">
+<body class="default">
     <div id="jqxWidget">
         <div style="display: none; width: 100%; height: 650px; margin-top: 50px;" id="mainWinContainer">
             <div id="chartWindow">
@@ -665,99 +730,135 @@
             </div>
         </div>
     </div>
-    </body>
+</body>
 
 
 
-    <style>
+<style>
 
-        .selectD {
-            font-size: 0.9rem;
-            padding: 2px 5px;
-        }
+    .selectD {
+        font-size: 0.9rem;
+        padding: 2px 5px;
+    }
 
-        .disable {
-            pointer-events: none;
-            background: #ccc;
-        }
+    .disable {
+        pointer-events: none;
+        background: #ccc;
+    }
 
-        .yellow {
-            background: orange;
-            border-color: orange;
-        }
+    .yellow {
+        background: orange;
+        border-color: orange;
+    }
 
-        .redCircle {
-            width: 24px;
-            height: 24px;
-            background: red;
-            border-radius: 50%;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    .redCircle {
+        width: 24px;
+        height: 24px;
+        background: red;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-        .greenCircle {
-            width: 24px;
-            height: 24px;
-            background: green;
-            border-radius: 50%;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    .greenCircle {
+        width: 24px;
+        height: 24px;
+        background: green;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-        .grayCircle {
-            width: 24px;
-            height: 24px;
-            background: gray;
-            border-radius: 50%;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    .grayCircle {
+        width: 24px;
+        height: 24px;
+        background: gray;
+        border-radius: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-        /* Preloader */
+    /* Preloader */
 
-        #p_prldr {
-            position: fixed;
-            left: 0;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            background: #0066FF;
-            z-index: 30;
-        }
+    #p_prldr {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: #0066FF;
+        z-index: 30;
+    }
 
-        .contpre small {
-            font-size: 20px;
-            line-height: 24px;
-        }
+    .contpre small {
+        font-size: 20px;
+        line-height: 24px;
+    }
 
-        .contpre {
-            width: 250px;
-            height: 100px;
-            position: absolute;
-            left: 50%;
-            top: 48%;
-            margin-left: -125px;
-            margin-top: -75px;
-            color: #fff;
-            font-size: 32px;
-            text-align: center;
-            line-height: 36px;
-        }
+    .contpre {
+        width: 250px;
+        height: 100px;
+        position: absolute;
+        left: 50%;
+        top: 48%;
+        margin-left: -125px;
+        margin-top: -75px;
+        color: #fff;
+        font-size: 32px;
+        text-align: center;
+        line-height: 36px;
+    }
 
-        #p_prldr .svg_anm {
-            position: absolute;
-            width: 41px;
-            height: 41px;
-            background: url(/images/tail-spin.svg) center center no-repeat;
-            background-size: 41px;
-            margin: -16px 0 0 -16px;
-        }     
-    </style>
+    #p_prldr .svg_anm {
+        position: absolute;
+        width: 41px;
+        height: 41px;
+        background: url(/images/tail-spin.svg) center center no-repeat;
+        background-size: 41px;
+        margin: -16px 0 0 -16px;
+    }
+</style>
 
 
+<div class="text-center">
+    <h2>Charhing stations hosting servers</h2>
+</div>
+<div id="jqxgrid"></div>
 
-    <div class="text-center">
-        <h2>Charhing stations hosting servers</h2></div>
-    <div id="jqxgrid"></div>
+<body class="default">
+    <div id="jqxWidget">
+        <div style="display: none; width: 100%; height: 650px; margin-top: 50px;" id="mainWinContainer">
+            <div id="deviceSettings">
 
+                <div id="windowHeader">
+                    <span>
+                        Device Settings
+                    </span>
+                </div>
+
+
+                <div style="overflow: hidden;" id="windowContent">
+
+                    <h2 style="text-align: center;">Charge station:</h2>
+                    <p style="font-size: 1.5em;"><strong>ID:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Device name:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Host ID:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Online:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Slots:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Activated:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Can register:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Registered:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Type of use:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Registered:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Type of use:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Description: </strong><input style="font-size: 1em;" type="text" id="DescriptionInputChange" name="" onchange="descriptionInputChange()"></p>
+                    <p style="font-size: 1.5em;"><strong>SimID:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Push PB:&nbsp;</strong></p>
+                    <p style="font-size: 1.5em;"><strong>Last conect time:&nbsp;</strong></p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 

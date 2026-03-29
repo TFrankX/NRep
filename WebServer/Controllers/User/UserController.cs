@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -18,12 +19,23 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Cryptography.Xml;
 using ProtoBuf.Meta;
 using WebServer.Data;
-using WebServer.Models.Device;
+using WebServer.Models.User;
 using System.Data;
 using System;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Security.Claims;
 using WebServer.Utils.Requests;
+using System.Net.Http;
+using System.Threading.Tasks;
+using WebServer.Models.Stripe;
+using Stripe.Checkout;
+using Stripe;
+using System.Drawing;
+using WebServer.Models.Stripe;
+using WebServer.Services.Stripe;
+using WebServer.Services.Pricing;
+
+
 
 namespace WebServer.Controllers.User
 {
@@ -66,8 +78,15 @@ namespace WebServer.Controllers.User
         private readonly UserManager<AppUser> userManager;
         private readonly ScanDevices scanDevices;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
+        private readonly IStripeRoutines _stripeRoutines;
+        private readonly IPricingService _pricingService;
 
-        public UserController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<UserController> logger, IHttpContextAccessor httpContextAccessor)
+
+        private readonly HttpClient _httpClient;
+
+
+        public UserController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<UserController> logger, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IStripeRoutines stripeRoutines, IPricingService pricingService)
         {
             userManager = _userManager;
             Logger = logger;
@@ -75,6 +94,255 @@ namespace WebServer.Controllers.User
             scanDevices.EvReturnThePowerBank -= ShowInfo;
             scanDevices.EvReturnThePowerBank += ShowInfo;
             this._httpContextAccessor = httpContextAccessor;
+            _configuration = configuration;
+            _stripeRoutines = stripeRoutines;
+            _pricingService = pricingService;
+        }
+
+        //public IActionResult InitiatePayment(StripeCheckout paymentRequest)
+        //{
+        //    // Настраиваем параметры платежа
+        //    paymentRequest.ProductName = "A-Charger";
+        //    paymentRequest.ProductDescription = "Powerbank rent pay";
+        //    paymentRequest.Amount = 12;
+        //    paymentRequest.Currency = "eur";
+
+        //    try
+        //    {
+        //        var session = _stripeRoutines.MakePayment(paymentRequest, Request);
+
+        //        var payCard = new UserPayCard
+        //        {
+        //            SessionId = session.Id
+        //        };
+
+        //        return View("DoPayCard", payCard);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest($"Payment initiation failed: {ex.Message}");
+        //    }
+        //}
+
+
+        //public async Task<IActionResult> InitiatePayment(StripeCheckout paymentRequest)
+        //{
+
+        //    paymentRequest.ProductName = "A-Charger";
+        //    paymentRequest.ProductDescription = "Powerbank rent pay";
+        //    paymentRequest.Amount = 12;
+        //    paymentRequest.Currency = "eur";
+
+        //    var _httpClient = new HttpClient();
+        //    // Отправка POST запроса к методу HoldPayment
+        //    var jsonContent = JsonConvert.SerializeObject(paymentRequest);
+        //    var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+        //    //          var response = await _httpClient.PostAsync($"{Request.Scheme}://{Request.Host}/checkout/hold-payment", content);
+        //    var response = await _httpClient.PostAsync($"{Request.Scheme}://{Request.Host}/checkout/make-payment", content);
+
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        // Получаем sessionId из ответа
+        //        var result = await response.Content.ReadAsStringAsync();
+        //        var sessionId = JsonConvert.DeserializeObject<dynamic>(result).sessionId;
+        //        var payCard= new UserPayCard();
+        //        payCard.SessionId = sessionId;
+
+        //        return View("DoPayCard", payCard);
+        //        //return Ok(new { sessionId });
+        //    }
+
+        //    return BadRequest("Payment initiation failed");
+        //}
+
+
+        //[HttpGet]
+        //[AllowAnonymous]
+        //[Authorize(Roles = "admin, manager, viewer, support")]
+        //public IActionResult User()
+        //{
+
+        //    //// read cookie from IHttpContextAccessor
+        //    //string cookieValueFromContext = _httpContextAccessor.HttpContext.Request.Cookies["KeyCharge911"];
+        //    ////read cookie from Request object  
+        //    //string cookieValueFromReq = Request.Cookies["KeyCharge911"];
+
+
+        //    //read cookie from Request object  
+        //    string cookieValueFromReq = Request.Cookies["KeyCharge911"];
+        //    //bool taken = false;
+
+        //    PayInfo payInfo = new PayInfo();
+        //    foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
+        //    {
+        //        if (((int)pb.ChargeLevel > 3) && pb.Plugged && pb.IsOk)
+        //        {
+        //            payInfo.Available++;
+        //        }
+        //    }
+        //    if (!string.IsNullOrEmpty(cookieValueFromReq))
+        //    {
+
+        //        foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
+        //        {
+
+
+        //            if (pb.UserId == cookieValueFromReq)
+        //            {
+        //                //float cost = ((DateTime.Now - pb.LastGetTime).Minutes/60) * pb.Price;
+        //                payInfo.Taken = pb.Taken ? 1 : 0;
+        //                payInfo.UserId = cookieValueFromReq;
+        //                payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
+        //                payInfo.Cost = (float)Math.Round(pb.Taken ? ((DateTime.Now - pb.LastGetTime).Minutes * pb.Price / 60F) : pb.Cost, 2);
+        //            }
+        //        }
+        //    }
+        //    //return View(Json(payInfo, new JsonSerializerOptions { PropertyNamingPolicy = null }));
+        //    return View(payInfo);
+        //    //return View();
+        //    //set the key value in Cookie  
+        //    //Set("KeyCharge911", "Hello from cookie1", 1500);
+        //    //Delete the cookie object  
+        //    //Remove("Key");
+        //    //return View();
+        //}
+
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> AlreadyPaid( string session_Id,  string stationId, string powerBankId)
+        {
+            PayInfo payInfo = new PayInfo();
+            ulong stationIdn=0;
+            ulong powerBankIdn = 0;
+            if (!ulong.TryParse(stationId, out stationIdn))
+            {
+                Logger.LogError($"Getting invalid Station Id: {stationId}\n");
+                return BadRequest("Invalid stationId");
+            }
+            if (!ulong.TryParse(powerBankId, out powerBankIdn))
+            {
+                Logger.LogError($"Getting invalid PowerBank Id: {stationId}\n");
+                return BadRequest("Invalid powerbankId"); ;
+            }
+
+            if (string.IsNullOrEmpty(session_Id))
+            {
+                return BadRequest("Missing session_id.");
+            }
+
+            StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
+
+            // 1. Получаем сессию
+            var sessionService = new SessionService();
+            Session session;
+            try
+            {
+                session = sessionService.Get(session_Id);
+            }
+            catch (StripeException ex)
+            {
+                return BadRequest("Invalid session_id: " + ex.Message);
+            }
+
+            PaymentIntent paymentIntent = null;
+            var paymentIntentId = session.PaymentIntentId;
+
+            if (!string.IsNullOrEmpty(paymentIntentId))
+            {
+                var paymentIntentService = new PaymentIntentService();
+                paymentIntent = paymentIntentService.Get(paymentIntentId);
+            }
+
+            var chargeService = new ChargeService();
+            var chargeList = chargeService.List(new ChargeListOptions
+            {
+                PaymentIntent = paymentIntentId,
+                Limit = 1
+            });
+
+            var charge = chargeList?.FirstOrDefault();
+
+            DateTime? paymentDateTime = null;
+
+            if (charge != null)
+            {
+                paymentDateTime = charge.Created;
+            }
+
+            Customer customer = null;
+            if (!string.IsNullOrEmpty(session.CustomerId))
+            {
+                var customerService = new CustomerService();
+                customer = customerService.Get(session.CustomerId);
+            }
+
+
+
+            var pbPush = scanDevices.DevicesData.PowerBanks[scanDevices.DevicesData.PowerBanks.FindIndex(item => item.Id == powerBankIdn)];
+            var pbDevice = scanDevices.DevicesData.Devices.FirstOrDefault(d => d.Id == stationIdn);
+            var typeOfUse = pbDevice?.TypeOfUse ?? TypeOfUse.PayByCard;
+
+
+            if (pbPush.Reserved && !pbPush.Taken && pbPush.Plugged)
+            {
+
+                var userId = userManager.GetUserId(base.User);
+                List<string> roles = new List<string>();
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    Guid guid = Guid.NewGuid();
+                    userId = guid.ToString();
+                }
+                else
+                {
+                    var user = await userManager.FindByIdAsync(userId);
+                    var rolesTask = await userManager.GetRolesAsync(user);
+
+                    roles = rolesTask.ToList();
+                }
+
+
+
+                pbPush.Reserved = false;
+                pbPush.SessionId = session_Id;
+                pbPush.PaymentInfo = $"Name: {session.CustomerDetails?.Name ?? "Unknown"},amount:{(session.AmountTotal / 100m).ToString()},time: {paymentDateTime?.ToString("g") ?? "Unknown".ToString()}, email:{session.CustomerDetails?.Email}, card country:{charge.PaymentMethodDetails?.Card.Country}, type: {charge.PaymentMethodDetails?.Card.Brand}, card last 4 digs: {charge.PaymentMethodDetails?.Card.Last4.ToString()}, card expired: {charge.PaymentMethodDetails?.Card.ExpMonth.ToString("D2")}/{charge.PaymentMethodDetails?.Card.ExpYear.ToString()}";
+                pbPush.Stored = false;
+
+                var pbId = scanDevices.PushPowerBank(pbPush.HostDeviceName, pbPush.HostSlot, userId, roles);
+
+  
+                if ((pbPush.Id > 1000) && (pbPush != null))
+                {
+
+                    //set the key value in Cookie 
+                    Set("KeyCharge911", userId, 1500);
+
+                    payInfo.Taken = pbPush.Taken ? 1 : 0;
+                    payInfo.UserId = $"{session.CustomerDetails?.Name ?? "Unknown"}";
+                    payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
+                    payInfo.Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken);
+
+                    return View("Do",payInfo);
+
+                };
+                Thread.Sleep(100);
+
+
+            }
+
+            payInfo.Taken = pbPush.Taken ? 1 : 0;
+            payInfo.UserId = $"{ session.CustomerDetails?.Name ?? "Unknown"}";
+            //payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
+            payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes).ToString()} min" : "-";
+            payInfo.Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken);
+
+            return View("Do", payInfo);
+
+
         }
 
 
@@ -147,7 +415,8 @@ namespace WebServer.Controllers.User
                         payInfo.UserId = cookieValueFromReq;
                         //payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
                         payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes).ToString()} min" : "-";
-                        payInfo.Cost = (float)Math.Round(pb.Taken ? ((DateTime.Now - pb.LastGetTime).Minutes * pb.Price / 60F) : pb.Cost, 2);
+                        payInfo.Cost = _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken);
+
                         return View(payInfo);
                     }
                 }
@@ -158,7 +427,9 @@ namespace WebServer.Controllers.User
 
 
 
-            if ((device.TypeOfUse != TypeOfUse.FreeTake && device.TypeOfUse != TypeOfUse.FreeMultiTake && device.TypeOfUse != TypeOfUse.SMSTake) ||(!device.Activated))
+            // if ((device.TypeOfUse != TypeOfUse.FreeTake && device.TypeOfUse != TypeOfUse.FreeMultiTake && device.TypeOfUse != TypeOfUse.SMSTake && device.TypeOfUse != TypeOfUse.PayByCard) ||(!device.Activated))
+
+            if ((device.TypeOfUse==0) || (!device.Activated))
             {
                 payInfo.Taken = 0;
                 payInfo.UserId = "Not registred/enabled device";
@@ -185,19 +456,32 @@ namespace WebServer.Controllers.User
             if ((!taken)||(device.TypeOfUse == TypeOfUse.FreeMultiTake))
             {
                 var maxCharge = 0;
+                PowerBank? pbTake = null;
                 uint maxChargedSlot = 0;
                 foreach (PowerBank pb in devicePbs)
                 {
-                    if (!pb.Taken && pb.Plugged)
+                    TimeSpan? resTimeDiff = (DateTime.Now - pb.ReserveTime);
+                    double resTimeDiffSec = 0;
+                    if (resTimeDiff.HasValue)
+                    {
+                         resTimeDiffSec = resTimeDiff.Value.TotalSeconds;
+                       
+                    }
+                    else
+                    {
+                        resTimeDiffSec = 0.0;
+                    }
+                    if (!pb.Taken && pb.Plugged && (!pb.Reserved || (resTimeDiffSec>90.0)))
                     {
                         if ((int)pb.ChargeLevel > maxCharge)
                         {
                             maxCharge = (int)pb.ChargeLevel;
                             maxChargedSlot = pb.HostSlot;
+                            pbTake = pb;
                         }
                        
                     }
-                }
+                    }
 
 
 
@@ -232,18 +516,71 @@ namespace WebServer.Controllers.User
                 }
 
 
+                if (_pricingService.IsPaidOption(device.TypeOfUse))
+                {
+                   if (pbTake != null)
+                    {
+                        var pricingPlan = _pricingService.GetPlan(device.TypeOfUse);
 
-                    //if (string.IsNullOrEmpty(userId))
-                    //{
-                    //    userId = "unknown";
+                        pbTake.Reserved = true;
+                        pbTake.ReserveTime = DateTime.Now;
+                        pbTake.Stored = false;
 
-                    //}
-                    //else
-                    //{
-                    //    var user = await userManager.FindByIdAsync(userId);
-                    //    var rolesTask = await userManager.GetRolesAsync(user);
-                    //    roles = rolesTask.ToList();
-                    //}
+
+                        var paymentRequest = new StripeCheckout
+                        {
+                            StationId = device.Id,
+                            PowerBankId = pbTake.Id,
+                            Amount = pricingPlan.HoldAmount,
+                            ProductName = "A-Charger",
+                            ProductDescription = "Powerbank rent pay",
+                            Currency = pricingPlan.Currency
+                        };
+
+
+
+                        try
+                        {
+                            //Для мгновенного списывания
+                            //var session = _stripeRoutines.MakePayment(paymentRequest, Request);
+                            //Для захвата суммы
+                            var session = _stripeRoutines.HoldPayment(paymentRequest, Request);
+                            var payCard = new UserPayCard
+                            {
+                               SessionId = session.Id
+                            };
+
+                            return View("DoPayCard", payCard);
+                        }
+                        catch (Exception ex)
+                        {
+                             return BadRequest($"Payment initiation failed: {ex.Message}");
+                        }
+
+
+
+
+                        //_stripeRoutines.MakePayment(paymentRequest, Request);
+
+                        //return RedirectToAction("InitiatePayment", new StripeCheckout { StationId = device.Id, PowerBankId = pbTake.Id, Amount=pbTake.Price});
+                    }
+                    payInfo.Cost = 0;
+                    return View(payInfo);
+                    //return View("DoPayCard", new UserSMS { StationId = device.Id });
+                }
+
+
+                //if (string.IsNullOrEmpty(userId))
+                //{
+                //    userId = "unknown";
+
+                //}
+                //else
+                //{
+                //    var user = await userManager.FindByIdAsync(userId);
+                //    var rolesTask = await userManager.GetRolesAsync(user);
+                //    roles = rolesTask.ToList();
+                //}
 
 
 
@@ -268,7 +605,7 @@ namespace WebServer.Controllers.User
                     payInfo.Taken = pbPush.Taken ? 1 : 0;
                     payInfo.UserId = userId;
                     payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
-                    payInfo.Cost = (float)Math.Round(pbPush.Taken ? ((DateTime.Now - pbPush.LastGetTime).Minutes * pbPush.Price / 60F) : pbPush.Cost, 2);
+                    payInfo.Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken);
                     return View(payInfo);
 
                 };
@@ -429,7 +766,7 @@ namespace WebServer.Controllers.User
                             payInfo.Taken = pbPush.Taken ? 1 : 0;
                             payInfo.UserId = model.PhoneNumber;
                             payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
-                            payInfo.Cost = (float)Math.Round(pbPush.Taken ? ((DateTime.Now - pbPush.LastGetTime).Minutes * pbPush.Price / 60F) : pbPush.Cost, 2);
+                            payInfo.Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken);
                             return View("User",payInfo);
 
                         };

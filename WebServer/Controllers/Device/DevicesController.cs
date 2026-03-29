@@ -9,6 +9,8 @@ using WebServer.Models.Device;
 using WebServer.Models.Identity;
 using WebServer.Workers;
 using WebServer.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace WebServer.Controllers.Device
 {
     public class PowerBankToPush 
@@ -41,18 +43,25 @@ namespace WebServer.Controllers.Device
         public string DeviceId { get; set; }
         public string TypeOfUse { get; set; }
     }
+
+    public class DeviceToDescription
+    {
+        public string DeviceId { get; set; }
+        public string Description { get; set; }
+    }
     public class DevicesController : Controller
     {
         private readonly ILogger<DevicesController> Logger;
         private readonly UserManager<AppUser> userManager;
         private readonly ScanDevices scanDevices;
+        private readonly DeviceContext _deviceContext;
 
-        public DevicesController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<DevicesController> logger)
+        public DevicesController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<DevicesController> logger, DeviceContext deviceContext)
         {
             userManager = _userManager;
             Logger = logger;
             this.scanDevices = scanDevices;
-
+            _deviceContext = deviceContext;
         }
 
         [HttpGet]
@@ -94,8 +103,23 @@ namespace WebServer.Controllers.Device
                 roles = rolesTask.ToList();
             }
 
+            // Try to update in memory first (online device)
+            var result = scanDevices.SetTypeOfUse(DeviceToTypeOfUse.DeviceId, typeOfUse, userName, roles);
 
-            scanDevices.SetTypeOfUse(DeviceToTypeOfUse.DeviceId, typeOfUse, userName, roles);
+            // If not found in memory, update directly in DB (offline device)
+            if (result == 404)
+            {
+                if (ulong.TryParse(DeviceToTypeOfUse.DeviceId, out ulong deviceId))
+                {
+                    var dbDevice = await _deviceContext.Device.FirstOrDefaultAsync(d => d.Id == deviceId);
+                    if (dbDevice != null)
+                    {
+                        dbDevice.TypeOfUse = (TypeOfUse)typeOfUse;
+                        await _deviceContext.SaveChangesAsync();
+                        Logger.LogInformation($"SetTypeOfUse for offline device {deviceId} to {typeOfUse} by {userName}");
+                    }
+                }
+            }
 
             Thread.Sleep(100);
 
@@ -128,11 +152,73 @@ namespace WebServer.Controllers.Device
                 roles = rolesTask.ToList();
             }
 
+            // Try to update in memory first (online device)
+            var result = scanDevices.SetOwner(DeviceToOwn.DeviceId, DeviceToOwn.Owner, userName, roles);
 
-            scanDevices.SetOwner(DeviceToOwn.DeviceId, DeviceToOwn.Owner, userName, roles);
+            // If not found in memory, update directly in DB (offline device)
+            if (result == 404)
+            {
+                if (ulong.TryParse(DeviceToOwn.DeviceId, out ulong deviceId))
+                {
+                    var dbDevice = await _deviceContext.Device.FirstOrDefaultAsync(d => d.Id == deviceId);
+                    if (dbDevice != null)
+                    {
+                        dbDevice.Owners = DeviceToOwn.Owner;
+                        await _deviceContext.SaveChangesAsync();
+                        Logger.LogInformation($"SetOwner for offline device {deviceId} to '{DeviceToOwn.Owner}' by {userName}");
+                    }
+                }
+            }
 
             Thread.Sleep(100);
 
+
+            return RedirectToAction("Devices", "Devices");
+        }
+
+        [Authorize(Roles = "admin,manager")]
+        [HttpPost]
+        public async Task<IActionResult> SetDescription([FromBody] DeviceToDescription deviceToDescription)
+        {
+            if (deviceToDescription == null || string.IsNullOrEmpty(deviceToDescription.DeviceId))
+            {
+                return RedirectToAction("Devices");
+            }
+
+            var userId = userManager.GetUserId(User);
+            var userName = userManager.GetUserName(User);
+            List<string> roles = new List<string>();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = "unknown";
+            }
+            else
+            {
+                var user = await userManager.FindByIdAsync(userId);
+                var rolesTask = await userManager.GetRolesAsync(user);
+                roles = rolesTask.ToList();
+            }
+
+            // Try to update in memory first (online device)
+            var result = scanDevices.SetDescription(deviceToDescription.DeviceId, deviceToDescription.Description ?? "", userName, roles);
+
+            // If not found in memory, update directly in DB (offline device)
+            if (result == 404)
+            {
+                if (ulong.TryParse(deviceToDescription.DeviceId, out ulong deviceId))
+                {
+                    var dbDevice = await _deviceContext.Device.FirstOrDefaultAsync(d => d.Id == deviceId);
+                    if (dbDevice != null)
+                    {
+                        dbDevice.Description = deviceToDescription.Description ?? "";
+                        await _deviceContext.SaveChangesAsync();
+                        Logger.LogInformation($"SetDescription for offline device {deviceId} to '{deviceToDescription.Description}' by {userName}");
+                    }
+                }
+            }
+
+            Thread.Sleep(100);
 
             return RedirectToAction("Devices", "Devices");
         }
@@ -306,17 +392,6 @@ namespace WebServer.Controllers.Device
         {
             try
             {
-                //var userId = userManager.GetUserId(User);
-                //var user = await userManager.FindByIdAsync(userId);
-                //var roles = await userManager.GetRolesAsync(user);
-                //var filterNotMoney = roles.Contains("support") || roles.Contains("manager");
-                //var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
-                //var allowAdminManagerSupport = roles.Contains("support") || roles.Contains("admin") || roles.Contains("manager");
-                //var allowAdmin = roles.Contains("admin");
-
-
-
-
                 var userId = userManager.GetUserId(User);
                 var user = await userManager.FindByIdAsync(userId);
 
@@ -332,20 +407,9 @@ namespace WebServer.Controllers.Device
                 {
                     var deviceList = scanDevices.DevicesData.Devices.Where(p => p.Owners == user.UserName).ToList<WebServer.Models.Device.Device>();
                     var powerBankList = scanDevices.DevicesData.PowerBanks.Where(p => deviceList.Select(b => b.DeviceName).Contains(p.HostDeviceName)).ToList<WebServer.Models.Device.PowerBank>();
-                    //foreach (var device in deviceList)
-                    //{
-                    //    foreach
-                    //}
                      serversTable = new DevicesData(null, deviceList, powerBankList);
                 }
-                
 
-                // serversTable.AddRange(new List<Server>
-                // {                                 
-                //       { new Server ( "yaup.ru", 8884, "devclient", "Potato345!", 30 ) },
-                // });
-
-                //serversTable.Servers = serversTable.Servers.OrderBy(c => c.Host).ToList();
                 serversTable.Sort();
                 return Json(serversTable.Devices, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }

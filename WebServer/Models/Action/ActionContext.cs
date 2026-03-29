@@ -64,6 +64,12 @@ namespace WebServer.Models.Action
                 {
                     text = $"User - {actLine.UserId}: {GetEnumDescription((ActionsDescription)(actLine.ActionCode))}";
                 }
+
+                // Payment
+                if ((actLine.ActionCode & 0x4000) == 0x4000)
+                {
+                    text = $"Payment {actLine.PaymentAmount} EUR - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} for powerbank {actLine.ActionPowerBankId} station {actLine.ActionStationId}. {actLine.PaymentInfo}";
+                }
                 actLine.ActionText = text;
             }
         }

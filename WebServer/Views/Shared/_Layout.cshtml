@@ -40,10 +40,13 @@
                         <li class="nav-item">
                             <a class="nav-link text-light" asp-area="" asp-controller="PowerBanks" asp-action="PowerBanks">PowerBanks</a>
                         </li>
-                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                        @if (User.IsInRole("admin") || User.IsInRole("manager"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-light" asp-area="" asp-controller="Actions" asp-action="ActionsAdmin">Actions</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Actions" asp-action="Finance">Finance</a>
                             </li>
                         }
                         else
@@ -54,7 +57,7 @@
                         }
 
 
-                        @if (User.IsInRole("Admin"))
+                        @if (User.IsInRole("admin"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-light" asp-area="" asp-controller="Settings" asp-action="Settings">Settings</a>

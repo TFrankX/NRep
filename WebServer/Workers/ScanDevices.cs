@@ -21,6 +21,16 @@ using ProtoBuf.Meta;
 using Microsoft.AspNetCore.Identity;
 using WebServer.Models.Identity;
 using System.Threading.Tasks;
+using System.Drawing;
+using WebServer.Controllers.User;
+using WebServer.Services.Stripe;
+using Stripe.Forwarding;
+using WebServer.Models.Stripe;
+using WebServer.Models.User;
+using WebServer.Utils.Requests;
+using Stripe;
+using WebServer.Services;
+using WebServer.Services.Pricing;
 
 namespace WebServer.Workers
 {
@@ -34,25 +44,30 @@ namespace WebServer.Workers
         //public List<PowerBank> powerbanks;
         //public readonly IServiceScopeFactory ScopeFactory;
         private readonly ILogger<ScanDevices> Logger;
-        //private IActionTable actionTable; 
+        //private IActionTable actionTable;
         public event dReturnThePowerBank EvReturnThePowerBank;
         IServiceScope scope;
         private IConfiguration config;
         private ActionProcess actionProcess;
         private readonly UserManager<AppUser> userManager;
         public long scanDevicePeriod = 300;//300 sec
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IPricingService _pricingService;
 
-                                      
+        // Lock для thread-safe операций с PowerBanks
+        private readonly object _powerBanksLock = new object();
+
         // DeviceContext dbDevice;
 
         //  public ScanDevices(List<Server> Servers, ILogger<ScanDevices> logger, IServiceScopeFactory scopeFactory)
         //  public ScanDevices(ILogger<ScanDevices> logger, IDevicesData devicesData, IServiceScopeFactory scopeFactory, UserManager<AppUser> _userManager)
-        public ScanDevices(ILogger<ScanDevices> logger, IDevicesData devicesData, IServiceScopeFactory scopeFactory)
+        public ScanDevices(ILogger<ScanDevices> logger, IDevicesData devicesData, IServiceScopeFactory scopeFactory, IPricingService pricingService)
         {
-            //ScopeFactory = scopeFactory;
+            _scopeFactory = scopeFactory;
             DevicesData = devicesData;
             Logger = logger;
             scope = scopeFactory.CreateScope();
+            _pricingService = pricingService;
             //           userManager = _userManager;
 
 
@@ -63,8 +78,9 @@ namespace WebServer.Workers
 
             config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-            .AddJsonFile($"appsettings.{environmentName}.json", optional: false).Build();
-
+            .AddJsonFile($"appsettings.{environmentName}.json", optional: false)
+            .AddSecretsConfiguration()
+            .Build();
 
 
             actionProcess = new ActionProcess(scopeFactory);
@@ -212,9 +228,17 @@ namespace WebServer.Workers
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                ReconnectServers();
-                UpdateDb();
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                try
+                {
+                    ReconnectServers();
+                    UpdateDb();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Critical error in ScanDevices worker");
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
 
         }
@@ -237,21 +261,54 @@ namespace WebServer.Workers
                     //var actionTable = scope.ServiceProvider.GetRequiredService<IDevActionTable>();
                     //actionTable.Name = "Dev02"; //powbank.Id_str;
 
-                  //  var dateTime = DateTime.Now;
-                   // dbDevActions.SaveChanges();
-                  //  var action = new WebServer.Models.Action.Action(dateTime, 777, 666, 888, 999, "Yes");
-                  //  dbActions.Action.Add(action);
+                    //  var dateTime = DateTime.Now;
+                    // dbDevActions.SaveChanges();
+                    //  var action = new WebServer.Models.Action.Action(dateTime, 777, 666, 888, 999, "Yes");
+                    //  dbActions.Action.Add(action);
                     //dbActions.SaveChanges();
                     //AddOrUpdate(dbActions.Action, dbActions, c => c.ActionTime, action);
-
-
-
-
-                    if (!powbank.Stored)
+                    try
                     {
+                        if (powbank.SessionId != "" && powbank.SessionId != "\"\"")
+                        {
+                            // Get device to determine TypeOfUse and pricing plan
+                            var pbDevice = DevicesData.Devices.FirstOrDefault(d => d.Id == powbank.HostDeviceId);
+                            var typeOfUse = pbDevice?.TypeOfUse ?? TypeOfUse.PayByCard;
+                            var pricingPlan = _pricingService.GetPlan(typeOfUse);
 
-                        AddOrUpdate(dbDevice.PowerBank, dbDevice, c => c.Id, powbank);
-                        powbank.Stored = true;
+                            powbank.Cost = _pricingService.CalculateCost(typeOfUse, powbank.LastGetTime, powbank.Taken);
+                            if ((DateTime.Now - powbank.LastGetTime).Days >= pricingPlan.MaxDaysBeforeCapture)
+                            {
+
+                                var stripeCapture = new StripeCapture
+                                {
+                                    SessionId = powbank.SessionId,
+                                    StationId = powbank.HostDeviceId,
+                                    PowerBankId = powbank.Id,
+                                    Amount = pricingPlan.HoldAmount,
+                                };
+
+                                using (var stripeScope = _scopeFactory.CreateScope())
+                                {
+                                    var stripeRoutines = stripeScope.ServiceProvider.GetRequiredService<IStripeRoutines>();
+                                    stripeRoutines.MakePostPayment(stripeCapture);
+                                }
+                                powbank.SessionId = "";
+                            }
+
+                        }
+
+
+                        if (!powbank.Stored)
+                        {
+
+                            AddOrUpdate(dbDevice.PowerBank, dbDevice, c => c.Id, powbank);
+                            powbank.Stored = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error processing powerbank");
                     }
                 }
 
@@ -366,15 +423,15 @@ namespace WebServer.Workers
                     foreach (var dev in dbDevice.Device)
                     {
 
-
-                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvQueryTheInventory -= Srv_EvQueryTheInventory;
-                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvQueryTheInventory += Srv_EvQueryTheInventory;
-                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
-                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvReturnThePowerBank += Srv_EvReturnThePowerBank;
-                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
-                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].EvReportCabinetLogin += Srv_EvReportCabinetLogin;
-                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].SubScript(dev.DeviceName);
-                        DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)].CmdQueryTheInventory(dev.DeviceName);
+                        var server = DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)];
+                        server.EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                        server.EvQueryTheInventory += Srv_EvQueryTheInventory;
+                        server.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                        server.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
+                        server.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
+                        server.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
+                        server.SubScript(dev.DeviceName);
+                        server.CmdQueryTheInventory(dev.DeviceName);
                     }
 
                 }
@@ -391,119 +448,118 @@ namespace WebServer.Workers
 
         private void ReconnectServers()
         {
-            foreach (var srv in DevicesData.Servers)
+            var now = DateTime.Now;
+
+            foreach (var srv in DevicesData.Servers.ToList())
             {
-                if ((srv != null))
+                if (srv == null)
+                    continue;
+
+                if (!srv.Connected)
                 {
-                    if (!srv.Connected)
+                    srv.EvConnected -= Srv_EvConnected;
+                    srv.EvConnected += Srv_EvConnected;
+
+                    srv.EvConnectError -= Srv_EvConnectError;
+                    srv.EvConnectError += Srv_EvConnectError;
+
+                    srv.EvDisconnected -= Srv_EvDisconnected;
+                    srv.EvDisconnected += Srv_EvDisconnected;
+
+                    srv.Connect();
+
+                    //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
+                    //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
+
+                    //srv.EvSubSniffer -= Srv_EvSniffer;
+                    //srv.EvSubSniffer += Srv_EvSniffer;
+
+                    srv.RecentlyConnect = true;
+                }
+                else
+                {
+                    if (srv.RecentlyConnect)
                     {
+                        //srv.SubScriptLogin();
 
+                        srv.EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                        srv.EvQueryTheInventory += Srv_EvQueryTheInventory;
 
-
-
-
-
-                        srv.EvConnected -= Srv_EvConnected;
-                        srv.EvConnected += Srv_EvConnected;
-                        srv.EvConnectError -= Srv_EvConnectError;
-                        srv.EvConnectError += Srv_EvConnectError;
-                        srv.EvDisconnected -= Srv_EvDisconnected;
-                        srv.EvDisconnected += Srv_EvDisconnected;
-
-
-                        srv.Connect();
+                        srv.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                        srv.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
 
                         //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
                         //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
 
-                        //srv.EvSubSniffer -= Srv_EvSniffer;
-                        //srv.EvSubSniffer += Srv_EvSniffer;
+                        foreach (var dev in DevicesData.Devices.ToList())
+                        {
+                            if (dev.HostDeviceId == srv.Id)
+                            {
+                                srv.SubScript(dev.DeviceName);
+                                srv.CmdQueryTheInventory(dev.DeviceName);
+                            }
+                        }
 
-                        srv.RecentlyConnect = true;
+                        srv.RecentlyConnect = false;
                     }
                     else
                     {
-                        if (srv.RecentlyConnect)
+                        //srv.EvSubSniffer -= Srv_EvSniffer;
+                        //srv.EvSubSniffer += Srv_EvSniffer;
+                        //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
+                        //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
+
+                        foreach (var dev in DevicesData.Devices.ToList())
                         {
-
-
-
-                            //srv.SubScriptLogin();
-
-
-                            srv.EvQueryTheInventory -= Srv_EvQueryTheInventory;
-                            srv.EvQueryTheInventory += Srv_EvQueryTheInventory;
-                            srv.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
-                            srv.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
-                            //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
-                            //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
-
-                            foreach (var dev in DevicesData.Devices)
+                            if (dev.HostDeviceId == srv.Id)
                             {
-                                if (dev.HostDeviceId == srv.Id)
+                                if ((now - dev.LastOnlineTime).TotalSeconds > srv.OnlineTimeOut)
                                 {
-                                    srv.SubScript(dev.DeviceName);
+                                    if (dev.Online == true)
+                                    {
+                                        actionProcess.ActionSave(
+                                            (int)ActionsDescription.StationDisconnect,
+                                            "System",
+                                            dev.HostDeviceId,
+                                            dev.Id,
+                                            0,
+                                            0,
+                                            "");
+                                    }
+
+                                    dev.Online = false;
+
+                                    //dev.Slots = 0;
+                                    //foreach (var powerbank in DevicesData.PowerBanks)
+                                    //{
+                                    //   if (powerbank.HostDeviceName == dev.DeviceName)
+                                    //   {
+                                    //       powerbank.Plugged = false;
+                                    //   }
+                                    //}
+
+                                    srv.EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                                    srv.EvQueryTheInventory += Srv_EvQueryTheInventory;
+
+                                    srv.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                                    srv.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
+
+                                    //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
+                                    //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
+                                }
+
+                                srv.SubScript(dev.DeviceName);
+
+                                if (dev.LastInventoryTime + (scanDevicePeriod * TimeSpan.TicksPerSecond) < now.Ticks)
+                                {
+                                    dev.LastInventoryTime = now.Ticks;
                                     srv.CmdQueryTheInventory(dev.DeviceName);
                                 }
                             }
-                            srv.RecentlyConnect = false;
                         }
-                        else
-                        {
-                            //srv.EvSubSniffer -= Srv_EvSniffer;
-                            //srv.EvSubSniffer += Srv_EvSniffer;
-                            //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
-                            //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
-                            foreach (var dev in DevicesData.Devices)
-                            {
-                                if ((dev.HostDeviceId == srv.Id) )
-                                {
-                                    if ((DateTime.Now - dev.LastOnlineTime).TotalSeconds > srv.OnlineTimeOut)
-                                    {
-                                        if (dev.Online == true)
-                                        {
-                                            actionProcess.ActionSave((int)ActionsDescription.StationDisconnect, "System", dev.HostDeviceId, dev.Id, 0, 0, "");
-                                        }
-                                        dev.Online = false;
-                                        //dev.Slots = 0;
-                                        //foreach (var powerbank in DevicesData.PowerBanks)
-                                        //{
-                                        //   if (powerbank.HostDeviceName == dev.DeviceName)
-                                        //    {
-                                        //        powerbank.Plugged = false;
-                                        //    }
-                                        //}
-
-
-                                        srv.EvQueryTheInventory -= Srv_EvQueryTheInventory;
-                                        srv.EvQueryTheInventory += Srv_EvQueryTheInventory;
-                                        srv.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
-                                        srv.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
-                                        //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
-                                        //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
-
-                                    }
-
-                                    srv.SubScript(dev.DeviceName);
-                                    if (dev.LastInventoryTime + (scanDevicePeriod * TimeSpan.TicksPerSecond) < DateTime.Now.Ticks)
-                                    {
-                                        dev.LastInventoryTime = DateTime.Now.Ticks;
-                                        srv.CmdQueryTheInventory(dev.DeviceName);
-                                    }
-                                }
-
-                            }
-
-                        }
-
-
-
                     }
-
                 }
-
             }
-
         }
 
 
@@ -667,51 +723,128 @@ namespace WebServer.Workers
             }
             Logger.LogInformation($"Powerbank {data.RlPbid} returned in device: {dev} , slot: {data.RlSlot}\n");
 
-            device.Slots = device.Slots | ((uint)Math.Pow(2, data.RlSlot - 1));// & ~((uint)(Math.Pow(2, data.RlSlot - 1)));
+            device.Slots = device.Slots | ((uint)Math.Pow(2, data.RlSlot - 1));
             device.Online = true;
             device.LastOnlineTime = DateTime.Now;
-            
-            if (DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid) < 0)
+
+            lock (_powerBanksLock)
             {
-                DevicesData.PowerBanks.Add(new PowerBank(data.RlPbid, device.DeviceName, data.RlSlot, data.RlLock > 0 ? true : false, true,false, (PowerBankChargeLevel)data.RlQoe));
-                actionProcess.ActionSave((int)ActionsDescription.PowerBankFindNew, "System", device.HostDeviceId, device.Id, data.RlPbid, data.RlSlot, "");
-            }
-            else
-            {
-                try
+                var existingIndex = DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid);
+                if (existingIndex < 0)
                 {
-                    if (DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Plugged)
+                    DevicesData.PowerBanks.Add(new PowerBank(data.RlPbid, device.DeviceName, data.RlSlot, data.RlLock > 0, true, false, (PowerBankChargeLevel)data.RlQoe));
+                    actionProcess.ActionSave((int)ActionsDescription.PowerBankFindNew, "System", device.HostDeviceId, device.Id, data.RlPbid, data.RlSlot, "");
+                }
+                else
+                {
+                    try
                     {
-                        return;
-                    }
+                        var pb = DevicesData.PowerBanks[existingIndex];
 
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].HostDeviceName = device.DeviceName;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].HostSlot = data.RlSlot;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Locked = data.RlLock > 0 ? true : false;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Plugged = true;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Charging = data.RlLimited > 0 ? true : false;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].ChargeLevel = (PowerBankChargeLevel)data.RlQoe;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].IsOk = data.RlCode == 0 ? true : false;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Stored = false;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].LastPutTime = DateTime.Now;
-                    DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Cost = DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Price * (DateTime.Now - DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].LastGetTime).Minutes / 60;
+                        // Если powerbank уже plugged в этом же месте - ничего не делаем
+                        if (pb.Plugged && pb.HostDeviceName == device.DeviceName && pb.HostSlot == data.RlSlot)
+                        {
+                            return;
+                        }
 
+                   
+
+                    pb.HostDeviceName = device.DeviceName;
+                    pb.HostSlot = data.RlSlot;
+                    pb.Locked = data.RlLock > 0 ? true : false;
+                    pb.Plugged = true;
+                    pb.Charging = data.RlLimited > 0 ? true : false;
+                    pb.ChargeLevel = (PowerBankChargeLevel)data.RlQoe;
+                    pb.IsOk = data.RlCode == 0 ? true : false;
+                    pb.LastPutTime = DateTime.Now;
+                    //pb.Cost = pb.Price * (DateTime.Now - pb.LastGetTime).Minutes / 60;
+                    //pb.Cost = (float)Math.Round(pb.Taken ? (2 + Math.Round(((DateTime.Now - pb.LastGetTime).Hours) * pb.Price / 6)) : pb.Cost);
+                    pb.Cost = _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken);
                     //if (DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Taken)
                     //{
-                        //float cost = DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Price * (DateTime.Now - DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].LastGetTime).Minutes / 60;
+                    //float cost = DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Price * (DateTime.Now - DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].LastGetTime).Minutes / 60;
                     //!!   EvReturnThePowerBank(device.DeviceName, data.RlPbid, data.RlSlot, DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Cost);
-                        DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Taken = false;
+                    pb.Taken = false;
+                    pb.Stored = false;
                     //}
+                    if (pb.SessionId != "")
+                    {
+                        try
+                        {
 
-                    actionProcess.ActionSave((int)ActionsDescription.PowerBankInsert, DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].UserId, device.HostDeviceId, device.Id, data.RlPbid,data.RlSlot, "");
+                            //Если сразу снимаем деньги а потом возвращаем:
+                            //var refundRequest = new RefundRequest
+                            //{
+                            //    SessionId = pb.SessionId,
+                            //    StationId = device.Id,
+                            //    PowerBankId = pb.Id,
+                            //    Amount = pb.Price - pb.Cost,
+                            //};
+                            //var refundService = _stripeRoutines.RefundPayment(refundRequest);
+
+
+
+                            //Если сначла захватываем а потом списываем:
+                            if (pb.Cost > 0)
+                            {
+
+                                var stripeCapture = new StripeCapture
+                                {
+                                    SessionId = pb.SessionId,
+                                    StationId = device.Id,
+                                    PowerBankId = pb.Id,
+                                    Amount = pb.Cost,
+                                };
+                                using (var stripeScope = _scopeFactory.CreateScope())
+                                {
+                                    var stripeRoutines = stripeScope.ServiceProvider.GetRequiredService<IStripeRoutines>();
+                                    stripeRoutines.MakePostPayment(stripeCapture);
+                                }
+
+                            }
+                            else
+                            {
+                                var stripeCapture = new StripeCapture
+                                {
+                                    SessionId = pb.SessionId,
+                                    StationId = device.Id,
+                                    PowerBankId = pb.Id,
+                                    Amount = pb.Cost,
+                                };
+                                using (var stripeScope = _scopeFactory.CreateScope())
+                                {
+                                    var stripeRoutines = stripeScope.ServiceProvider.GetRequiredService<IStripeRoutines>();
+                                    stripeRoutines.ReleaseHeldPayment(stripeCapture);
+                                }
+                            }
+
+
+
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"Problem with refund: {ex}; \n");
+                            return;
+
+                        }
+                    }
+
+
+                        pb.SessionId = "";
+                        pb.Stored = false;
+
+                        var userId = string.IsNullOrEmpty(pb.UserId) ? "" : pb.UserId;
+                        actionProcess.ActionSave((int)ActionsDescription.PowerBankInsert, userId, device.HostDeviceId, device.Id, data.RlPbid, data.RlSlot, "");
+                    }
+                    catch
+                    {
+                        Logger.LogInformation($"Invalid device id: {data.RlPbid}; \n");
+                        return;
+                    }
                 }
-                catch
-                {
-                    Logger.LogInformation($"Invalid device id: {data.RlPbid}; \n");
-                    return;
-                }
-            }
-             ((Server)(sender)).SrvReturnThePowerBank(data.RlSlot, 1, dev);
+            } // end lock
+
+            ((Server)(sender)).SrvReturnThePowerBank(data.RlSlot, 1, dev);
              device.Online = true;
              device.LastOnlineTime = DateTime.Now;
              device.Stored = false;
@@ -720,16 +853,12 @@ namespace WebServer.Workers
 
         private void Srv_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
         {
-
-
-
             string dev = "";
             Device device;
             try
             {
-               dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
-               device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)];
-              
+                dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
+                device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)];
             }
             catch
             {
@@ -737,92 +866,75 @@ namespace WebServer.Workers
                 return;
             }
 
-      
             Logger.LogInformation($"Get inventory info from device: {dev} \n");
 
-            //ulong hostedId = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)].Id;
-
-
-            try
-            {
-                var devicePowerbanks = DevicesData.PowerBanks.Where(p => p.HostDeviceName == device.DeviceName).ToList();
-                //var devicePowerbanks = DevicesData.PowerBanks.ToList();
-                foreach (var devicePowerbank in devicePowerbanks)
-                {
-                    //bool pbPresent = false;
-                    foreach (var pbank in data.RlBank1s)
-                    {
-                        if ((devicePowerbank.HostSlot == pbank.RlSlot) && devicePowerbank.Plugged && (pbank.RlPbid!=devicePowerbank.Id))
-                        {
-                            //pbPresent = true;
-
-                            devicePowerbank.Plugged = false;
-                            devicePowerbank.LastGetTime = DateTime.Now;
-                            devicePowerbank.Taken = true;
-                            actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, "unknown", device.HostDeviceId, device.Id, devicePowerbank.Id, devicePowerbank.HostSlot, "");
-                        }
-                    }
-
-
-                }
-                
-
-            }
-            catch
-            {
-                Logger.LogInformation($"Error in the inventarisation...\n");
-            }
-            
-
+            // Создаём set ID powerbank'ов из текущего inventory для быстрой проверки
+            var inventoryPbIds = new HashSet<ulong>(data.RlBank1s.Where(p => p.RlPbid != 0).Select(p => p.RlPbid));
 
             uint slots = 0;
-            foreach (var pbank in data.RlBank1s)
+
+            lock (_powerBanksLock)
             {
-
-                //if ((pbank.RlIdok == 1) && (pbank.RlPbid!=0))
-                if ((pbank.RlPbid != 0))
+                // 1. Помечаем powerbank'и которые были plugged в этом устройстве, но их нет в inventory - значит взяли
+                var devicePowerbanks = DevicesData.PowerBanks.Where(p => p.HostDeviceName == device.DeviceName && p.Plugged).ToList();
+                foreach (var devicePowerbank in devicePowerbanks)
                 {
-
-                    slots = slots | ((uint)Math.Pow(2,pbank.RlSlot - 1));
-                    if (DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid) < 0) 
+                    if (!inventoryPbIds.Contains(devicePowerbank.Id))
                     {
-                        DevicesData.PowerBanks.Add(new PowerBank(pbank.RlPbid, device.DeviceName, pbank.RlSlot, pbank.RlLock > 0 ? true : false, true, pbank.RlCharge > 0 ? true : false, (PowerBankChargeLevel)pbank.RlQoe));
-                        actionProcess.ActionSave((int)ActionsDescription.PowerBankFindNew, "System", device.HostDeviceId, device.Id, pbank.RlPbid, pbank.RlSlot,"");
+                        // Powerbank был plugged в этом устройстве, но его нет в inventory - значит взяли
+                        devicePowerbank.Stored = false;
+                        devicePowerbank.Plugged = false;
+                        devicePowerbank.LastGetTime = DateTime.Now;
+                        devicePowerbank.Taken = true;
+                        var userId = string.IsNullOrEmpty(devicePowerbank.UserId) ? "unknown" : devicePowerbank.UserId;
+                        actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, devicePowerbank.Id, devicePowerbank.HostSlot, "");
+                        Logger.LogInformation($"PowerBank {devicePowerbank.Id} taken from device {dev} slot {devicePowerbank.HostSlot}");
                     }
-                    else
-                    {
-                        try
-                        {
+                }
 
-                            if (DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Plugged == false)
+                // 2. Обрабатываем powerbank'и из inventory
+                foreach (var pbank in data.RlBank1s)
+                {
+                    if (pbank.RlPbid != 0)
+                    {
+                        slots = slots | ((uint)Math.Pow(2, pbank.RlSlot - 1));
+
+                        var existingIndex = DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid);
+                        if (existingIndex < 0)
+                        {
+                            // Новый powerbank - добавляем
+                            DevicesData.PowerBanks.Add(new PowerBank(pbank.RlPbid, device.DeviceName, pbank.RlSlot,
+                                pbank.RlLock > 0, true, pbank.RlCharge > 0, (PowerBankChargeLevel)pbank.RlQoe));
+                            actionProcess.ActionSave((int)ActionsDescription.PowerBankFindNew, "System", device.HostDeviceId, device.Id, pbank.RlPbid, pbank.RlSlot, "");
+                            Logger.LogInformation($"New PowerBank {pbank.RlPbid} found in device {dev} slot {pbank.RlSlot}");
+                        }
+                        else
+                        {
+                            var pb = DevicesData.PowerBanks[existingIndex];
+
+                            // Если powerbank был не plugged (или был в другом устройстве) - это insert
+                            if (!pb.Plugged || pb.HostDeviceName != device.DeviceName)
                             {
-                                actionProcess.ActionSave((int)ActionsDescription.PowerBankInsert, DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].UserId, device.HostDeviceId, device.Id, pbank.RlPbid, pbank.RlSlot,"");
+                                var userId = string.IsNullOrEmpty(pb.UserId) ? "" : pb.UserId;
+                                actionProcess.ActionSave((int)ActionsDescription.PowerBankInsert, userId, device.HostDeviceId, device.Id, pbank.RlPbid, pbank.RlSlot, "");
+                                Logger.LogInformation($"PowerBank {pbank.RlPbid} inserted in device {dev} slot {pbank.RlSlot}");
                             }
 
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].HostDeviceName = device.DeviceName;
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].HostSlot = pbank.RlSlot;
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Locked = pbank.RlLock > 0 ? true : false;
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Plugged = true;
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Taken = false;
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Charging = pbank.RlCharge > 0 ? true : false;
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
-                            DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].Stored = false;
-                            //DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid)].LastPutTime = DateTime.Now;
-
-                           
-
-                        }
-                        catch
-                        {
-                            Logger.LogInformation($"Invalid device id: {pbank.RlPbid}; \n");
-                            return;
+                            // Обновляем данные powerbank'а
+                            pb.HostDeviceName = device.DeviceName;
+                            pb.HostSlot = pbank.RlSlot;
+                            pb.Locked = pbank.RlLock > 0;
+                            pb.Plugged = true;
+                            pb.Taken = false;
+                            pb.Charging = pbank.RlCharge > 0;
+                            pb.ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
+                            pb.Stored = false;
                         }
                     }
                 }
             }
 
-             
-
+            device.Slots = slots;
             device.Online = true;
             device.LastOnlineTime = DateTime.Now;
             device.Slots = slots;
@@ -874,6 +986,21 @@ namespace WebServer.Workers
 
             }
 
+        }
+
+        public int SetDescription(string deviceId, string description, string? userId, List<string> roles)
+        {
+            try
+            {
+                Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id_str == deviceId)];
+                device.Description = description;
+                device.Stored = false;  // Mark for saving to DB
+                return 200;
+            }
+            catch
+            {
+                return 404;
+            }
         }
 
         public int Activate(string deviceIdToAct, string? userId, List<string> roles)
@@ -1055,30 +1182,27 @@ namespace WebServer.Workers
                 if (numberPB == 0)
                 {
 
-                    foreach (var powerBank in DevicesData.PowerBanks)
+                    foreach (var powerBank in DevicesData.PowerBanks.ToList())
                     {
-                        
-                        
                         if ((powerBank.Plugged) && (powerBank.HostDeviceName == deviceName))
                         {
                             if ((int)powerBank.ChargeLevel >= maxСharge)
                             {
                                 maxСharge = (int)powerBank.ChargeLevel;
                                 powerBankPush = powerBank;
-                                //index = powerBank.HostSlot;
                             }
                         }
                     }
 
-                    //foreach (var powerBank in DevicesData.PowerBanks)
-                    //{
+                //foreach (var powerBank in DevicesData.PowerBanks)
+                //{
 
-                    //   if ((powerBank.Plugged) && (powerBank.HostDeviceName == deviceName))
-                    //  {
+                //   if ((powerBank.Plugged) && (powerBank.HostDeviceName == deviceName))
+                //  {
 
 
 
-                    if (powerBankPush != null)
+                if (powerBankPush != null)
                     {
 
 
@@ -1100,6 +1224,7 @@ namespace WebServer.Workers
                             }
                             powerBankPush.UserId = userId;
                             powerBankPush.Taken = true;
+                            powerBankPush.Stored = false;
                             taken = true;
                             pushPbId = powerBankPush.Id;
 
@@ -1125,21 +1250,22 @@ namespace WebServer.Workers
                 }
                 else
                 {
-                    foreach (var powerBank in DevicesData.PowerBanks)
+                    foreach (var powerBank in DevicesData.PowerBanks.ToList())
                     {
-                        if ((powerBank.Plugged) && (powerBank.HostDeviceName == deviceName) &&(powerBank.HostSlot == numberPB)) 
+                        if ((powerBank.Plugged) &&
+                            (powerBank.HostDeviceName == deviceName) &&
+                            (powerBank.HostSlot == numberPB))
                         {
 
                             try
                             {
                                 Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == deviceName)];
                                 device.Slots = device.Slots & ~(uint)Math.Pow(2, powerBank.HostSlot - 1);
-                                device.Stored = false;
+
                                 Server server = DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == device.HostDeviceId)];
                                 actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, powerBank.Id, powerBank.HostSlot, "");
                                 powerBank.Plugged = false;
                                 server.CmdPushPowerBank(numberPB, deviceName);                                
-                                powerBank.Stored = false;
                                 powerBank.LastGetTime = DateTime.Now;
                                 if (allowAdminAndManager)
                                 {
@@ -1152,7 +1278,8 @@ namespace WebServer.Workers
                                 powerBank.Taken = true;
                                 taken = true;
                                 pushPbId = powerBank.Id;
-
+                                powerBank.Stored = false;
+                                
                             DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == device.HostDeviceId)].CmdQueryTheInventory(device.DeviceName);
 
                             }

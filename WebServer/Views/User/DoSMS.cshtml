@@ -1,4 +1,5 @@
-﻿@model UserSMS
+﻿@using WebServer.Models.User
+@model UserSMS
 
 @{
     ViewBag.Title = "Take powerbank";
@@ -6,18 +7,18 @@
 
 <div class="row">
     @*<div class="col-md-2">
-        <div class="position-fixed">
-            <br><br>
-            @Html.Partial("NavVertical")
-        </div>
-    </div>*@
+            <div class="position-fixed">
+                <br><br>
+                @Html.Partial("NavVertical")
+            </div>
+        </div>*@
 
 
 
     <div class="col-md-10">
         <div class="text-center"><h2>Take powerbank</h2></div>
 
-        <form asp-action="SendSMSCode" asp-controller="User"  asp-route-returnUrl="@Model.ReturnUrl" asp-route-StationId="@Model.StationId">
+        <form asp-action="SendSMSCode" asp-controller="User" asp-route-returnUrl="@Model.ReturnUrl" asp-route-StationId="@Model.StationId">
 
             <div asp-validation-summary="ModelOnly"></div>
             <div class="form-group">
@@ -26,15 +27,15 @@
                 <span asp-validation-for="PhoneNumber"></span>
             </div>
             @*<div class="form-group">
-                <label asp-for="Password">Password</label><br />
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PasswordConfirm">Confirm password</label><br />
-                <input asp-for="PasswordConfirm" class="form-control" />
-                <span asp-validation-for="PasswordConfirm"></span>
-            </div>*@
+                    <label asp-for="Password">Password</label><br />
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PasswordConfirm">Confirm password</label><br />
+                    <input asp-for="PasswordConfirm" class="form-control" />
+                    <span asp-validation-for="PasswordConfirm"></span>
+                </div>*@
             <div class="text-center">
                 <div class="btn-group" role="group">
                     <input class="btn btn-dark mr-2" type="submit" Value="Take">
