@@ -169,37 +169,14 @@
 
             $("#jqxgrid").jqxGrid(
                 {
-
-                    //width: '100%',
-                    //source: dataAdapterAdvocate,
-                    ////theme: 'energyblue',
-                    //sortable: true,
-                    //filterable: true,
-                    ////showfilterrow: true,
-                    ////autorowheight: true,
-                    //rowsheight: 48,
-                    //enablebrowserselection: true,
-                    //selectionmode: 'multiplecellsadvanced',
-                    ////autorowheight: true,
-                    ////autoheight: true,
-                    ////pageable: true,
-                    //height: 720,
-                    //columnsresize: true,
-
-
                     width: '100%',
                     source: dataAdapter,
                     theme: 'material-purple',
                     sortable: true,
                     filterable: true,
-                    //showfilterrow: true,
-                    //autorowheight: true,
                     rowsheight: 40,
                     enablebrowserselection: true,
                     selectionmode: 'multiplecellsadvanced',
-                    //autorowheight: true,
-                    //autoheight: true,
-                    //pageable: false,
                     height: 720,
                     columnsresize: true,
                     columns: [
@@ -214,7 +191,8 @@
                      ]
                 });
             refresh();
-            //_createWindow();
+            // Sort by ActionTime descending (newest first)
+            $("#jqxgrid").jqxGrid('sortby', 'ActionTime', 'desc');
             $("#jqxWidget").css('display', 'block');
 
 

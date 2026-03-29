@@ -155,6 +155,8 @@
                      ]
                 });
             refresh();
+            // Sort by ActionTime descending (newest first)
+            $("#jqxgrid").jqxGrid('sortby', 'ActionTime', 'desc');
             $("#jqxWidget").css('display', 'block');
         });
 

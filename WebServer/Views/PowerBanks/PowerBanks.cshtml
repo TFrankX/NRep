@@ -241,7 +241,9 @@
 
             // Charge level with progress indicator
             if (column === 'ChargeLevel') {
-                var level = value || 0;
+                // Convert enum to percentage: 1=10%, 2=30%, 3=50%, 4=70%, 5=100%, 6=100%
+                var enumValue = value || 0;
+                var level = enumValue === 1 ? 10 : enumValue === 2 ? 30 : enumValue === 3 ? 50 : enumValue === 4 ? 70 : enumValue >= 5 ? 100 : 0;
                 var color = level > 60 ? '#22C55E' : (level > 30 ? '#F59E0B' : '#EF4444');
                 return divstartstyle +
                     "<div style='display: flex; align-items: center; gap: 8px; width: 100%;'>" +
