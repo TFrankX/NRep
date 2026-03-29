@@ -13,7 +13,15 @@
       "Bash(ASPNETCORE_ENVIRONMENT=Development /usr/local/share/dotnet/dotnet WebServer.dll)",
       "Bash(ls:*)",
       "Bash(find /Users/tomfrank/repository/ShareCharging/WebServer -name *.html -o -name *signalr* -o -name *hub*)",
-      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --print-to-pdf=\"/Users/tomfrank/repository/ShareCharging/WebServer/docs/payment_algorithm.pdf\" --no-margins \"/Users/tomfrank/repository/ShareCharging/WebServer/docs/payment_algorithm.html\" 2>&1)"
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --print-to-pdf=\"/Users/tomfrank/repository/ShareCharging/WebServer/docs/payment_algorithm.pdf\" --no-margins \"/Users/tomfrank/repository/ShareCharging/WebServer/docs/payment_algorithm.html\" 2>&1)",
+      "Bash(find /Users/tomfrank/repository/ShareCharging/WebServer -name *.cshtml -type f)",
+      "Bash(wc:*)",
+      "Bash(grep -i \"newtonsoft\" *.csproj)",
+      "Bash(curl -s -I \"http://localhost:5001/AppAccountManagement/AppAccounts\")",
+      "Bash(/usr/local/share/dotnet/dotnet list:*)",
+      "Bash(cat /Users/tomfrank/repository/ShareCharging/WebServer/logs/errors/*.log)",
+      "Bash(cat /Users/tomfrank/repository/ShareCharging/WebServer/logs/*.log)",
+      "Bash(tail -100 /Users/tomfrank/repository/ShareCharging/WebServer/logs/nlog-webserver-*.log)"
     ]
   }
 }

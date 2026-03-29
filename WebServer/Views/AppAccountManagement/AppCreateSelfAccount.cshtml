@@ -1,60 +1,78 @@
-﻿@model AppAccountsSelfRegister
-
+@model AppAccountsSelfRegister
 @{
-    ViewBag.Title = "Create account";
+    Layout = null;
 }
-
-<div class="row">
-    @*<div class="col-md-2">
-        <div class="position-fixed">
-            <br><br>
-            @Html.Partial("NavVertical")
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - A-Charger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/acharger-theme.css" />
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+</head>
+<body class="login-page">
+    <div class="login-card fade-in">
+        <div class="login-logo">
+            <h1>
+                <span class="logo-icon">
+                    <i class="fas fa-bolt"></i>
+                </span>
+                A-Charger
+            </h1>
         </div>
-    </div>*@
 
-
-
-    <div class="col-md-10">
-         <div class="text-center"><h2>New user registration</h2></div>
-
-         <form asp-action="SendCodeRegister" asp-controller="AppAccountManagement"  asp-route-returnUrl="@Model.ReturnUrl" asp-route-newStationId="@Model.NewStationId">
-             <div asp-validation-summary="ModelOnly"></div>
-             <div class="form-group">
-                 <label asp-for="PhoneNumber">Phone Number</label><br />
-                 <input type="text" asp-for="PhoneNumber" class="form-control" />
-                 <span asp-validation-for="PhoneNumber"></span>
-             </div>
-             @*<div class="form-group">
-            <label asp-for="Password">Password</label><br />
-            <input asp-for="Password" class="form-control" />
-            <span asp-validation-for="Password"></span>
+        <div class="login-title">
+            <h2>Create Account</h2>
+            <p>Register with your phone number</p>
         </div>
-        <div class="form-group">
-            <label asp-for="PasswordConfirm">Confirm password</label><br />
-            <input asp-for="PasswordConfirm" class="form-control" />
-            <span asp-validation-for="PasswordConfirm"></span>
-        </div>*@
-             <div class="text-center">
-                 <div class="btn-group" role="group">
-                     <input class="btn btn-dark mr-2" type="submit" Value="Create">
-                     <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark" role="button">Cancel</a>
-                     @*<button id="BankruptInputButton" onclick="CheckNum(BankruptInput1.value)">Поиск</button><br><br>*@
 
-                 </div>
-             </div>
-             <div>
-                 @if (@Model.NewStationId > 0)
-                 {
-                     <a>
-                         New station ID:
-                     </a>
-                     <a>
-                         @Html.DisplayFor(Model => Model.NewStationId)
-                     </a>
-                 }
-             </div>
-         </form>
-  
+        <form asp-action="SendCodeRegister" asp-controller="AppAccountManagement"
+              asp-route-returnUrl="@Model.ReturnUrl" asp-route-newStationId="@Model.NewStationId" class="login-form">
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+            <div class="form-group-acharger">
+                <label asp-for="PhoneNumber">
+                    <i class="fas fa-phone me-1"></i>Phone Number
+                </label>
+                <input type="text" asp-for="PhoneNumber" class="form-control-acharger" placeholder="+7 (999) 123-45-67" />
+                <span asp-validation-for="PhoneNumber" class="text-danger-acharger" style="font-size: 0.875rem;"></span>
+            </div>
+
+            <button type="submit" class="btn-acharger btn-primary-acharger btn-login">
+                <i class="fas fa-paper-plane"></i>
+                Send Verification Code
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>
+                Already have an account?
+                <a href="@Url.Action("AppAccountLogin", "AppAccount", new { NewStationId = Model.NewStationId })">
+                    Sign in
+                </a>
+            </p>
+        </div>
+
+        @if (Model.NewStationId > 0)
+        {
+            <div class="mt-4 p-3" style="background: var(--accent-light); border-radius: var(--border-radius-sm);">
+                <small class="text-primary-acharger">
+                    <i class="fas fa-info-circle me-1"></i>
+                    New station ID: <strong>@Model.NewStationId</strong>
+                </small>
+            </div>
+        }
     </div>
-</div>
 
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

@@ -1,28 +1,109 @@
-﻿@using WebServer.Models.User
+@using WebServer.Models.User
 @model UserPayCard
+@{
+    ViewData["Title"] = "Redirecting to Payment";
+}
 
-
-<form id="payment-form">
-    <div class="form-group pt-2">
-        <label for="productName" id="productName">Redirecting to payment page...</label>      
+<div class="payment-redirect-page">
+    <div class="payment-redirect-card">
+        <div class="redirect-icon">
+            <i class="fas fa-credit-card"></i>
+        </div>
+        <h2>Redirecting to Payment</h2>
+        <p id="productName" class="redirect-message">
+            <i class="fas fa-spinner fa-spin me-2"></i>
+            Please wait while we redirect you to the secure payment page...
+        </p>
+        <div class="stripe-badge">
+            <i class="fab fa-stripe" style="font-size: 2rem; color: #635BFF;"></i>
+            <span>Powered by Stripe</span>
+        </div>
     </div>
-    
-</form>
+</div>
+
+<style>
+    .payment-redirect-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: 20px;
+    }
+
+    .payment-redirect-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        max-width: 450px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .redirect-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 36px;
+        background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+        color: white;
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .payment-redirect-card h2 {
+        color: #111827;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .redirect-message {
+        color: #6B7280;
+        font-size: 1rem;
+        margin-bottom: 32px;
+        line-height: 1.6;
+    }
+
+    .stripe-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px;
+        background: #F8F9FA;
+        border-radius: 12px;
+        color: #6B7280;
+        font-size: 0.875rem;
+    }
+</style>
 
 <script src="https://js.stripe.com/v3/"></script>
 <script type="text/javascript">
-   // var stripe = Stripe('pk_test_51RBiyVPqFqBNcrc302KNl0PZoEb9LOSXxNagulZva9H8UhHvEpeomIZTBCbeLwJKaRO6znWMdsdEePr35JYRIpGp00TM2OBd2c');
-   var stripe = Stripe('pk_live_51QU70kBhJvOZdZCER6xV0TT7n2YZ41JCB5LrODrNWqNvIaKN1iPJ6ZS85nt0xGOQIefkU6jILYzf112MZ2A627Rm00HI9Xrxjd');
+    var stripe = Stripe('pk_live_51QU70kBhJvOZdZCER6xV0TT7n2YZ41JCB5LrODrNWqNvIaKN1iPJ6ZS85nt0xGOQIefkU6jILYzf112MZ2A627Rm00HI9Xrxjd');
     window.onload = function () {
-        document.getElementById('productName').textContent = "Redirecting to payment page...";
         var sessionId = '@Model.SessionId';
         if (sessionId) {
             stripe.redirectToCheckout({ sessionId: sessionId });
-            } else {
+        } else {
+            document.getElementById('productName').innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Error: Session not found. Please try again.';
+            document.getElementById('productName').style.color = '#DC2626';
             console.error('SessionId is not defined or invalid.');
         }
     }
-
 </script>
-
-

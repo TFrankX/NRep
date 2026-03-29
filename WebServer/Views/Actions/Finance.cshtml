@@ -15,6 +15,7 @@
 <script src="~/jqwidgets/jqxdata.js"></script>
 
 <link rel="stylesheet" href="~/jqwidgets/styles/jqx.base.css" type="text/css" />
+<link rel="stylesheet" href="~/jqwidgets/styles/jqx.material-purple.css" type="text/css" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1" />
 
@@ -32,43 +33,41 @@
             var isTotalRow = jsonmod[row] && jsonmod[row].StationName === "TOTAL";
 
             if (isTotalRow) {
-                backcolor = "#E8F5E9";
+                backcolor = "#F0FDF4";
             }
 
-            var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
+            var divstartstyle = "<div style='height: 100%; min-height: 40px; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 12px;'>";
 
+            // Station name
             if (column === 'StationName') {
-                var fontWeight = isTotalRow ? "bold" : "normal";
+                var fontWeight = isTotalRow ? "700" : "500";
+                var fontSize = isTotalRow ? "0.95rem" : "0.875rem";
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute; font-weight: " + fontWeight + ";'>" +
-                    value +
-                    "</span>" +
+                    "<span style='font-weight: " + fontWeight + "; font-size: " + fontSize + ";'>" + value + "</span>" +
                     "</div>";
             }
 
+            // Earnings columns
             if (column === 'MonthEarnings' || column === 'YearEarnings' || column === 'TotalEarnings') {
-                var fontWeight = isTotalRow ? "bold" : "normal";
-                var color = value >= 0 ? "#2E7D32" : "#C62828";
+                var fontWeight = isTotalRow ? "700" : "600";
+                var color = value >= 0 ? "#059669" : "#DC2626";
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute; font-weight: " + fontWeight + "; color: " + color + ";'>" +
-                    value.toFixed(2) + " EUR" +
-                    "</span>" +
+                    "<span style='font-weight: " + fontWeight + "; color: " + color + ";'>" +
+                    value.toFixed(2) + " EUR</span>" +
                     "</div>";
             }
 
+            // Transaction count columns
             if (column === 'MonthTransactions' || column === 'YearTransactions' || column === 'TotalTransactions') {
-                var fontWeight = isTotalRow ? "bold" : "normal";
+                var fontWeight = isTotalRow ? "700" : "500";
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute; font-weight: " + fontWeight + ";'>" +
-                    value +
-                    "</span>" +
+                    "<span style='font-weight: " + fontWeight + "; color: #6B7280;'>" + value + "</span>" +
                     "</div>";
             }
 
+            // Default
             return divstartstyle +
-                "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                value +
-                "</span>" +
+                "<span style='font-size: 0.85rem;'>" + value + "</span>" +
                 "</div>";
         }
 
@@ -112,9 +111,10 @@
                 {
                     width: '100%',
                     source: dataAdapter,
+                    theme: 'material-purple',
                     sortable: true,
                     filterable: true,
-                    rowsheight: 40,
+                    rowsheight: 44,
                     enablebrowserselection: true,
                     selectionmode: 'multiplecellsadvanced',
                     height: 500,
@@ -136,41 +136,20 @@
     </script>
 }
 
-<style>
-    .finance-header {
-        margin-bottom: 20px;
-    }
-    .finance-summary {
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: #f5f5f5;
-        border-radius: 8px;
-    }
-    .summary-item {
-        display: inline-block;
-        margin-right: 30px;
-    }
-    .summary-label {
-        font-size: 0.9em;
-        color: #666;
-    }
-    .summary-value {
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #2E7D32;
-    }
-</style>
 
-<div class="text-center finance-header">
-    <h2>Financial Statistics</h2>
-    <p>Revenue by station</p>
+<div class="page-header">
+    <h1><i class="fas fa-chart-line"></i> Financial Statistics</h1>
+    <p class="page-subtitle">Revenue and transactions by station</p>
 </div>
 
-<div id="jqxWidget">
+<div class="grid-container">
+    <div id="jqxWidget"></div>
+    <div id="jqxgrid"></div>
 </div>
 
-<div id="jqxgrid"></div>
-
-<div style="margin-top: 20px; color: #666; font-size: 0.9em;">
-    <p><strong>Note:</strong> Earnings = Captured payments - Refunds. "Tx" = number of successful transactions.</p>
+<div class="card-acharger mt-3" style="padding: 1rem 1.5rem;">
+    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">
+        <i class="fas fa-info-circle me-1"></i>
+        <strong>Note:</strong> Earnings = Captured payments - Refunds. "Tx" = number of successful transactions.
+    </p>
 </div>

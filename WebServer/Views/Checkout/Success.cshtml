@@ -1,11 +1,152 @@
-﻿@using WebServer.Models.Stripe
+@using WebServer.Models.Stripe
 @model StripeCheckout
 @{
-    ViewData["Title"] = "Payment Successful";    
+    ViewData["Title"] = "Payment Successful";
     var redirectUrl = Url.Action("User", "AlreadyPaid");
 }
-<h2>Payment Successful</h2>
-<p id="maintext">Thank you for your purchase! Your payment has been successfully processed.<br>You will be redirected after <span id="countdown">3</span> seconds to powerbank page...</p>
+
+<div class="payment-result-page">
+    <div class="payment-result-card success">
+        <div class="result-icon success">
+            <i class="fas fa-check"></i>
+        </div>
+        <h2>Payment Successful!</h2>
+        <p class="result-message">Thank you for your purchase! Your payment has been successfully processed.</p>
+        <p id="maintext" class="redirect-message">
+            <i class="fas fa-spinner fa-spin me-2"></i>
+            Redirecting to powerbank page in <span id="countdown" class="countdown-number">3</span> seconds...
+        </p>
+        <div class="result-details">
+            <div class="detail-item">
+                <i class="fas fa-bolt text-warning"></i>
+                <span>Your powerbank is ready!</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-result-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: 20px;
+    }
+
+    .payment-result-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        max-width: 450px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .result-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 36px;
+        animation: scaleIn 0.5s ease-out 0.2s both;
+    }
+
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+
+    .result-icon.success {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .payment-result-card h2 {
+        color: #111827;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .payment-result-card.success h2 {
+        color: #059669;
+    }
+
+    .result-message {
+        color: #6B7280;
+        font-size: 1rem;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .redirect-message {
+        background: #F0FDF4;
+        border: 1px solid #BBF7D0;
+        border-radius: 12px;
+        padding: 16px 20px;
+        color: #166534;
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+    }
+
+    .countdown-number {
+        display: inline-block;
+        background: #059669;
+        color: white;
+        width: 28px;
+        height: 28px;
+        line-height: 28px;
+        border-radius: 50%;
+        font-weight: 700;
+        margin: 0 4px;
+    }
+
+    .result-details {
+        padding-top: 20px;
+        border-top: 1px solid #E5E7EB;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: #374151;
+        font-size: 0.95rem;
+    }
+
+    .detail-item i {
+        font-size: 1.25rem;
+    }
+
+    .error-text {
+        background: #FEF2F2 !important;
+        border-color: #FECACA !important;
+        color: #991B1B !important;
+    }
+</style>
 
 <script type="text/javascript">
     window.onload = function () {
@@ -14,14 +155,13 @@
         const stationId = urlParams.get('stationId');
         const powerBankId = urlParams.get('powerBankId');
 
-
         if (sessionId) {
            console.log("Session ID:", sessionId);
-           // Здесь можно показать sessionId пользователю или запросить детали с сервера
         } else {
-           var countdownElement = document.getElementById('maintext');
-            countdownElement.textContent = "Session number not found, please contact the project administrators."
-            return; // Остановим редирект
+           var mainText = document.getElementById('maintext');
+           mainText.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Session number not found, please contact the project administrators.';
+           mainText.classList.add('error-text');
+           return;
         }
 
         var countdownElement = document.getElementById('countdown');
@@ -33,16 +173,8 @@
 
             if (seconds <= 0) {
                 clearInterval(interval);
-
-                //window.location.href = '/User/AlreadyPaid?session_id=' + encodeURIComponent(sessionId);
-
-                // Переход с передачей всех нужных параметров
                 window.location.href = `/User/AlreadyPaid?session_id=${encodeURIComponent(sessionId)}&stationId=${encodeURIComponent(stationId)}&powerBankId=${encodeURIComponent(powerBankId)}`;
-           
-
-                //window.location.href = '@redirectUrl';
             }
         }, 1000);
-
-
-}</script>
+    }
+</script>

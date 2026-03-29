@@ -1,5 +1,163 @@
-﻿@{
+@{
     ViewData["Title"] = "Payment Canceled";
 }
-<h2>Payment Canceled</h2>
-<p>Your payment has been canceled. Please try again or contact support if you need assistance.</p>
+
+<div class="payment-result-page">
+    <div class="payment-result-card canceled">
+        <div class="result-icon canceled">
+            <i class="fas fa-times"></i>
+        </div>
+        <h2>Payment Canceled</h2>
+        <p class="result-message">Your payment has been canceled. No charges have been made to your account.</p>
+
+        <div class="result-actions">
+            <a href="javascript:history.back()" class="btn-action btn-primary-action">
+                <i class="fas fa-redo me-2"></i>Try Again
+            </a>
+            <a href="@Url.Action("Index", "Home")" class="btn-action btn-secondary-action">
+                <i class="fas fa-home me-2"></i>Go Home
+            </a>
+        </div>
+
+        <div class="help-section">
+            <p class="help-text">
+                <i class="fas fa-question-circle me-1"></i>
+                Need help? Contact our support team
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-result-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: 20px;
+    }
+
+    .payment-result-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        max-width: 450px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .result-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 36px;
+        animation: scaleIn 0.5s ease-out 0.2s both;
+    }
+
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+
+    .result-icon.canceled {
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        color: white;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+    }
+
+    .payment-result-card h2 {
+        color: #111827;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .payment-result-card.canceled h2 {
+        color: #D97706;
+    }
+
+    .result-message {
+        color: #6B7280;
+        font-size: 1rem;
+        margin-bottom: 32px;
+        line-height: 1.6;
+    }
+
+    .result-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary-action {
+        background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+
+    .btn-primary-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+        color: white;
+    }
+
+    .btn-secondary-action {
+        background: #F3F4F6;
+        color: #374151;
+        border: 1px solid #E5E7EB;
+    }
+
+    .btn-secondary-action:hover {
+        background: #E5E7EB;
+        color: #111827;
+    }
+
+    .help-section {
+        padding-top: 20px;
+        border-top: 1px solid #E5E7EB;
+    }
+
+    .help-text {
+        color: #9CA3AF;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .help-text i {
+        color: #7C3AED;
+    }
+</style>

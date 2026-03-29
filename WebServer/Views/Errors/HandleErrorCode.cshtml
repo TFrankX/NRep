@@ -1,9 +1,185 @@
-﻿@{
+@{
     ViewData["Title"] = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="error-page">
+    <div class="error-card">
+        <div class="error-icon">
+            <i class="fas fa-bug"></i>
+        </div>
+        <h2>Something Went Wrong</h2>
+        <p class="error-message">An error occurred while processing your request.</p>
 
-@ViewBag.ErrorMessage
-@ViewBag.RouteOfException
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="error-details-box">
+                <div class="error-detail">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>@ViewBag.ErrorMessage</span>
+                </div>
+            </div>
+        }
+
+        @if (ViewBag.RouteOfException != null)
+        {
+            <div class="route-box">
+                <span class="route-label">Route:</span>
+                <code class="route-value">@ViewBag.RouteOfException</code>
+            </div>
+        }
+
+        <div class="error-actions">
+            <a href="javascript:history.back()" class="btn-action btn-primary-action">
+                <i class="fas fa-arrow-left me-2"></i>Go Back
+            </a>
+            <a href="@Url.Action("Index", "Home")" class="btn-action btn-secondary-action">
+                <i class="fas fa-home me-2"></i>Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: 20px;
+    }
+
+    .error-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .error-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 36px;
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        color: white;
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .error-card h2 {
+        color: #DC2626;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .error-message {
+        color: #6B7280;
+        font-size: 1rem;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .error-details-box {
+        background: #FEF2F2;
+        border: 1px solid #FECACA;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+        text-align: left;
+    }
+
+    .error-detail {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: #991B1B;
+        font-size: 0.9rem;
+    }
+
+    .error-detail i {
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .route-box {
+        background: #F3F4F6;
+        border: 1px solid #E5E7EB;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .route-label {
+        color: #6B7280;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .route-value {
+        background: #E5E7EB;
+        color: #374151;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        word-break: break-all;
+    }
+
+    .error-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary-action {
+        background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+
+    .btn-primary-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+        color: white;
+    }
+
+    .btn-secondary-action {
+        background: #F3F4F6;
+        color: #374151;
+        border: 1px solid #E5E7EB;
+    }
+
+    .btn-secondary-action:hover {
+        background: #E5E7EB;
+        color: #111827;
+    }
+</style>

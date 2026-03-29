@@ -1,25 +1,61 @@
-﻿@model AppAccountSelfPassReset
+@model AppAccountSelfPassReset
 @{
-    ViewBag.Title = "Reset password account";
+    ViewData["Title"] = "Reset Password";
 }
 
-<div class="text-center"><h2>Reset password account</h2></div>
+<div class="page-header">
+    <h2><i class="fas fa-sms"></i> Reset Password via SMS</h2>
+</div>
 
-<form asp-action="SendCodePassReset" asp-controller="AppAccountManagement">
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-header" style="background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: white;">
+                <h5 class="mb-0"><i class="fas fa-key me-2"></i>Reset Your Password</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="user-avatar mx-auto mb-2" style="width: 60px; height: 60px; font-size: 24px; line-height: 60px;">
+                        @(Model.UserName?.Length > 0 ? Model.UserName[0].ToString().ToUpper() : "U")
+                    </div>
+                    <h6 class="text-muted">@Model.UserName</h6>
+                    <p class="text-muted mb-0">
+                        <small><i class="fas fa-phone me-1"></i>@Model.PhoneNumber</small>
+                    </p>
+                </div>
 
-    <div asp-validation-summary="All" class="text-danger"></div>
-    <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="UserName" />
-    <input type="hidden" asp-for="PhoneNumber" />
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    An SMS code will be sent to your phone number to verify the password reset.
+                </div>
 
-    <div class="form-group">
-        <label asp-for="NewPassword" class="control-label">New Password</label>
-        <input type="password" asp-for="NewPassword" class="form-control" />
-    </div>
-    <div class="text-center">
-        <div class="btn-group" role="group">
-            <input class="btn btn-dark mr-2" type="submit" Value="Save">
-            <a asp-action="AppEditSelfAccountData" asp-controller="AppAccountManagement" class="btn btn-dark" role="button">Cancel</a>
+                <form asp-action="SendCodePassReset" asp-controller="AppAccountManagement">
+                    <div asp-validation-summary="All" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="UserName" />
+                    <input type="hidden" asp-for="PhoneNumber" />
+
+                    <div class="mb-4">
+                        <label asp-for="NewPassword" class="form-label fw-semibold">
+                            <i class="fas fa-lock me-1 text-muted"></i> New Password
+                        </label>
+                        <input type="password" asp-for="NewPassword" class="form-control form-control-lg"
+                               placeholder="Enter new password" />
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Send SMS Code
+                        </button>
+                        <a asp-action="AppEditSelfAccountData" asp-controller="AppAccountManagement" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</form>
+</div>

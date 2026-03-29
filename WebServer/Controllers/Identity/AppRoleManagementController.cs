@@ -65,7 +65,8 @@ namespace WebServer.Controllers.Identity
             //var model = new List<AppRoleEdit>();
             var model = new AppRoles();
 
-            foreach (AppUser user in userManag.Users)
+            var users = userManag.Users.ToList(); // Загружаем в память перед итерацией
+            foreach (AppUser user in users)
             {
                 var list = await userManag.IsInRoleAsync(user, role.Name);
 

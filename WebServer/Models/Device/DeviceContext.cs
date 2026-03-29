@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WebServer.Models.Settings;
 
 namespace WebServer.Models.Device
 {
@@ -7,11 +8,13 @@ namespace WebServer.Models.Device
         public DbSet<Device> Device { get; set; }
         public DbSet<Server> Server { get; set; }
         public DbSet<PowerBank> PowerBank { get; set; }
+        public DbSet<AppSetting> AppSettings { get; set; }
+
         public DeviceContext(DbContextOptions<DeviceContext> options)
         : base(options)
             {
                 Database.EnsureCreated();
-            
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -19,6 +22,11 @@ namespace WebServer.Models.Device
             modelBuilder.Entity<Device>().HasIndex(u => u.Id);
             modelBuilder.Entity<Server>().HasIndex(u => u.Id);
             modelBuilder.Entity<PowerBank>().HasIndex(u => u.Id);
+
+            // AppSettings: unique index on Category + Key
+            modelBuilder.Entity<AppSetting>()
+                .HasIndex(s => new { s.Category, s.Key })
+                .IsUnique();
             //modelBuilder.Entity<StressProfile>().HasIndex(u => new { u.NameSettings, u.NumberOfUsers, u.NumberOfInstrument, u.NumberOfOrdersFromUserPerSec }).IsUnique();
         }
 

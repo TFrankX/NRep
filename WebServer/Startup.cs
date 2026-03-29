@@ -21,6 +21,7 @@ using Stripe;
 using WebServer.Services.Stripe;
 using WebServer.Services.Pricing;
 using WebServer.Services;
+using WebServer.Services.Settings;
 
 namespace WebServer
 {
@@ -111,6 +112,7 @@ namespace WebServer
             services.AddScoped<IStripeRoutines, StripeRoutines>();
             services.AddSingleton<IPricingService, PricingService>();
             services.AddSingleton<IDatabaseMigrator, DatabaseMigrator>();
+            services.AddSingleton<IAppSettingsService, AppSettingsService>();
 
             services.AddSession(options =>
             {

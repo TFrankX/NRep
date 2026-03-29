@@ -1,56 +1,69 @@
-﻿@model AppAccountSelfPassReset
-
+@model AppAccountSelfPassReset
 @{
-    ViewBag.Title = "Enter code from SMS";
+    ViewData["Title"] = "Verify SMS Code";
 }
 
-
-
-<div class="row">
-    @*<div class="col-md-2">
-            <div class="position-fixed">
-                <br><br>
-                @Html.Partial("NavVertical")
-            </div>
-        </div>*@
-
-
-    <div class="col-md-10">
-        <div class="text-center"><h2>Check SMS code</h2></div>
-
-        <form asp-action="CheckCodePassReset" asp-controller="AppAccountManagement">
-            @Html.HiddenFor(model => model.Id)
-            @Html.HiddenFor(model => model.PhoneNumber)
-            @Html.HiddenFor(model => model.UserName)
-            @Html.HiddenFor(model => model.Message)
-            @Html.HiddenFor(model => model.NewPassword)
-            <div asp-validation-summary="ModelOnly"></div>
-            <div class="form-group">
-                <label class="control-label">Phone number</label>
-                <input type="text" asp-for="PhoneNumber" class="form-control" readonly />
-            </div>
-            <div class="form-group">
-                <label asp-for="SMSCode">SMS Code</label><br />
-                <input type="text" asp-for="SMSCode" class="form-control" />
-                <span asp-validation-for="SMSCode"></span>
-            </div>
-            @*<div class="form-group">
-            <label asp-for="Password">Password</label><br />
-            <input asp-for="Password" class="form-control" />
-            <span asp-validation-for="Password"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="PasswordConfirm">Confirm password</label><br />
-            <input asp-for="PasswordConfirm" class="form-control" />
-            <span asp-validation-for="PasswordConfirm"></span>
-        </div>*@
-            <div class="text-center">
-                <div class="btn-group" role="group">
-                    <input class="btn btn-dark mr-2" type="submit" Value="Send">
-                </div>
-            </div>
-        </form>
-
-    </div>
+<div class="page-header">
+    <h2><i class="fas fa-sms"></i> Reset Password</h2>
 </div>
 
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-header" style="background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: white;">
+                <h5 class="mb-0"><i class="fas fa-key me-2"></i>Verify SMS Code</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="p-3" style="background: #F3E8FF; border-radius: 8px;">
+                        <i class="fas fa-mobile-alt me-2" style="color: #7C3AED;"></i>
+                        <span class="fw-semibold">@Model.PhoneNumber</span>
+                    </div>
+                    <p class="text-muted mt-2 mb-0">
+                        <small>Enter the code sent to your phone</small>
+                    </p>
+                </div>
+
+                <form asp-action="CheckCodePassReset" asp-controller="AppAccountManagement">
+                    @Html.HiddenFor(model => model.Id)
+                    @Html.HiddenFor(model => model.PhoneNumber)
+                    @Html.HiddenFor(model => model.UserName)
+                    @Html.HiddenFor(model => model.Message)
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="SMSCode" class="form-label fw-semibold">
+                            <i class="fas fa-key me-1 text-muted"></i> SMS Code
+                        </label>
+                        <input asp-for="SMSCode" class="form-control form-control-lg text-center"
+                               placeholder="Enter 5-digit code"
+                               style="font-size: 1.5rem; letter-spacing: 0.5rem;"
+                               maxlength="5" />
+                        <span asp-validation-for="SMSCode" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="NewPassword" class="form-label fw-semibold">
+                            <i class="fas fa-lock me-1 text-muted"></i> New Password
+                        </label>
+                        <input type="password" asp-for="NewPassword" class="form-control form-control-lg"
+                               placeholder="Enter new password" />
+                        <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check me-2"></i>Reset Password
+                        </button>
+                        <a asp-action="AppEditSelfAccountData" asp-controller="AppAccountManagement" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

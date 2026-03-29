@@ -1,55 +1,90 @@
-﻿@using WebServer.Models.User
+@using WebServer.Models.User
 @model UserSMS
-
 @{
-    ViewBag.Title = "Enter code from SMS";
+    ViewData["Title"] = "Verify SMS Code";
+    Layout = null;
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify SMS Code - A-Charger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/acharger-theme.css" />
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+</head>
+<body class="login-page">
+    <div class="login-card fade-in">
+        <div class="login-logo">
+            <h1>
+                <span class="logo-icon">
+                    <i class="fas fa-bolt"></i>
+                </span>
+                A-Charger
+            </h1>
+        </div>
 
+        <div class="login-title">
+            <h2>Verify Code</h2>
+            <p>Enter the code sent to your phone</p>
+        </div>
 
-
-<div class="row">
-    @*<div class="col-md-2">
-            <div class="position-fixed">
-                <br><br>
-                @Html.Partial("NavVertical")
-            </div>
-        </div>*@
-
-
-    <div class="col-md-10">
-        <div class="text-center"><h2>Check SMS code</h2></div>
-
-        <form asp-action="CheckSMSCode" asp-controller="User">
+        <form asp-action="CheckSMSCode" asp-controller="User" class="login-form">
             @Html.HiddenFor(model => model.StationId)
             @Html.HiddenFor(model => model.PhoneNumber)
             @Html.HiddenFor(model => model.Message)
-            <div asp-validation-summary="ModelOnly"></div>
-            <div class="form-group">
-                <label class="control-label">Phone number</label>
-                <input type="text" asp-for="PhoneNumber" class="form-control" readonly />
-            </div>
-            <div class="form-group">
-                <label asp-for="SMSCode">SMS Code</label><br />
-                <input autoFocus type="text" asp-for="SMSCode" class="form-control" />
-                <span asp-validation-for="SMSCode"></span>
-            </div>
-            @*<div class="form-group">
-                    <label asp-for="Password">Password</label><br />
-                    <input asp-for="Password" class="form-control" />
-                    <span asp-validation-for="Password"></span>
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+            <div class="text-center mb-4">
+                <div class="p-3" style="background: var(--accent-light); border-radius: var(--border-radius-sm);">
+                    <i class="fas fa-mobile-alt me-2 text-primary"></i>
+                    <span class="fw-semibold">@Model.PhoneNumber</span>
                 </div>
-                <div class="form-group">
-                    <label asp-for="PasswordConfirm">Confirm password</label><br />
-                    <input asp-for="PasswordConfirm" class="form-control" />
-                    <span asp-validation-for="PasswordConfirm"></span>
-                </div>*@
-            <div class="text-center">
-                <div class="btn-group" role="group">
-                    <input class="btn btn-dark mr-2" type="submit" Value="Send">
-                </div>
+            </div>
+
+            <div class="form-group-acharger">
+                <label asp-for="SMSCode">
+                    <i class="fas fa-key me-1"></i>SMS Code
+                </label>
+                <input asp-for="SMSCode" class="form-control-acharger text-center"
+                       placeholder="Enter 5-digit code"
+                       style="font-size: 1.5rem; letter-spacing: 0.5rem;"
+                       maxlength="5" autofocus />
+                <span asp-validation-for="SMSCode" class="text-danger-acharger" style="font-size: 0.875rem;"></span>
+            </div>
+
+            <button type="submit" class="btn-acharger btn-primary-acharger btn-login">
+                <i class="fas fa-check"></i>
+                Verify & Get Powerbank
+            </button>
+
+            <div class="d-grid gap-2 mt-3">
+                <a asp-action="DoSMS" asp-controller="User" asp-route-stationId="@Model.StationId"
+                   class="btn-acharger btn-secondary-acharger">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </a>
             </div>
         </form>
 
+        <div class="login-footer">
+            <p>
+                Didn't receive the code?
+                <a asp-action="DoSMS" asp-controller="User" asp-route-stationId="@Model.StationId">
+                    Resend
+                </a>
+            </p>
+        </div>
     </div>
-</div>
 
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

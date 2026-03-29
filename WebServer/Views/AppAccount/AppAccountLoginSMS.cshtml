@@ -1,29 +1,86 @@
-﻿@model AppAccountsLoginSMS
-<h2>Charging system login</h2>
+@model AppAccountsLoginSMS
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SMS Login - A-Charger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/acharger-theme.css" />
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+</head>
+<body class="login-page">
+    <div class="login-card fade-in">
+        <div class="login-logo">
+            <h1>
+                <span class="logo-icon">
+                    <i class="fas fa-bolt"></i>
+                </span>
+                A-Charger
+            </h1>
+        </div>
 
-<form method="post" asp-controller="AppAccount" asp-action="SendCodeLogin"
-     asp-route-returnUrl="@Model.ReturnUrl" asp-route-newStationId="@Model.NewStationId">
-    <div asp-validation-summary="ModelOnly"></div>
-    <div>
-        <label asp-for="PhoneNumber">Phone number</label><br />
-        <input asp-for="PhoneNumber" />
-        <span asp-validation-for="PhoneNumber"></span>
-    </div>
+        <div class="login-title">
+            <h2>SMS Login</h2>
+            <p>Enter your phone number to receive a code</p>
+        </div>
 
-    <div>
-        <input class="btn btn-dark my-3" type="submit" value="Log in with SMS" />
-        <input class="btn btn-dark my-3" type="submit" onclick="location.href='@Url.Action("AppAccountLogin", "AppAccount",new { NewStationId=Model.NewStationId })';return false;" value="Log in with with User/Password" </>
-        <a class="btn btn-dark my-3" asp-controller="AppAccountManagement" asp-action="AppCreateSelfAccount">Register new account</a>
+        <form method="post" asp-controller="AppAccount" asp-action="SendCodeLogin"
+              asp-route-returnUrl="@Model.ReturnUrl" asp-route-newStationId="@Model.NewStationId" class="login-form">
 
-    </div>
-    <div>
-        @if (@Model.NewStationId > 0)
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+            <div class="form-group-acharger">
+                <label asp-for="PhoneNumber">
+                    <i class="fas fa-phone me-1"></i>Phone Number
+                </label>
+                <input asp-for="PhoneNumber" class="form-control-acharger" placeholder="+357 99 123456" />
+                <span asp-validation-for="PhoneNumber" class="text-danger-acharger" style="font-size: 0.875rem;"></span>
+            </div>
+
+            <button type="submit" class="btn-acharger btn-primary-acharger btn-login">
+                <i class="fas fa-paper-plane"></i>
+                Send SMS Code
+            </button>
+
+            <div class="d-grid gap-2 mt-3">
+                <a href="@Url.Action("AppAccountLogin", "AppAccount", new { NewStationId = Model.NewStationId })"
+                   class="btn-acharger btn-secondary-acharger">
+                    <i class="fas fa-user"></i>
+                    Sign in with Password
+                </a>
+            </div>
+        </form>
+
+        <div class="login-footer">
+            <p>
+                Don't have an account?
+                <a href="@Url.Action("AppCreateSelfAccount", "AppAccountManagement", new { NewStationId = Model.NewStationId })">
+                    Create one
+                </a>
+            </p>
+        </div>
+
+        @if (Model.NewStationId > 0)
         {
-            <a>
-                New station ID:
-            </a>
-            <a>
-                @Html.DisplayFor(Model => Model.NewStationId)
-            </a>
+            <div class="mt-4 p-3" style="background: var(--accent-light); border-radius: var(--border-radius-sm);">
+                <small class="text-primary-acharger">
+                    <i class="fas fa-info-circle me-1"></i>
+                    New station ID: <strong>@Model.NewStationId</strong>
+                </small>
+            </div>
         }
-</form>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

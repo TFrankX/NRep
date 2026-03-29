@@ -18,21 +18,112 @@
 <script src="~/jqwidgets/jqxdraw.js"></script>
 <script src="~/jqwidgets/jqxchart.core.js"></script>
 <script src="~/jqwidgets/jqxchart.rangeselector.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 
 
 <meta name="keywords" content="jQuery Window, Window Widget, Window" />
 <link rel="stylesheet" href="~/jqwidgets/styles/jqx.base.css" type="text/css" />
+<link rel="stylesheet" href="~/jqwidgets/styles/jqx.material-purple.css" type="text/css" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1" />
 
 @{
-    ViewData["Title"] = "";
+    ViewData["Title"] = "Devices";
+    var serverAddress = ViewBag.ServerAddress ?? "a-charger.com";
 }
 
 @section scripts
 {
     <script type="text/javascript">
+        var serverAddress = '@serverAddress';
+        var qrModalInstance = null;
+
+        function closeQRModal() {
+            if (qrModalInstance) {
+                qrModalInstance.hide();
+            }
+            // Also try jQuery method as fallback
+            $('#qrModal').modal('hide');
+        }
+
+        function showQRCode(deviceId, deviceName) {
+            var url = 'https://' + serverAddress + '/User/Do?deviceId=' + deviceId;
+
+            $('#qrDeviceName').text(deviceName || 'Station ' + deviceId);
+            $('#qrLink').attr('href', url).text(url);
+            $('#qrcode').empty();
+
+            // Generate QR code using qrcodejs library
+            var qrcode = new QRCode(document.getElementById('qrcode'), {
+                text: url,
+                width: 256,
+                height: 256,
+                colorDark: '#7C3AED',
+                colorLight: '#FFFFFF',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            qrModalInstance = new bootstrap.Modal(document.getElementById('qrModal'));
+            qrModalInstance.show();
+        }
+
+        function downloadQR() {
+            var canvas = $('#qrcode canvas')[0];
+            var img = $('#qrcode img')[0];
+
+            if (canvas) {
+                var link = document.createElement('a');
+                link.download = 'qrcode-' + $('#qrDeviceName').text() + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } else if (img) {
+                var link = document.createElement('a');
+                link.download = 'qrcode-' + $('#qrDeviceName').text() + '.png';
+                link.href = img.src;
+                link.click();
+            }
+        }
+
+        function printQR() {
+            var deviceName = $('#qrDeviceName').text();
+            var qrLink = $('#qrLink').attr('href');
+            var img = $('#qrcode img')[0];
+            var canvas = $('#qrcode canvas')[0];
+            var qrSrc = '';
+
+            if (canvas) {
+                qrSrc = canvas.toDataURL('image/png');
+            } else if (img) {
+                qrSrc = img.src;
+            }
+
+            var printWindow = window.open('', '_blank');
+            var html = '<!DOCTYPE html>' +
+                '<html><head><title>QR Code - ' + deviceName + '</title>' +
+                '<style>' +
+                'body{font-family:Arial,sans-serif;margin:15px;padding:0}' +
+                '.container{text-align:left;border:1px solid #7C3AED;border-radius:8px;padding:12px;display:inline-block}' +
+                '.header{display:flex;align-items:center;margin-bottom:8px}' +
+                '.logo{font-size:12px;font-weight:bold;color:#7C3AED}' +
+                '.logo-icon{display:inline-block;width:18px;height:18px;background:#7C3AED;color:white;border-radius:4px;line-height:18px;text-align:center;margin-right:5px;font-size:10px}' +
+                '.device-name{font-size:11px;font-weight:600;color:#333;margin-left:10px}' +
+                '.qr-wrapper{position:relative;display:inline-block;padding:6px;background:white;border-radius:6px}' +
+                '.qr-wrapper img{display:block;width:80px;height:80px}' +
+                '.qr-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;background:#7C3AED;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;color:white;font-size:8px}' +
+                '.url{color:#7C3AED;font-size:7px;word-break:break-all;margin-top:6px;max-width:80px}' +
+                '</style></head>' +
+                '<body><div class="container">' +
+                '<div class="header"><div class="logo"><span class="logo-icon">⚡</span>A-Charger</div><span class="device-name">' + deviceName + '</span></div>' +
+                '<div class="qr-wrapper"><img src="' + qrSrc + '" alt="QR Code"><div class="qr-logo">⚡</div></div>' +
+                '<div class="url">' + qrLink + '</div>' +
+                '</div>' +
+                '<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};};<\/script>' +
+                '</body></html>';
+            printWindow.document.write(html);
+            printWindow.document.close();
+        }
+
         function PushPB(DeviceName,PBNumber) {
              $.ajax({
                  type: "POST",
@@ -260,26 +351,21 @@
         }
 
         function cellsrenderer(row, column, value) {
-            //if (stoprefresh) { return }
-            //if (noRender == row) {return }
             var jsonmod = source.localdata;
             var backcolor = "#FFFFFF";
             var text = value;
 
+            // Soft yellow for not activated
             if ((jsonmod[row].Activated !== null) && (jsonmod[row].Activated == false)) {
-                backcolor = "#FFFF99";
+                backcolor = "#FEF9C3";
             }
 
-
+            // Soft red for offline
             if ((jsonmod[row].Online !== null) && (jsonmod[row].Online == false)) {
-                backcolor = "#FFA07A";
-
+                backcolor = "#FEE2E2";
             }
 
-
-
-
-            var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
+            var divstartstyle = "<div style='height: 100%; min-height: 40px; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 8px;'>";
 
 
 
@@ -348,161 +434,118 @@
 
             //alert(column);
             if (column === 'DeviceName') {
-                // return divstartstyle +
-                //     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                // value + ":" + jsonmod[row].Port
-                //     "</span>" +
-                //     "</div>";
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
-                    "<input style='height:30px;' type='button' " +
-                    "class='btn btn-success btn-lg btn-block btn-sm' " +
-                    "onclick=GoToDetails('" +
+                    "<button class='btn-grid btn-grid-primary' " +
+                    "onclick=\"GoToDetails('" + jsonmod[row].DeviceName + "')\">" +
                     jsonmod[row].DeviceName +
-                    "'); " +
-                    "href='javascript: void (0);' value='" +
-                    jsonmod[row].DeviceName +
-                    "' /> " +
-                    "</span>" +
+                    "</button>" +
                     "</div>";
             } else if (column === 'HostDeviceId') {
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
+                    "<span style='font-size: 0.75rem; color: #6B7280;'>" + value + "</span>" +
                     "</div>";
             } else if (column === 'Slots') {
-
-                if (value & 1) {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "1" + "');  title=' 1 '>   1</span>";
-                } else {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' class='grayCircle'; title=' 1 '>   1</span>";
+                var slotInfo = jsonmod[row].SlotInfo || [];
+                var slots = "<div style='display: flex; gap: 6px;'>";
+                for (var i = 0; i < 4; i++) {
+                    var slot = slotInfo[i] || { HasPowerBank: false, ChargeLevel: 0, Charging: false };
+                    var slotNum = i + 1;
+                    if (slot.HasPowerBank) {
+                        var level = slot.ChargeLevel || 0;
+                        var color = level > 60 ? '#22C55E' : (level > 30 ? '#F59E0B' : '#EF4444');
+                        var fillHeight = Math.max(level, 5);
+                        var chargingIcon = slot.Charging ? "<span style='position:absolute;top:-2px;right:-2px;font-size:8px;color:#F59E0B;'>&#9889;</span>" : "";
+                        slots += "<div class='battery-slot' onclick=\"PushPB('" + jsonmod[row].DeviceName + "','" + slotNum + "')\" title='Slot " + slotNum + " - " + level + "% - Click to push'>" +
+                            "<div class='battery-icon'>" +
+                            "<div class='battery-tip'></div>" +
+                            "<div class='battery-body'>" +
+                            "<div class='battery-fill' style='height:" + fillHeight + "%;background:" + color + ";'></div>" +
+                            "</div>" +
+                            chargingIcon +
+                            "</div>" +
+                            "<span class='battery-percent' style='color:" + color + ";'>" + level + "%</span>" +
+                            "</div>";
+                    } else {
+                        slots += "<div class='battery-slot empty' title='Slot " + slotNum + " - Empty'>" +
+                            "<div class='battery-icon empty'>" +
+                            "<div class='battery-tip'></div>" +
+                            "<div class='battery-body'><i class='fas fa-minus' style='font-size:8px;color:#D1D5DB;'></i></div>" +
+                            "</div>" +
+                            "<span class='battery-percent' style='color:#D1D5DB;visibility:hidden;'>100%</span>" +
+                            "</div>";
+                    }
                 }
-                if (value & 2) {
-                    text = text + "<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "2" + "'); title=' 2 '>   2</span>";
-                } else {
-                    text = text + "<span style='margin-top: 5px; margin-left: 43px; position: absolute;' class='grayCircle'; title=' 2 '>   2</span>";
-                }
-                if (value & 4) {
-                    text = text + "<span style='margin-top: 5px; margin-left: 73px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "3" + "'); title=' 3 '>   3</span>";
-                } else {
-                    text = text + "<span style='margin-top: 5px; margin-left: 73px; position: absolute;' class='grayCircle'; title=' 3 '>   3</span>";
-                }
-                if (value & 8) {
-                    text = text + "<span style='margin-top: 5px; margin-left: 103px; position: absolute;' class='greenCircle'; type='button'; onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "4" + "'); title=' 4 '>   4</span>";
-                } else {
-                    text = text + "<span style='margin-top: 5px; margin-left: 103px; position: absolute;' class='grayCircle'; title=' 4 '>   4</span>";
-                }
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    text +
-                    "</span>" +
-                    "</div>";
+                slots += "</div>";
+                return divstartstyle + slots + "</div>";
 
 
             } else if (column === 'Activated') {
-
-
-                if (value) {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='greenCircle'; onclick=Activate('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
-                } else {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='grayCircle'; onclick=Activate('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
-                }
-
+                var circleClass = value ? 'green' : 'gray';
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    text +
-                    "</span>" +
+                    "<span class='status-circle " + circleClass + "' onclick=\"Activate('" + jsonmod[row].Id_str + "')\" title='Click to toggle'></span>" +
                     "</div>";
 
             } else if (column === 'CanRegister') {
-
-
-                if (value) {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='greenCircle'; onclick=CanReg('" + jsonmod[row].Id_str + "');  title='  '>   </span>";
-                } else {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='grayCircle'; onclick=CanReg('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
-                }
-
+                var circleClass = value ? 'green' : 'gray';
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    text +
-                    "</span>" +
+                    "<span class='status-circle " + circleClass + "' onclick=\"CanReg('" + jsonmod[row].Id_str + "')\" title='Click to toggle'></span>" +
                     "</div>";
 
             } else if (column === 'Registered') {
-
-
-                if (value) {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='greenCircle'; onclick=Register('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
-                } else {
-                    text = "<span style='margin-top: 5px; margin-left: 13px; position: absolute;' type='button'; class='grayCircle'; onclick=Register('" + jsonmod[row].Id_str + "'); title='  '>   </span>";
-                }
-
+                var circleClass = value ? 'green' : 'gray';
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    text +
-                    "</span>" +
+                    "<span class='status-circle " + circleClass + "' onclick=\"Register('" + jsonmod[row].Id_str + "')\" title='Click to toggle'></span>" +
                     "</div>";
 
             } else if (column === 'LastOnlineTime') {
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
+                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + value + "</span>" +
                     "</div>";
             } else if (column === 'PushPB') {
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
-                    "<input style='height:30px;' type='button' " +
-                    "class='btn btn-success btn-lg btn-block btn-sm' " +
-                    "onclick=PushPB('" + jsonmod[row].DeviceName + "','" + "0" + "'); " +
-                    "href='javascript: void (0);' value='" +
-                    "Push PB" +
-                    "' /> " +
-                    "</span>" +
+                    "<button class='btn-grid btn-grid-success' " +
+                    "onclick=\"PushPB('" + jsonmod[row].DeviceName + "','0')\">" +
+                    "Push PB</button>" +
                     "</div>";
             } else if (column === 'TypeOfUse') {
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    "<select class='selectD' id='TypeOfUse" + row + "' " +
+                    "<select class='grid-select' id='TypeOfUse" + row + "' " +
                     "onfocus='isUserEditing=true' onblur='isUserEditing=false' " +
                     "onmousedown='isUserEditing=true' " +
-                    "onchange=\"SetTypeOfUse('" + jsonmod[row].Id_str + "','" + row + "','" + value + "')\" >" +
-                    "<option value='0' " + ((value == 0) ? "selected='selected'" : "") + " >-----</option>" +
-                    "<option value='1'" + ((value == 1) ? "selected='selected'" : "") + " >Free Take</option>" +
-                    "<option value='2'" + ((value == 2) ? "selected='selected'" : "") + " >Free Multi Take</option>" +
-                    "<option value='3'" + ((value == 3) ? "selected='selected'" : "") + " >SMS Take</option>" +
-                    "<option value='4'" + ((value == 4) ? "selected='selected'" : "") + " >Owner Auth</option>" +
-                    "<option value='5'" + ((value == 5) ? "selected='selected'" : "") + " >Pay By Card1</option>" +
-                    "<option value='6'" + ((value == 6) ? "selected='selected'" : "") + " >Pay By Card2</option>" +
-                    "<option value='7'" + ((value == 7) ? "selected='selected'" : "") + " >Pay By Card3</option>" +
-                    "<option value='8'" + ((value == 8) ? "selected='selected'" : "") + " >Pay By Card4</option>" +
-                    "</select >" +
-                    "</span>" +
+                    "onchange=\"SetTypeOfUse('" + jsonmod[row].Id_str + "','" + row + "','" + value + "')\">" +
+                    "<option value='0'" + ((value == 0) ? " selected" : "") + ">-----</option>" +
+                    "<option value='1'" + ((value == 1) ? " selected" : "") + ">Free Take</option>" +
+                    "<option value='2'" + ((value == 2) ? " selected" : "") + ">Free Multi</option>" +
+                    "<option value='3'" + ((value == 3) ? " selected" : "") + ">SMS Take</option>" +
+                    "<option value='4'" + ((value == 4) ? " selected" : "") + ">Owner Auth</option>" +
+                    "<option value='5'" + ((value == 5) ? " selected" : "") + ">Pay Card 1</option>" +
+                    "<option value='6'" + ((value == 6) ? " selected" : "") + ">Pay Card 2</option>" +
+                    "<option value='7'" + ((value == 7) ? " selected" : "") + ">Pay Card 3</option>" +
+                    "<option value='8'" + ((value == 8) ? " selected" : "") + ">Pay Card 4</option>" +
+                    "</select>" +
                     "</div>";
             } else if (column === 'Description') {
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; margin-right: 10px; position: absolute; left: 0; right: 0;'>" +
-                    "<input type='text' style='width: calc(100% - 10px); box-sizing: border-box;' value='" + (value || '') + "' id='Desc" + row + "' " +
+                    "<input type='text' class='grid-input' value='" + (value || '').replace(/'/g, "&#39;") + "' id='Desc" + row + "' " +
                     "onfocus='isUserEditing=true' " +
                     "onkeydown='if(event.keyCode==13){this.blur();}' " +
-                    "onblur='isUserEditing=false; SetDescription(\"" + jsonmod[row].Id_str + "\", this.value)' >" +
-                    "</span>" +
+                    "onblur='isUserEditing=false; SetDescription(\"" + jsonmod[row].Id_str + "\", this.value)'>" +
                     "</div>";
 
             } else if (column === 'Owners') {
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    "<input type='text' value='" + (value || '1000') + "' id='Owner" + row + "' " +
-                    "onfocus='isUserEditing=true' onblur='isUserEditing=false; SetOwner(\"" + jsonmod[row].Id_str + "\", this.value)' >" +
-                    "</span>" +
+                    "<input type='text' class='grid-input' style='width: 60px;' value='" + (value || '1000') + "' id='Owner" + row + "' " +
+                    "onfocus='isUserEditing=true' onblur='isUserEditing=false; SetOwner(\"" + jsonmod[row].Id_str + "\", this.value)'>" +
+                    "</div>";
+            } else if (column === 'QR') {
+                return divstartstyle +
+                    "<button class='btn-grid btn-grid-qr' title='Show QR Code' " +
+                    "onclick=\"showQRCode('" + jsonmod[row].Id_str + "', '" + (jsonmod[row].DeviceName || '').replace(/'/g, "\\'") + "')\">" +
+                    "<i class='fas fa-qrcode'></i></button>" +
                     "</div>";
             }
             return divstartstyle +
-                "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                value +
-                "</span>" +
+                "<span style='font-size: 0.85rem;'>" + value + "</span>" +
                 "</div>";
         }
 
@@ -606,6 +649,7 @@
                 { name: 'HostDeviceId_str', type: 'string' },
                 { name: 'Online', type: 'boolean' },
                 { name: 'Slots', type: 'number' },
+                { name: 'SlotInfo' },
                 { name: 'Activated', type: 'boolean' },
                 { name: 'CanRegister', type: 'boolean' },
                 { name: 'Registered', type: 'boolean' },
@@ -629,12 +673,12 @@
                 {
                     width: '100%',
                     source: dataAdapter,
-                    //theme: 'energyblue',
+                    theme: 'material-purple',
                     sortable: true,
                     filterable: true,
                     //showfilterrow: true,
                     //autorowheight: true,
-                    rowsheight: 48,
+                    rowsheight: 44,
                     //autorowheight: true,
                     enablebrowserselection: true,
                     selectionmode: 'multiplecellsadvanced',
@@ -642,30 +686,76 @@
                     //pageable: true,
                     height: 720,
                     columnsresize: true,
+                    autowidth: true,
                     columns: [
-                        { text: "Id", datafield: "Id_str", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Device name", datafield: "DeviceName", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Host Device Id", datafield: "HostDeviceId_str", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Online", datafield: "Online", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Slots", datafield: "Slots", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Activated", datafield: "Activated", width: "3%", cellsrenderer: cellsrenderer },
-                        { text: "CanRegister", datafield: "CanRegister", width: "3%", cellsrenderer: cellsrenderer },
-                        { text: "Registered", datafield: "Registered", width: "3%", cellsrenderer: cellsrenderer },
-                        { text: "TypeOfUse", datafield: "TypeOfUse", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Description", datafield: "Description", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Owners", datafield: "Owners", width: "3%", cellsrenderer: cellsrenderer, columntype: 'textbox' },
-                        { text: "SimId", datafield: "SimId", width: "3%", cellsrenderer: cellsrenderer },
-                        { text: "Last connected time", datafield: "LastOnlineTime", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Push PB", datafield: "PushPB", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Can Reg", datafield: "CanReg", width: "5%", cellsrenderer: cellsrenderer },
+                        { text: "ID", datafield: "Id_str", width: 160, cellsrenderer: cellsrenderer },
+                        { text: "Device", datafield: "DeviceName", width: 170, cellsrenderer: cellsrenderer },
+                        { text: "Host ID", datafield: "HostDeviceId_str", width: 160, cellsrenderer: cellsrenderer },
+                        { text: "Online", datafield: "Online", width: 60, cellsrenderer: cellsrenderer },
+                        { text: "Slots", datafield: "Slots", width: 155, cellsrenderer: cellsrenderer },
+                        { text: "Active", datafield: "Activated", width: 60, cellsrenderer: cellsrenderer },
+                        { text: "CanReg", datafield: "CanRegister", width: 60, cellsrenderer: cellsrenderer },
+                        { text: "Reg", datafield: "Registered", width: 50, cellsrenderer: cellsrenderer },
+                        { text: "Type", datafield: "TypeOfUse", width: 120, cellsrenderer: cellsrenderer },
+                        { text: "Description", datafield: "Description", width: 220, cellsrenderer: cellsrenderer },
+                        { text: "Owner", datafield: "Owners", width: 70, cellsrenderer: cellsrenderer, columntype: 'textbox' },
+                        { text: "SIM", datafield: "SimId", width: 180, cellsrenderer: cellsrenderer },
+                        { text: "Last Online", datafield: "LastOnlineTime", width: 160, cellsrenderer: cellsrenderer },
+                        { text: "Push", datafield: "PushPB", width: 80, cellsrenderer: cellsrenderer },
+                        { text: "QR", datafield: "QR", width: 60, cellsrenderer: cellsrenderer },
                      ]
                 });
             refresh();
-            //_createWindow();
             $("#jqxWidget").css('display', 'block');
 
-
+            // Check saved view preference
+            var isCompact = localStorage.getItem('devicesCompactView') === 'true';
+            if (isCompact) {
+                setCompactView(true);
+                $('#viewToggle').addClass('active');
+                $('#viewToggleText').text('Full View');
+                $('#viewToggleIcon').removeClass('fa-compress').addClass('fa-expand');
+            }
         });
+
+        // Columns to hide in compact view
+        var compactHiddenColumns = ['Id_str', 'HostDeviceId_str', 'Online', 'CanRegister', 'Registered', 'Owners', 'PushPB'];
+
+        function setCompactView(compact) {
+            compactHiddenColumns.forEach(function(col) {
+                $("#jqxgrid").jqxGrid('hidecolumn', col);
+                if (!compact) {
+                    $("#jqxgrid").jqxGrid('showcolumn', col);
+                }
+            });
+            if (compact) {
+                compactHiddenColumns.forEach(function(col) {
+                    $("#jqxgrid").jqxGrid('hidecolumn', col);
+                });
+            }
+        }
+
+        function toggleView() {
+            var isCompact = localStorage.getItem('devicesCompactView') === 'true';
+            isCompact = !isCompact;
+            localStorage.setItem('devicesCompactView', isCompact);
+
+            if (isCompact) {
+                compactHiddenColumns.forEach(function(col) {
+                    $("#jqxgrid").jqxGrid('hidecolumn', col);
+                });
+                $('#viewToggle').addClass('active');
+                $('#viewToggleText').text('Full View');
+                $('#viewToggleIcon').removeClass('fa-compress').addClass('fa-expand');
+            } else {
+                compactHiddenColumns.forEach(function(col) {
+                    $("#jqxgrid").jqxGrid('showcolumn', col);
+                });
+                $('#viewToggle').removeClass('active');
+                $('#viewToggleText').text('Compact');
+                $('#viewToggleIcon').removeClass('fa-expand').addClass('fa-compress');
+            }
+        }
 
 
         function addElement(parentId, elementTag, elementId, html) {
@@ -716,149 +806,133 @@
 
 
 
-<body class="default">
-    <div id="jqxWidget">
-        <div style="display: none; width: 100%; height: 650px; margin-top: 50px;" id="mainWinContainer">
-            <div id="chartWindow">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+        <h1><i class="fas fa-charging-station"></i> Charging Stations</h1>
+        <p class="page-subtitle">Manage your charging station devices</p>
+    </div>
+    <button id="viewToggle" class="btn-acharger btn-secondary-acharger" onclick="toggleView()" style="white-space: nowrap;">
+        <i id="viewToggleIcon" class="fas fa-compress"></i>
+        <span id="viewToggleText">Compact</span>
+    </button>
+</div>
 
-                <div id="windowHeader">
-                    <span>
-                        Chart
-                    </span>
+<div class="grid-container">
+    <div id="jqxgrid"></div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: white; border-radius: 16px 16px 0 0; border: none;">
+                <h5 class="modal-title" id="qrModalLabel">
+                    <i class="fas fa-qrcode me-2"></i>QR Code
+                </h5>
+                <button type="button" class="btn-close btn-close-white" onclick="closeQRModal()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <h6 class="text-muted mb-3" id="qrDeviceName">Station</h6>
+                <div style="position: relative; display: inline-block;">
+                    <div id="qrcode" style="padding: 16px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>
+                    <div id="qrLogo" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: #7C3AED; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                        <i class="fas fa-bolt" style="color: white; font-size: 22px;"></i>
+                    </div>
                 </div>
-
+                <div class="mt-4">
+                    <p class="text-muted mb-2"><small>Scan to access station:</small></p>
+                    <a href="#" id="qrLink" target="_blank" class="text-break" style="color: #7C3AED; font-size: 0.875rem;"></a>
+                </div>
+            </div>
+            <div class="modal-footer" style="border: none; justify-content: center; padding-bottom: 24px; gap: 8px;">
+                <button type="button" class="btn btn-outline-secondary" onclick="closeQRModal()">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="printQR()" style="border-color: #7C3AED; color: #7C3AED;">
+                    <i class="fas fa-print me-1"></i>Print
+                </button>
+                <button type="button" class="btn" onclick="downloadQR()" style="background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: white;">
+                    <i class="fas fa-download me-1"></i>Download
+                </button>
             </div>
         </div>
     </div>
-</body>
-
-
+</div>
 
 <style>
-
-    .selectD {
-        font-size: 0.9rem;
-        padding: 2px 5px;
+    /* Battery slot styles */
+    .battery-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+        padding: 2px;
     }
 
-    .disable {
-        pointer-events: none;
-        background: #ccc;
+    .battery-slot:hover {
+        transform: scale(1.1);
     }
 
-    .yellow {
-        background: orange;
-        border-color: orange;
+    .battery-slot.empty {
+        cursor: default;
+        opacity: 0.5;
     }
 
-    .redCircle {
-        width: 24px;
-        height: 24px;
-        background: red;
-        border-radius: 50%;
-        margin-left: auto;
-        margin-right: auto;
+    .battery-slot.empty:hover {
+        transform: none;
     }
 
-    .greenCircle {
-        width: 24px;
-        height: 24px;
-        background: green;
-        border-radius: 50%;
-        margin-left: auto;
-        margin-right: auto;
+    .battery-icon {
+        position: relative;
+        width: 18px;
+        height: 28px;
     }
 
-    .grayCircle {
-        width: 24px;
-        height: 24px;
-        background: gray;
-        border-radius: 50%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    /* Preloader */
-
-    #p_prldr {
-        position: fixed;
-        left: 0;
+    .battery-tip {
+        position: absolute;
         top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 8px;
+        height: 3px;
+        background: #9CA3AF;
+        border-radius: 2px 2px 0 0;
+    }
+
+    .battery-body {
+        position: absolute;
+        top: 3px;
+        left: 0;
         right: 0;
         bottom: 0;
-        background: #0066FF;
-        z-index: 30;
+        border: 2px solid #9CA3AF;
+        border-radius: 3px;
+        overflow: hidden;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
     }
 
-    .contpre small {
-        font-size: 20px;
-        line-height: 24px;
+    .battery-icon.empty .battery-body {
+        border-color: #D1D5DB;
+        align-items: center;
     }
 
-    .contpre {
-        width: 250px;
-        height: 100px;
+    .battery-fill {
         position: absolute;
-        left: 50%;
-        top: 48%;
-        margin-left: -125px;
-        margin-top: -75px;
-        color: #fff;
-        font-size: 32px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        transition: height 0.3s ease;
+    }
+
+    .battery-percent {
+        font-size: 9px;
+        font-weight: 700;
+        margin-top: 1px;
+        line-height: 1;
+        min-width: 28px;
         text-align: center;
-        line-height: 36px;
-    }
-
-    #p_prldr .svg_anm {
-        position: absolute;
-        width: 41px;
-        height: 41px;
-        background: url(/images/tail-spin.svg) center center no-repeat;
-        background-size: 41px;
-        margin: -16px 0 0 -16px;
     }
 </style>
-
-
-<div class="text-center">
-    <h2>Charhing stations hosting servers</h2>
-</div>
-<div id="jqxgrid"></div>
-
-<body class="default">
-    <div id="jqxWidget">
-        <div style="display: none; width: 100%; height: 650px; margin-top: 50px;" id="mainWinContainer">
-            <div id="deviceSettings">
-
-                <div id="windowHeader">
-                    <span>
-                        Device Settings
-                    </span>
-                </div>
-
-
-                <div style="overflow: hidden;" id="windowContent">
-
-                    <h2 style="text-align: center;">Charge station:</h2>
-                    <p style="font-size: 1.5em;"><strong>ID:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Device name:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Host ID:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Online:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Slots:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Activated:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Can register:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Registered:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Type of use:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Registered:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Type of use:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Description: </strong><input style="font-size: 1em;" type="text" id="DescriptionInputChange" name="" onchange="descriptionInputChange()"></p>
-                    <p style="font-size: 1.5em;"><strong>SimID:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Push PB:&nbsp;</strong></p>
-                    <p style="font-size: 1.5em;"><strong>Last conect time:&nbsp;</strong></p>
-
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-

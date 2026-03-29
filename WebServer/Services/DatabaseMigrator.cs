@@ -14,7 +14,7 @@ namespace WebServer.Services
         private readonly IConfiguration _configuration;
 
         // Current schema version - increment when adding new migrations
-        private const int CURRENT_SCHEMA_VERSION = 1;
+        private const int CURRENT_SCHEMA_VERSION = 2;
 
         public DatabaseMigrator(IServiceProvider serviceProvider, ILogger<DatabaseMigrator> logger, IConfiguration configuration)
         {
@@ -131,6 +131,15 @@ namespace WebServer.Services
                 // v1: Ensure all Server table columns exist
                 await MigrateServer_v1_BaseColumnsAsync(connection);
 
+                // v2: Create AppSettings table
+                await MigrateAppSettings_v2_CreateTableAsync(connection);
+
+                // v2: Seed default pricing settings
+                await MigrateAppSettings_v2_SeedPricingAsync(connection);
+
+                // v2.1: Fix pricing values (comma to dot issue)
+                await MigrateAppSettings_v2_1_FixPricingValuesAsync(connection);
+
                 _logger.LogInformation("Device database migration completed");
             }
             catch (Exception ex)
@@ -236,6 +245,117 @@ namespace WebServer.Services
             await AddColumnIfNotExistsAsync(connection, "Server", "CertPass", "text", "''");
 
             await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateAppSettings_v2_CreateTableAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "AppSettings_v2_CreateTable";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            var sql = @"
+                CREATE TABLE IF NOT EXISTS ""AppSettings"" (
+                    ""Id"" SERIAL PRIMARY KEY,
+                    ""Category"" VARCHAR(50) NOT NULL,
+                    ""Key"" VARCHAR(100) NOT NULL,
+                    ""Value"" TEXT NOT NULL DEFAULT '',
+                    ""ValueType"" VARCHAR(20) NOT NULL DEFAULT 'string',
+                    ""Description"" VARCHAR(255) NOT NULL DEFAULT '',
+                    ""DisplayOrder"" INTEGER NOT NULL DEFAULT 0,
+                    ""LastModified"" TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+                    ""ModifiedBy"" VARCHAR(100) NOT NULL DEFAULT '',
+                    UNIQUE(""Category"", ""Key"")
+                )";
+
+            await using var cmd = new NpgsqlCommand(sql, connection);
+            await cmd.ExecuteNonQueryAsync();
+
+            // Create index for faster lookups
+            var indexSql = @"CREATE INDEX IF NOT EXISTS ""IX_AppSettings_Category"" ON ""AppSettings"" (""Category"")";
+            await using var indexCmd = new NpgsqlCommand(indexSql, connection);
+            await indexCmd.ExecuteNonQueryAsync();
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateAppSettings_v2_SeedPricingAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "AppSettings_v2_SeedPricing";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            // Default pricing plans to seed
+            var pricingPlans = new[]
+            {
+                ("PayByCard", "Standard Plan", 25.0f, 2.0f, 2.0f, 12.0f, 3, "eur"),
+                ("PayByCard2", "Plan 2", 25.0f, 2.0f, 2.0f, 12.0f, 3, "eur"),
+                ("PayByCard3", "Plan 3", 12.0f, 1.0f, 1.0f, 6.0f, 3, "eur"),
+                ("PayByCard4", "Plan 4", 12.0f, 1.0f, 1.0f, 6.0f, 3, "eur")
+            };
+
+            int order = 0;
+            foreach (var (planName, displayName, hold, baseFee, hourly, daily, maxDays, currency) in pricingPlans)
+            {
+                await InsertSettingIfNotExistsAsync(connection, "Pricing", $"{planName}.DisplayName", displayName, "string", $"Display name for {planName}", order++);
+                await InsertSettingIfNotExistsAsync(connection, "Pricing", $"{planName}.HoldAmount", hold.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), "float", "Hold amount (deposit)", order++);
+                await InsertSettingIfNotExistsAsync(connection, "Pricing", $"{planName}.BaseFee", baseFee.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), "float", "Base fee for rental", order++);
+                await InsertSettingIfNotExistsAsync(connection, "Pricing", $"{planName}.HourlyRate", hourly.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), "float", "Hourly rate (first day)", order++);
+                await InsertSettingIfNotExistsAsync(connection, "Pricing", $"{planName}.DailyRate", daily.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), "float", "Daily rate (after first day)", order++);
+                await InsertSettingIfNotExistsAsync(connection, "Pricing", $"{planName}.MaxDaysBeforeCapture", maxDays.ToString(), "int", "Max days before full capture", order++);
+                await InsertSettingIfNotExistsAsync(connection, "Pricing", $"{planName}.Currency", currency, "string", "Currency code", order++);
+            }
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateAppSettings_v2_1_FixPricingValuesAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "AppSettings_v2_1_FixPricingValues";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            // Fix float values that were stored with comma instead of dot
+            // This happens when ToString("F2") uses local culture with comma
+            var fixSql = @"
+                UPDATE ""AppSettings""
+                SET ""Value"" = REPLACE(""Value"", ',', '.')
+                WHERE ""Category"" = 'Pricing'
+                AND ""ValueType"" = 'float'
+                AND ""Value"" LIKE '%,%'";
+
+            await using var cmd = new NpgsqlCommand(fixSql, connection);
+            var affected = await cmd.ExecuteNonQueryAsync();
+
+            if (affected > 0)
+                _logger.LogInformation("Fixed {Count} pricing values with comma separator", affected);
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task InsertSettingIfNotExistsAsync(NpgsqlConnection connection, string category, string key, string value, string valueType, string description, int displayOrder)
+        {
+            var sql = @"
+                INSERT INTO ""AppSettings"" (""Category"", ""Key"", ""Value"", ""ValueType"", ""Description"", ""DisplayOrder"", ""LastModified"", ""ModifiedBy"")
+                VALUES (@category, @key, @value, @valueType, @description, @displayOrder, NOW(), 'system')
+                ON CONFLICT (""Category"", ""Key"") DO NOTHING";
+
+            await using var cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("category", category);
+            cmd.Parameters.AddWithValue("key", key);
+            cmd.Parameters.AddWithValue("value", value);
+            cmd.Parameters.AddWithValue("valueType", valueType);
+            cmd.Parameters.AddWithValue("description", description);
+            cmd.Parameters.AddWithValue("displayOrder", displayOrder);
+            await cmd.ExecuteNonQueryAsync();
         }
 
         #endregion

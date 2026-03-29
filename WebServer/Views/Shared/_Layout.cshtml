@@ -1,88 +1,174 @@
-﻿@inject SignInManager<AppUser> SignInManager
+@inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] Charging system</title>
+    <title>@ViewData["Title"] - A-Charger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <link href="~/jqwidgets/styles/jqx.base.css" rel="stylesheet" />
+    <link href="~/jqwidgets/styles/jqx.material-purple.css" rel="stylesheet" />
     <script src="~/jqwidgets/jqxcore.js"></script>
     <script src="~/jqwidgets/jqxdata.js"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/acharger-theme.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="icon" type="image/png" href="~/favicon.png" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom box-shadow mb-auto">
+        <nav class="navbar navbar-expand-lg navbar-acharger">
             <div class="container-fluid">
-                @*                <a class="navbar-brand" asp-area="" asp-controller="Statistic" asp-action="Statistic">Main</a>*@
+                <a class="navbar-brand" asp-area="" asp-controller="Devices" asp-action="Devices">
+                    <span class="brand-icon">
+                        <i class="fas fa-bolt"></i>
+                    </span>
+                    A-Charger
+                </a>
 
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                        aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                @if (User.Identity.IsAuthenticated)
-                {
 
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="User" asp-action="User">User</a>
-                        </li>
-                           <li class="nav-item">
-                               <a class="nav-link text-light" asp-area="" asp-controller="Servers" asp-action="Servers">Servers</a>
-                           </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Devices" asp-action="Devices">Devices</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="PowerBanks" asp-action="PowerBanks">PowerBanks</a>
-                        </li>
-                        @if (User.IsInRole("admin") || User.IsInRole("manager"))
-                        {
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <ul class="navbar-nav me-auto">
+                            @if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="AppAccountManagement" asp-action="AppAccounts">
+                                        <i class="fas fa-users"></i>
+                                        Users
+                                    </a>
+                                </li>
+                            }
                             <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Actions" asp-action="ActionsAdmin">Actions</a>
+                                <a class="nav-link" asp-area="" asp-controller="Servers" asp-action="Servers">
+                                    <i class="fas fa-server"></i>
+                                    Servers
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Actions" asp-action="Finance">Finance</a>
+                                <a class="nav-link" asp-area="" asp-controller="Devices" asp-action="Devices">
+                                    <i class="fas fa-charging-station"></i>
+                                    Devices
+                                </a>
                             </li>
-                        }
-                        else
-                        {
                             <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Actions" asp-action="ActionsUser">Actions</a>
+                                <a class="nav-link" asp-area="" asp-controller="PowerBanks" asp-action="PowerBanks">
+                                    <i class="fas fa-battery-three-quarters"></i>
+                                    PowerBanks
+                                </a>
                             </li>
-                        }
+                            @if (User.IsInRole("admin") || User.IsInRole("manager"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Actions" asp-action="ActionsAdmin">
+                                        <i class="fas fa-list-alt"></i>
+                                        Actions
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Actions" asp-action="Finance">
+                                        <i class="fas fa-chart-line"></i>
+                                        Finance
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Actions" asp-action="ActionsUser">
+                                        <i class="fas fa-list-alt"></i>
+                                        Actions
+                                    </a>
+                                </li>
+                            }
 
+                            @if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Settings" asp-action="Settings">
+                                        <i class="fas fa-cog"></i>
+                                        Settings
+                                    </a>
+                                </li>
+                            }
+                        </ul>
 
-                        @if (User.IsInRole("admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Settings" asp-action="Settings">Settings</a>
-                            </li>
-                        }
-                    </ul>
-                }
-
-                <div class="navbar-collapse collapse d-md-inline-flex flex-md-row-reverse">
-                    <partial name="_LoginPartial" />
+                        <div class="user-menu dropdown">
+                            @{
+                                var userName = User.Identity.Name ?? "U";
+                                var initials = userName.Length > 0 ? userName[0].ToString().ToUpper() : "U";
+                            }
+                            <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="javascript:void(0)" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar me-2">@initials</div>
+                                <span>@User.Identity.Name</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="AppAccountManagement" asp-action="AppEditSelfAccountData">
+                                        <i class="fas fa-user me-2"></i>Profile
+                                    </a>
+                                </li>
+                                @if (User.IsInRole("admin"))
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="AppAccountManagement" asp-action="AppCreateAccount">
+                                            <i class="fas fa-user-plus me-2"></i>Create User
+                                        </a>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="AppAccount" asp-action="LogOff" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="ms-auto">
+                            <a class="btn btn-outline-light" asp-controller="AppAccount" asp-action="AppAccountLogin">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container-fluid">
-        <main role="main" class="pb-3">
+
+    <div class="container-fluid py-4">
+        <main role="main" class="fade-in">
             @RenderBody()
         </main>
     </div>
 
-
-    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Initialize Bootstrap dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            var dropdownElements = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+            dropdownElements.forEach(function(element) {
+                new bootstrap.Dropdown(element);
+            });
+        });
+    </script>
 
-    @RenderSection("Scripts", required: false)
-    <hr />
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

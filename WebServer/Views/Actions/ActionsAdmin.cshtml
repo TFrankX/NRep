@@ -23,11 +23,12 @@
 
 <meta name="keywords" content="jQuery Window, Window Widget, Window" />
 <link rel="stylesheet" href="~/jqwidgets/styles/jqx.base.css" type="text/css" />
+<link rel="stylesheet" href="~/jqwidgets/styles/jqx.material-purple.css" type="text/css" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1" />
 
 @{
-    ViewData["Title"] = "";
+    ViewData["Title"] = "Actions";
 }
 
 @section scripts
@@ -38,81 +39,11 @@
         function cellsrenderer(row, column, value) {
             var jsonmod = source.localdata;
             var backcolor = "#FFFFFF";
-            var text = value;
 
-            if ((jsonmod[row].Online !== null) && (jsonmod[row].Online == false)) {
-                backcolor = "#FFA07A";
-            }
-            var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
+            var divstartstyle = "<div style='height: 100%; min-height: 36px; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 8px;'>";
 
-
-
-            // if ((jsonmod[row].Connected !== null) && (jsonmod[row].Connected == false)) {
-
-            //     if (column === 'Host') {
-            //         // MergerColspan(row, column);
-            //         return divstartstyle +
-            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-            //             value +
-            //             "<br>" +
-            //             "</span>" +
-            //             "</div>";
-            //     }
-
-            //     if (column === 'Port') {
-            //         // MergerColspan(row, column);
-            //         return divstartstyle +
-            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-            //             value +
-            //             "<br>" +
-            //             "</span>" +
-            //             "</div>";
-            //     }
-            //     if (column === 'Error') {
-            //         // MergerColspan(row, column);
-            //         return divstartstyle +
-            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-            //             value +
-            //             "<br>" +
-            //             "</span>" +
-            //             "</div>";
-            //     }
-            //     if (column === 'ReconnectTime') {
-            //         // MergerColspan(row, column);
-            //         return divstartstyle +
-            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-            //             value +
-            //             "<br>" +
-            //             "</span>" +
-            //             "</div>";
-            //     }
-            //     if (column === 'ConnectTime') {
-            //         // MergerColspan(row, column);
-            //         return divstartstyle +
-            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-            //             value +
-            //             "<br>" +
-            //             "</span>" +
-            //             "</div>";
-            //     }
-            //     if (column === 'DisconnectTime') {
-            //         // MergerColspan(row, column);
-            //         return divstartstyle +
-            //             "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-            //             value +
-            //             "<br>" +
-            //             "</span>" +
-            //             "</div>";
-            //     }
-
-
-            //     return divstartstyle;
-            // }
-
-
-            //alert(column);
+            // Date/time column
             if (column === 'ActionTime') {
-
                 function checkZero(data) {
                     if (data < 10) {
                         data = "0" + data;
@@ -122,72 +53,59 @@
                 var year = value.getFullYear();
                 var month = checkZero(value.getMonth() + 1);
                 var day = checkZero(value.getDate());
-                var hour = checkZero(value.getHours());                
+                var hour = checkZero(value.getHours());
                 var min = checkZero(value.getMinutes());
                 var sec = checkZero(value.getSeconds());
-
                 var svalue = year + '/' + month + '/' + day + " " + hour + ":" + min + ":" + sec;
-              
-
 
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    svalue +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'ActionCode') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'UserId') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'ActionServerId') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'ActionServerId') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'ActionStationId') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'ActionPowerBankId') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'ActionPowerBankSlot') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'ActionText') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
+                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + svalue + "</span>" +
                     "</div>";
             }
+
+            // Action code
+            if (column === 'ActionCode') {
+                var code = value || 0;
+                var codeHex = '0x' + code.toString(16).toUpperCase();
+                return divstartstyle +
+                    "<span class='type-badge' style='background: #EDE9FE; color: #7C3AED;'>" + codeHex + "</span>" +
+                    "</div>";
+            }
+
+            // User ID
+            if (column === 'UserId') {
+                return divstartstyle +
+                    "<span style='font-size: 0.8rem;'>" + (value || '-') + "</span>" +
+                    "</div>";
+            }
+
+            // ID columns (smaller font, muted)
+            if (column === 'ActionServerId' || column === 'ActionStationId' || column === 'ActionPowerBankId') {
+                return divstartstyle +
+                    "<span style='font-size: 0.75rem; color: #6B7280;'>" + (value || '-') + "</span>" +
+                    "</div>";
+            }
+
+            // Slot
+            if (column === 'ActionPowerBankSlot') {
+                if (value && value > 0) {
+                    return divstartstyle +
+                        "<span class='status-circle purple' style='width: 20px; height: 20px; font-size: 0.65rem;'>" + value + "</span>" +
+                        "</div>";
+                }
+                return divstartstyle + "<span>-</span></div>";
+            }
+
+            // Action text
+            if (column === 'ActionText') {
+                return divstartstyle +
+                    "<span style='font-size: 0.85rem;'>" + (value || '') + "</span>" +
+                    "</div>";
+            }
+
+            // Default
             return divstartstyle +
-                "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                value +
-                "</span>" +
+                "<span style='font-size: 0.85rem;'>" + value + "</span>" +
                 "</div>";
         }
 
@@ -294,12 +212,12 @@
 
                     width: '100%',
                     source: dataAdapter,
-                    //theme: 'energyblue',
+                    theme: 'material-purple',
                     sortable: true,
                     filterable: true,
                     //showfilterrow: true,
                     //autorowheight: true,
-                    rowsheight: 48,
+                    rowsheight: 40,
                     enablebrowserselection: true,
                     selectionmode: 'multiplecellsadvanced',
                     //autorowheight: true,
@@ -469,8 +387,13 @@
 
 
 
-    <div class="text-center">
-        <h2>Actions log</h2></div>
+<div class="page-header">
+    <h1><i class="fas fa-list-alt"></i> Actions Log</h1>
+    <p class="page-subtitle">System events and user actions</p>
+</div>
+
+<div class="grid-container">
     <div id="jqxgrid"></div>
+</div>
 
 

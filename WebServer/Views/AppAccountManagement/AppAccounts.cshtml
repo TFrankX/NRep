@@ -1,4 +1,4 @@
-﻿<script src="~/jqwidgets/jqxbuttons.js"></script>
+<script src="~/jqwidgets/jqxbuttons.js"></script>
 <script src="~/jqwidgets/jqxscrollbar.js"></script>
 <script src="~/jqwidgets/jqxgrid.js"></script>
 <script src="~/jqwidgets/jqxgrid.edit.js"></script>
@@ -13,15 +13,21 @@
 <script src="~/jqwidgets/jqxlistbox.js"></script>
 <script src="~/jqwidgets/jqxdropdownlist.js"></script>
 <script src="~/jqwidgets/jqxcheckbox.js"></script>
+<link rel="stylesheet" href="~/jqwidgets/styles/jqx.material-purple.css" type="text/css" />
 
 @model AppUsers
 
 @{
-    ViewBag.Title = "Settings";
+    ViewData["Title"] = "Users";
+    var usersData = Model.Select(u => new {
+        Id = u.Id,
+        UserName = u.UserName,
+        AppRoles = u.AppRoles
+    }).ToList();
 }
 
 
-@section scripts
+@section Scripts
 {
     <script type="text/javascript">
 
@@ -33,50 +39,40 @@
                 { name: 'UserName', type: 'string' }
             ],
             localdata:
-                @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model, Newtonsoft.Json.Formatting.Indented))
+                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(usersData))
         };
 
         var dataAdapter = new $.jqx.dataAdapter(source);
 
         function cellsrenderer(row, column, value) {
             var UserId = source.localdata[row].Id;
-
             var backcolor = "#FFFFFF";
-            var text = value;
 
             if (column === 'UserName') {
-                // MergerColspan(row, column);
-                return "<div style='height: 100%; width: 100%; background: " +
-                    backcolor +
-                    ";'>" +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
+                return "<div style='height: 100%; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 12px;'>" +
+                    "<i class='fas fa-user' style='color: #7C3AED; margin-right: 10px;'></i>" +
+                    "<span style='font-weight: 500; color: #1F2937;'>" + value + "</span>" +
                     "</div>";
             }
             if (column === 'UserManagement') {
-                return "<div class='btn-group btn-group-lg' role='group'>" +
-                    "<form method='get' action='\/AppAccountManagement\/AppEditAccountData'>" +
-                    "<input type='hidden' name='Id' value='" + UserId +"' />" +
-                    "<input class='btn btn-dark mr-2' type='submit' value='Edit Data' />" +
-                    "</form>" +
-                    "<form method='get' action='\/AppAccountManagement\/AppEditAccountPass'>" +
+                return "<div style='display: flex; gap: 8px; align-items: center; height: 100%; padding: 0 8px;'>" +
+                    "<form method='get' action='/AppAccountManagement/AppEditAccountData' style='margin: 0;'>" +
                     "<input type='hidden' name='Id' value='" + UserId + "' />" +
-                    "<input class='btn btn-dark mr-2' type='submit' value='Edit Password' />" +
+                    "<button type='submit' class='btn-grid btn-grid-primary'><i class='fas fa-edit'></i> Edit</button>" +
                     "</form>" +
-                    "<form method='post' action='\/AppAccountManagement\/Delete'>" +
-                    "<input type='hidden' name='Id' value='" + UserId +"' />" +
-                    "<input class='btn btn-danger' type='submit' onclick='return confirm(\"Are you sure you want to delete the user?\");' value='Delete' />" +
+                    "<form method='get' action='/AppAccountManagement/AppEditAccountPass' style='margin: 0;'>" +
+                    "<input type='hidden' name='Id' value='" + UserId + "' />" +
+                    "<button type='submit' class='btn-grid'><i class='fas fa-key'></i> Password</button>" +
+                    "</form>" +
+                    "<form method='post' action='/AppAccountManagement/Delete' style='margin: 0;'>" +
+                    "<input type='hidden' name='Id' value='" + UserId + "' />" +
+                    "<button type='submit' class='btn-grid btn-grid-danger' onclick='return confirm(\"Are you sure you want to delete user: " + source.localdata[row].UserName + "?\");'><i class='fas fa-trash'></i></button>" +
                     "</form>" +
                     "</div>";
             }
 
-            return "<div style='height: 100%; width: 100%; background: " +
-                backcolor +
-                ";'>" +
-                "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                value +
-                "</span>" +
+            return "<div style='height: 100%; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 12px;'>" +
+                "<span>" + value + "</span>" +
                 "</div>";
         }
 
@@ -103,37 +99,34 @@
             if (grid != null) {
                 grid.jqxGrid({
                     source: nestedGridAdapter,
-                    width: 780,
+                    width: '100%',
                     height: 200,
                     editable: true,
+                    columnsresize: true,
                     columns: [
-                        { text: 'Role Name', dataField: 'RoleName', editable: false, width: 200 },
+                        { text: 'Role Name', dataField: 'RoleName', editable: false, width: 250 },
                         {
                             text: 'Active',
-                            cellsAlign: 'right',
+                            cellsAlign: 'center',
+                            align: 'center',
                             dataField: 'IsInRole',
                             columntype: "checkbox",
-                            width: 200
+                            width: 100
                         },
                         {
                             text: 'UserId',
-                            cellsAlign: 'right',
                             dataField: 'UserId',
                             editable: false,
-                            hidden: true,
-                            width: 200
+                            hidden: true
                         },
                         {
                             text: 'RoleId',
-                            cellsAlign: 'right',
                             dataField: 'RoleId',
                             editable: false,
-                            hidden: true,
-                            width: 200
+                            hidden: true
                         }
                     ]
                 });
-
             }
         }
 
@@ -144,21 +137,16 @@
                 {
                     width: '100%',
                     source: dataAdapter,
-                    //theme: 'energyblue',
                     sortable: true,
                     filterable: true,
-                    //showfilterrow: true,
-                    //autorowheight: true,
-                    rowsheight: 40,
+                    rowsheight: 50,
                     autoheight: true,
-                    //autowidth: true,
-                    //height: 720,
                     columnsresize: true,
                     altrows: true,
                     rowdetails: true,
                     rowdetailstemplate: function(index) {
                         var details = {
-                            rowdetails: "<div style=\"margin: 10px;\"></div>",
+                            rowdetails: "<div style='margin: 10px;'></div>",
                             rowdetailsheight: 220,
                             rowdetailshidden: true
                         };
@@ -166,8 +154,8 @@
                     },
                     initrowdetails: initRowDetails,
                     columns: [
-                        { text: "User name", datafield: "UserName", width: "70%", cellsrenderer: cellsrenderer },
-                        { text: "User Management", datafield: "UserManagement", width: "30%", cellsrenderer: cellsrenderer },
+                        { text: "User", datafield: "UserName", width: "60%", cellsrenderer: cellsrenderer },
+                        { text: "Actions", datafield: "UserManagement", width: "40%", cellsrenderer: cellsrenderer, filterable: false, sortable: false },
                     ]
                 });
         });
@@ -180,7 +168,6 @@
                 if (datafield === 'IsInRole') {
                     var rowBoundIndex = args.rowindex;
                     var rowData = $("#" + event.target.id).jqxGrid('getrowdata', rowBoundIndex);
-                    //alert(rowData.UserId);
                     $.ajax({
                         type: "POST",
                         url: '@Url.Action("ManageUsersRole", "AppRoleManagement")',
@@ -199,21 +186,18 @@
 
 }
 
-
-<style>
-    .jqx-grid-column-header {
-        font-size:12px;
-        font-weight:bold;
-    }
-</style>
-
-<div class="text-center"><h2>Account Management</h2></div>
-
-<div id="jqxgrid"></div>
-
-<div style="margin-top: 30px;">
-    <a class="btn btn-dark btn-block" asp-controller="AppAccountManagement" asp-action="AppCreateAccount">Create Account</a>
+<div class="page-header">
+    <h2><i class="fas fa-users"></i> User Management</h2>
 </div>
 
+<div class="card">
+    <div class="card-body p-0">
+        <div id="jqxgrid"></div>
+    </div>
+</div>
 
-
+<div style="margin-top: 20px;">
+    <a class="btn btn-primary btn-lg" asp-controller="AppAccountManagement" asp-action="AppCreateAccount">
+        <i class="fas fa-user-plus"></i> Create New User
+    </a>
+</div>

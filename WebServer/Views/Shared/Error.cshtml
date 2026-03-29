@@ -1,25 +1,184 @@
-﻿@model ErrorViewModel
+@model ErrorViewModel
 @{
     ViewData["Title"] = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="error-page">
+    <div class="error-card">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h2>Oops! Something went wrong</h2>
+        <p class="error-message">An error occurred while processing your request.</p>
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+        @if (Model != null && Model.ShowRequestId)
+        {
+            <div class="request-id-box">
+                <span class="request-id-label">Request ID:</span>
+                <code class="request-id-value">@Model.RequestId</code>
+            </div>
+        }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+        <div class="error-actions">
+            <a href="javascript:history.back()" class="btn-action btn-primary-action">
+                <i class="fas fa-arrow-left me-2"></i>Go Back
+            </a>
+            <a href="@Url.Action("Index", "Home")" class="btn-action btn-secondary-action">
+                <i class="fas fa-home me-2"></i>Home
+            </a>
+        </div>
+
+        <div class="help-section">
+            <p class="help-text">
+                <i class="fas fa-info-circle me-1"></i>
+                If the problem persists, please contact support
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: 20px;
+    }
+
+    .error-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .error-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 36px;
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        color: white;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        animation: shake 0.5s ease-out 0.3s;
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-5px); }
+        40%, 80% { transform: translateX(5px); }
+    }
+
+    .error-card h2 {
+        color: #D97706;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .error-message {
+        color: #6B7280;
+        font-size: 1rem;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .request-id-box {
+        background: #FEF3C7;
+        border: 1px solid #FCD34D;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .request-id-label {
+        color: #92400E;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .request-id-value {
+        background: rgba(146, 64, 14, 0.1);
+        color: #92400E;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        word-break: break-all;
+    }
+
+    .error-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary-action {
+        background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    }
+
+    .btn-primary-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+        color: white;
+    }
+
+    .btn-secondary-action {
+        background: #F3F4F6;
+        color: #374151;
+        border: 1px solid #E5E7EB;
+    }
+
+    .btn-secondary-action:hover {
+        background: #E5E7EB;
+        color: #111827;
+    }
+
+    .help-section {
+        padding-top: 20px;
+        border-top: 1px solid #E5E7EB;
+    }
+
+    .help-text {
+        color: #9CA3AF;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .help-text i {
+        color: #7C3AED;
+    }
+</style>

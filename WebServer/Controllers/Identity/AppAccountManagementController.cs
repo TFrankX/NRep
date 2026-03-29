@@ -38,10 +38,10 @@ namespace WebServer.Controllers.Identity
         public async Task<IActionResult> AppAccounts()
         {
             var roles = roleManag.Roles.ToList();
-//            var model = userManag.Users.ToList();
+            var users = userManag.Users.ToList(); // Загружаем в память перед итерацией
             var model = new AppUsers();
 
-            foreach (AppUser user in userManag.Users)
+            foreach (AppUser user in users)
             {
                 user.AppRoles = new List<AppRole>();
                 model.Add(user);

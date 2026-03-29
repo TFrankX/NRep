@@ -1,43 +1,59 @@
-﻿@model AppAccountsRegister
+@model AppAccountsRegister
 
 @{
-    ViewBag.Title = "Create account";
+    ViewData["Title"] = "Create User";
 }
 
-<div class="row">
-    <div class="col-md-2">
-        <div class="position-fixed">
-            <br><br>
-            @Html.Partial("NavVertical")
+<div class="page-header">
+    <h2><i class="fas fa-user-plus"></i> Create New User</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-header" style="background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: white;">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>New Account</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="AppCreateAccount" asp-controller="AppAccountManagement">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="UserName" class="form-label fw-semibold">
+                            <i class="fas fa-user me-1 text-muted"></i> Username
+                        </label>
+                        <input type="text" asp-for="UserName" class="form-control form-control-lg" placeholder="Enter username" />
+                        <span asp-validation-for="UserName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold">
+                            <i class="fas fa-lock me-1 text-muted"></i> Password
+                        </label>
+                        <input type="password" asp-for="Password" class="form-control form-control-lg" placeholder="Enter password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="PasswordConfirm" class="form-label fw-semibold">
+                            <i class="fas fa-lock me-1 text-muted"></i> Confirm Password
+                        </label>
+                        <input type="password" asp-for="PasswordConfirm" class="form-control form-control-lg" placeholder="Confirm password" />
+                        <span asp-validation-for="PasswordConfirm" class="text-danger small"></span>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Create User
+                        </button>
+                        <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-
-    <div class="col-md-10">
-        <div class="text-center"><h2>Create account</h2></div>
-
-        <form asp-action="AppCreateAccount" asp-controller="AppAccountManagement">
-            <div asp-validation-summary="ModelOnly"></div>
-            <div class="form-group">
-                <label asp-for="UserName">UserName</label><br />
-                <input type="text" asp-for="UserName" class="form-control" />
-                <span asp-validation-for="UserName"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Password">Password</label><br />
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PasswordConfirm">Confirm password</label><br />
-                <input asp-for="PasswordConfirm" class="form-control" />
-                <span asp-validation-for="PasswordConfirm"></span>
-            </div>
-            <div class="text-center">
-                <div class="btn-group" role="group">
-                    <input class="btn btn-dark mr-2" type="submit" Value="Create">
-                    <a asp-action="AppAccounts" asp-controller="AppAccountManagement" class="btn btn-dark" role="button">Cancel</a>
-                </div>
-            </div>
-        </form>
     </div>
 </div>

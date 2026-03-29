@@ -23,11 +23,12 @@
 
 <meta name="keywords" content="jQuery Window, Window Widget, Window" />
 <link rel="stylesheet" href="~/jqwidgets/styles/jqx.base.css" type="text/css" />
+<link rel="stylesheet" href="~/jqwidgets/styles/jqx.material-purple.css" type="text/css" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1" />
 
 @{
-    ViewData["Title"] = "";
+    ViewData["Title"] = "Servers";
 }
 
 @section scripts
@@ -140,10 +141,11 @@
             var backcolor = "#FFFFFF";
             var text = value;
 
+            // Soft red for disconnected
             if ((jsonmod[row].Connected !== null) && (jsonmod[row].Connected == false)) {
-                backcolor = "#FFA07A";
+                backcolor = "#FEE2E2";
             }
-            var divstartstyle = "<div style='height: 32px; width: 100%; background: " + backcolor + ";'>";
+            var divstartstyle = "<div style='height: 100%; min-height: 40px; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 8px;'>";
            
 
 
@@ -210,84 +212,51 @@
             // }
 
 
-            //alert(column);
+            // Host column as button
             if (column === 'Host') {
-                    // return divstartstyle +
-                    //     "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    // value + ":" + jsonmod[row].Port
-                    //     "</span>" +
-                    //     "</div>";
                 return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'> " +
-                    "<input style='height:30px;' type='button' " +
-                    "class='btn btn-success btn-lg btn-block btn-sm' " +
-                    "onclick=GoToDetails('" +
+                    "<button class='btn-grid btn-grid-primary' " +
+                    "onclick=\"GoToDetails('" + jsonmod[row].Host + ":" + jsonmod[row].Port + "')\">" +
                     jsonmod[row].Host + ":" + jsonmod[row].Port +
-                    "'); " +
-                    "href='javascript: void (0);' value='" +
-                    jsonmod[row].Host + ":" + jsonmod[row].Port +
-                    "' /> " +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'Connected') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'Login') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'Password') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'DeviceCount') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'DeviceAuthCount') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'Error') {
-                    return divstartstyle +
-                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                        value +
-                        "</span>" +
-                        "</div>";
-            } else if (column === 'ReonnectTime') {
-                    return divstartstyle +
-                        "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                        value +
-                        "</span>" +
-                        "</div>";
-            } else if (column === 'ConnectTime') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
-                    "</div>";
-            } else if (column === 'DisconnectTime') {
-                return divstartstyle +
-                    "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                    value +
-                    "</span>" +
+                    "</button>" +
                     "</div>";
             }
+
+            // Connected status
+            if (column === 'Connected') {
+                var circleClass = value ? 'green' : 'red';
+                return divstartstyle +
+                    "<span class='status-circle " + circleClass + "' title='" + (value ? 'Connected' : 'Disconnected') + "'></span>" +
+                    "</div>";
+            }
+
+            // Device counts
+            if (column === 'DeviceCount' || column === 'DeviceAuthCount') {
+                return divstartstyle +
+                    "<span style='font-weight: 600; font-size: 1rem;'>" + value + "</span>" +
+                    "</div>";
+            }
+
+            // Error column
+            if (column === 'Error') {
+                if (value && value.length > 0) {
+                    return divstartstyle +
+                        "<span style='font-size: 0.8rem; color: #DC2626;'>" + value + "</span>" +
+                        "</div>";
+                }
+                return divstartstyle + "</div>";
+            }
+
+            // Date columns
+            if (column === 'ConnectTime' || column === 'DisconnectTime') {
+                return divstartstyle +
+                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + value + "</span>" +
+                    "</div>";
+            }
+
+            // Default
             return divstartstyle +
-                "<span style='margin-top: 5px; margin-left: 10px; position: absolute;'>" +
-                value +
-                "</span>" +
+                "<span style='font-size: 0.85rem;'>" + value + "</span>" +
                 "</div>";
         }
 
@@ -376,12 +345,12 @@
                 {
                     width: '100%',
                     source: dataAdapter,
-                    //theme: 'energyblue',
+                    theme: 'material-purple',
                     sortable: true,
                     filterable: true,
                     //showfilterrow: true,
                     //autorowheight: true,
-                    //rowsheight: 48,
+                    rowsheight: 44,
                     autorowheight: true,
                     //autoheight: true,
                     pageable: true,
@@ -543,8 +512,13 @@
 
 
 
-    <div class="text-center">
-        <h2>Charhing stations hosting servers</h2></div>
+<div class="page-header">
+    <h1><i class="fas fa-server"></i> Servers</h1>
+    <p class="page-subtitle">MQTT servers hosting charging stations</p>
+</div>
+
+<div class="grid-container">
     <div id="jqxgrid"></div>
+</div>
 
 

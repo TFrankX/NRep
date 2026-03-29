@@ -322,8 +322,7 @@ namespace WebServer.Controllers.Identity
                     }
                     else
                     {
-                        //return this.RedirectToAction<ServersController>(m => m.Servers());
-                        return RedirectToAction("Servers", "Servers");
+                        return RedirectToAction("Devices", "Devices");
                     }
                 }
                 else

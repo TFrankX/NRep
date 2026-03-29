@@ -55,13 +55,15 @@ namespace WebServer.Controllers.Device
         private readonly UserManager<AppUser> userManager;
         private readonly ScanDevices scanDevices;
         private readonly DeviceContext _deviceContext;
+        private readonly IConfiguration _configuration;
 
-        public DevicesController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<DevicesController> logger, DeviceContext deviceContext)
+        public DevicesController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<DevicesController> logger, DeviceContext deviceContext, IConfiguration configuration)
         {
             userManager = _userManager;
             Logger = logger;
             this.scanDevices = scanDevices;
             _deviceContext = deviceContext;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -69,6 +71,7 @@ namespace WebServer.Controllers.Device
         [Authorize]
         public IActionResult Devices()
         {
+            ViewBag.ServerAddress = _configuration["Server1:address"] ?? "a-charger.com";
             return View();
         }
 
@@ -411,13 +414,66 @@ namespace WebServer.Controllers.Device
                 }
 
                 serversTable.Sort();
-                return Json(serversTable.Devices, new JsonSerializerOptions { PropertyNamingPolicy = null });
+
+                // Create extended device data with slot charge levels
+                var devicesWithSlots = serversTable.Devices.Select(d => new {
+                    d.Id_str,
+                    d.DeviceName,
+                    d.HostDeviceId_str,
+                    d.Online,
+                    d.Slots,
+                    d.Activated,
+                    d.CanRegister,
+                    d.Registered,
+                    d.TypeOfUse,
+                    d.Description,
+                    d.Owners,
+                    d.SimId,
+                    d.LastOnlineTime,
+                    // Add slot charge levels
+                    SlotInfo = GetSlotInfo(d.DeviceName, serversTable.PowerBanks)
+                }).ToList();
+
+                return Json(devicesWithSlots, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, $"{nameof(DevicesController)} -> {nameof(Refresh)} throw Exception");
                 return null;
             }
+        }
+
+        private object[] GetSlotInfo(string deviceName, List<WebServer.Models.Device.PowerBank> powerBanks)
+        {
+            var result = new object[4];
+            for (int i = 0; i < 4; i++)
+            {
+                var pb = powerBanks?.FirstOrDefault(p => p.HostDeviceName == deviceName && p.HostSlot == i + 1 && p.Plugged);
+                if (pb != null)
+                {
+                    // Convert enum to percentage
+                    int chargePercent = (int)pb.ChargeLevel switch
+                    {
+                        1 => 10,   // ChargeLev0_20
+                        2 => 30,   // ChargeLev20_40
+                        3 => 50,   // ChargeLev40_60
+                        4 => 70,   // ChargeLev60_80
+                        5 => 100,  // ChargeLev80_100 - show as full
+                        6 => 100,  // ChargeLev100
+                        _ => 0
+                    };
+                    result[i] = new {
+                        HasPowerBank = true,
+                        ChargeLevel = chargePercent,
+                        Charging = pb.Charging
+                    };
+                }
+                else
+                {
+                    result[i] = new { HasPowerBank = false, ChargeLevel = 0, Charging = false };
+                }
+            }
+            return result;
         }
 
 
