@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebServer.Models.Settings;
 using WebServer.Services.Settings;
+using WebServer.Workers;
 using System.Security.Claims;
 
 namespace WebServer.Controllers.Settings
@@ -11,11 +12,13 @@ namespace WebServer.Controllers.Settings
     {
         private readonly IAppSettingsService _settingsService;
         private readonly ILogger<SettingsController> _logger;
+        private readonly ScanDevices _scanDevices;
 
-        public SettingsController(IAppSettingsService settingsService, ILogger<SettingsController> logger)
+        public SettingsController(IAppSettingsService settingsService, ILogger<SettingsController> logger, ScanDevices scanDevices)
         {
             _settingsService = settingsService;
             _logger = logger;
+            _scanDevices = scanDevices;
         }
 
         [HttpGet]
@@ -69,6 +72,31 @@ namespace WebServer.Controllers.Settings
             {
                 _logger.LogError(ex, "Failed to save pricing plan {Plan}", plan.PlanName);
                 return StatusCode(500, new { success = false, message = "Failed to save settings" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReloadDatabase()
+        {
+            try
+            {
+                var userName = User.Identity?.Name ?? "unknown";
+                _logger.LogInformation("Database reload requested by {User}", userName);
+
+                var (devices, powerBanks) = await _scanDevices.ReloadFromDatabaseAsync();
+
+                return Ok(new {
+                    success = true,
+                    message = $"Database reloaded successfully. Devices: {devices}, PowerBanks: {powerBanks}",
+                    devices,
+                    powerBanks
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to reload database");
+                return StatusCode(500, new { success = false, message = "Failed to reload database: " + ex.Message });
             }
         }
     }

@@ -52,28 +52,20 @@ namespace WebServer.Controllers.Device
                 var userId = userManager.GetUserId(User);
                 var user = await userManager.FindByIdAsync(userId);
                 var roles = await userManager.GetRolesAsync(user);
-                DevicesData serversTable;
 
                 var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
+                List<WebServer.Models.Device.Server> serversList;
+
                 if (allowAdminAndManager)
                 {
-                    serversTable = new DevicesData(scanDevices.DevicesData.Servers, null,null);
+                    serversList = scanDevices.DevicesData.Servers.OrderBy(s => s.Host).ToList();
                 }
                 else
                 {
-                   serversTable = new DevicesData(null, null, null);
+                    serversList = new List<WebServer.Models.Device.Server>();
                 }
 
-
-
-                // serversTable.AddRange(new List<Server>
-                // {                                 
-                //       { new Server ( "yaup.ru", 8884, "devclient", "Potato345!", 30 ) },
-                // });
-
-                //serversTable.Servers = serversTable.Servers.OrderBy(c => c.Host).ToList();
-                //serversTable.Sort();
-                return Json(serversTable.Servers, new JsonSerializerOptions { PropertyNamingPolicy = null });
+                return Json(serversList, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)
             {

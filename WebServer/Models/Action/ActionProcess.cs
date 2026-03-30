@@ -59,6 +59,37 @@ namespace WebServer.Models.Action
                 }
             }
         }
+
+        /// <summary>
+        /// Updates payment info for an existing action by SessionId (stored in UserId field)
+        /// </summary>
+        public bool UpdatePaymentInfo(string sessionId, string customerName, string paymentInfo)
+        {
+            using (var dbActions = scope.ServiceProvider.GetRequiredService<ActionContext>())
+            {
+                try
+                {
+                    var action = dbActions.Actions
+                        .Where(a => a.UserId == sessionId && a.ActionCode == (int)ActionsDescription.PaymentHold)
+                        .OrderByDescending(a => a.ActionTime)
+                        .FirstOrDefault();
+
+                    if (action != null)
+                    {
+                        action.UserId = customerName;
+                        action.PaymentInfo = paymentInfo;
+                        dbActions.SaveChanges();
+                        return true;
+                    }
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    var z = ex.Message;
+                    return false;
+                }
+            }
+        }
     }
 }
 

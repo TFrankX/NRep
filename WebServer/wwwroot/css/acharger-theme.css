@@ -858,6 +858,95 @@ a:hover {
    RESPONSIVE
    ============================================ */
 
+@media (max-width: 991.98px) {
+    /* Mobile navbar - ensure toggler is visible */
+    .navbar-acharger .navbar-toggler {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+
+    .navbar-acharger .navbar-toggler-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Mobile navbar collapse */
+    .navbar-acharger .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--primary-dark);
+        padding: 1rem;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+    }
+
+    /* Hidden state */
+    .navbar-acharger .navbar-collapse:not(.show) {
+        display: none;
+    }
+
+    /* Shown state */
+    .navbar-acharger .navbar-collapse.show {
+        display: block !important;
+    }
+
+    .navbar-acharger .navbar-nav {
+        padding: 0.5rem 0;
+    }
+
+    .navbar-acharger .nav-link {
+        padding: 0.75rem 1rem !important;
+        border-radius: 8px;
+        margin-bottom: 0.25rem;
+    }
+
+    .navbar-acharger .user-menu {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .navbar-acharger .user-menu .dropdown-toggle {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .navbar-acharger .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        width: 100%;
+        margin-top: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+    }
+
+    .navbar-acharger .dropdown-menu .dropdown-item {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .navbar-acharger .dropdown-menu .dropdown-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .navbar-acharger .dropdown-menu .dropdown-divider {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Container needs relative positioning */
+    .navbar-acharger .container-fluid {
+        position: relative;
+    }
+}
+
 @media (max-width: 768px) {
     .navbar-acharger {
         padding: 0.5rem 1rem;

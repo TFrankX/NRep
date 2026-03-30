@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebServer.Models.Device;
 using WebServer.Models.Settings;
+using WebServer.Services.Pricing;
 
 namespace WebServer.Services.Settings
 {
@@ -19,11 +20,13 @@ namespace WebServer.Services.Settings
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<AppSettingsService> _logger;
+        private readonly IPricingService _pricingService;
 
-        public AppSettingsService(IServiceScopeFactory scopeFactory, ILogger<AppSettingsService> logger)
+        public AppSettingsService(IServiceScopeFactory scopeFactory, ILogger<AppSettingsService> logger, IPricingService pricingService)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _pricingService = pricingService;
         }
 
         public async Task<List<AppSetting>> GetByCategoryAsync(string category)
@@ -134,7 +137,10 @@ namespace WebServer.Services.Settings
             await SetAsync("Pricing", $"{plan.PlanName}.MaxDaysBeforeCapture", plan.MaxDaysBeforeCapture.ToString(), modifiedBy);
             await SetAsync("Pricing", $"{plan.PlanName}.Currency", plan.Currency, modifiedBy);
 
-            _logger.LogInformation("Pricing plan {Plan} saved by {User}", plan.PlanName, modifiedBy);
+            // Reload pricing plans in memory so changes take effect immediately
+            _pricingService.ReloadPlans();
+
+            _logger.LogInformation("Pricing plan {Plan} saved and reloaded by {User}", plan.PlanName, modifiedBy);
         }
 
         private static T GetSettingValue<T>(List<AppSetting> settings, string key, T defaultValue)

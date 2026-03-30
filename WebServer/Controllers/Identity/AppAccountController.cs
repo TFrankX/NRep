@@ -5,26 +5,30 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebServer.Models.Identity;
-using WebServer.Utils.Requests;
 using Microsoft.AspNetCore.Http;
 using System.Text.RegularExpressions;
 using WebServer.Workers;
 using System.Security.Claims;
 using System;
+using WebServer.Services.Sms;
 
 namespace WebServer.Controllers.Identity
 {
     public class AppAccountController : Controller
     {
+        private readonly ILogger<AppAccountController> _logger;
         private readonly UserManager<AppUser> userManag;
         private readonly SignInManager<AppUser> signInManag;
-        private ScanDevices scanDevices;
+        private readonly ScanDevices scanDevices;
+        private readonly ISmsService _smsService;
 
-        public AppAccountController(UserManager<AppUser> userManager, ScanDevices scanDevices, SignInManager<AppUser> signInManager)
+        public AppAccountController(UserManager<AppUser> userManager, ScanDevices scanDevices, SignInManager<AppUser> signInManager, ISmsService smsService, ILogger<AppAccountController> logger)
         {
+            _logger = logger;
             userManag = userManager;
             signInManag = signInManager;
             this.scanDevices = scanDevices;
+            _smsService = smsService;
         }
         [HttpGet]
         [Authorize(Roles = "admin")]
@@ -206,8 +210,11 @@ namespace WebServer.Controllers.Identity
 
             WebServer.Models.Identity.AppUser user;
 
-            SMS chSMS = new SMS();
-            model.PhoneNumber = chSMS.TunePhoneNumber(model.PhoneNumber);
+            if (!_smsService.IsValidPhoneNumber(model.PhoneNumber))
+            {
+                ModelState.AddModelError("", "Wrong phone number format");
+                return View("AppAccountLoginSMS", model);
+            }
 
             try
             {
@@ -218,28 +225,24 @@ namespace WebServer.Controllers.Identity
                 user = null;
             }
 
-
             if (user != null)
             {
                 try
                 {
-                    SMS sms = new SMS();
-                    string cd = sms.Gen4Code();
-                    //HttpContext.Session.SetString("cd", cd);
+                    string cd = _smsService.GenerateCode();
                     TempData["cd"] = cd;
-                    var phone = sms.TunePhoneNumber(model.PhoneNumber);
-                    if (phone.Length != 11)
+
+                    var sent = await _smsService.SendCodeAsync(model.PhoneNumber, "takecharger", cd);
+                    if (!sent)
                     {
-                        ModelState.AddModelError("", $"Wrong phone number format");
+                        ModelState.AddModelError("", "Problem with sms-gate");
                         return View("AppAccountLoginSMS", model);
                     }
-
-                    sms.Send(phone, "takecharger", cd);
                     return View("AppLogCheckPhoneNumber", model);
                 }
                 catch
                 {
-                    ModelState.AddModelError("", $"Problem with sms-gate");
+                    ModelState.AddModelError("", "Problem with sms-gate");
                     return View("AppAccountLoginSMS", model);
                 }
 
@@ -284,6 +287,7 @@ namespace WebServer.Controllers.Identity
                     await signInManag.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, false).ConfigureAwait(false);
                 if (result.Succeeded)
                 {
+                    _logger.LogInformation("User {UserName} logged in successfully", model.UserName);
 
                     var currentUserID = "";
                     ClaimsPrincipal currentUser = this.User;
@@ -327,6 +331,7 @@ namespace WebServer.Controllers.Identity
                 }
                 else
                 {
+                    _logger.LogWarning("Failed login attempt for user {UserName}", model.UserName);
                     ModelState.AddModelError("", "Incorrect login and/or password");
                 }
             }
@@ -347,9 +352,6 @@ namespace WebServer.Controllers.Identity
 
                 WebServer.Models.Identity.AppUser user;
 
-                SMS chSMS = new SMS();
-                model.PhoneNumber = chSMS.TunePhoneNumber(model.PhoneNumber);
-
                 try
                 {
                     user = userManag.Users.Where(x => x.PhoneNumber == model.PhoneNumber).First();
@@ -359,7 +361,6 @@ namespace WebServer.Controllers.Identity
                     user = null;
                 }
 
-                //var user = await userManag.FindByNameAsync(model.PhoneNumber);
                 if ((user != null) && (model.SMSCode == TempData["cd"].ToString().Trim()))
                 {
 
@@ -426,6 +427,8 @@ namespace WebServer.Controllers.Identity
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogOff()
         {
+            var userName = User?.Identity?.Name ?? "Unknown";
+            _logger.LogInformation("User {UserName} logged out", userName);
             await signInManag.SignOutAsync().ConfigureAwait(false);
             return RedirectToAction("AppAccountLogin", "AppAccount");
         }

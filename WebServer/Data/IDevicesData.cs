@@ -9,8 +9,8 @@ namespace WebServer.Data
 {
     public interface IDevicesData
     {
-        List<Server> Servers { get; set; }
-        List<Device> Devices { get; set; }
-        List<PowerBank> PowerBanks { get; set; }
+        ThreadSafeList<Server> Servers { get; }
+        ThreadSafeList<Device> Devices { get; }
+        ThreadSafeList<PowerBank> PowerBanks { get; }
     }
 }

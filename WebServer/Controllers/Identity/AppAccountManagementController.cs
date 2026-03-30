@@ -9,48 +9,56 @@ using System.Text.Json;
 using System.Security.Claims;
 using System.Data;
 using System.Text.RegularExpressions;
-using WebServer.Utils.Requests;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using WebServer.Workers;
+using WebServer.Services.Sms;
 
 namespace WebServer.Controllers.Identity
 {
     [Authorize]
     public class AppAccountManagementController : Controller
     {
-        UserManager<AppUser> userManag;
-        RoleManager<IdentityRole> roleManag;
-        SignInManager<AppUser> signInManag;
-        private ScanDevices scanDevices;
-        //private AppAccountsSelfRegister newAccount = new AppAccountsSelfRegister();
+        private readonly ILogger<AppAccountManagementController> _logger;
+        private readonly UserManager<AppUser> userManag;
+        private readonly RoleManager<IdentityRole> roleManag;
+        private readonly SignInManager<AppUser> signInManag;
+        private readonly ScanDevices scanDevices;
+        private readonly ISmsService _smsService;
 
-
-        public AppAccountManagementController(UserManager<AppUser> userManager,ScanDevices scanDevices, RoleManager<IdentityRole> roleManager, SignInManager<AppUser> signInManager)
+        public AppAccountManagementController(UserManager<AppUser> userManager, ScanDevices scanDevices, RoleManager<IdentityRole> roleManager, SignInManager<AppUser> signInManager, ISmsService smsService, ILogger<AppAccountManagementController> logger)
         {
+            _logger = logger;
             userManag = userManager;
             roleManag = roleManager;
             signInManag = signInManager;
             this.scanDevices = scanDevices;
-            //newAccount = new AppAccountsSelfRegister();
+            _smsService = smsService;
         }
 
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> AppAccounts()
         {
             var roles = roleManag.Roles.ToList();
-            var users = userManag.Users.ToList(); // Загружаем в память перед итерацией
+            var users = userManag.Users.ToList();
             var model = new AppUsers();
+
+            // Batch load user roles to avoid N+1 queries
+            var userRolesMap = new Dictionary<string, IList<string>>();
+            foreach (var user in users)
+            {
+                userRolesMap[user.Id] = await userManag.GetRolesAsync(user);
+            }
 
             foreach (AppUser user in users)
             {
                 user.AppRoles = new List<AppRole>();
                 model.Add(user);
+                var userRoleNames = userRolesMap[user.Id];
                 foreach (IdentityRole role in roles)
                 {
-                    var list = await userManag.IsInRoleAsync(user, role.Name);
-                    model[model.Count-1].AppRoles.Add(new AppRole { RoleName = role.Name, RoleId = role.Id, UserId = user.Id, UserName = user.UserName, IsInRole = list });
+                    var isInRole = userRoleNames.Contains(role.Name ?? "");
+                    model[model.Count-1].AppRoles.Add(new AppRole { RoleName = role.Name, RoleId = role.Id, UserId = user.Id, UserName = user.UserName, IsInRole = isInRole });
                 }
-
             }
             return View(model);
         }
@@ -150,8 +158,6 @@ namespace WebServer.Controllers.Identity
 
                 if (ModelState.IsValid)
                 {
-                    SMS chSMS = new SMS();
-                    model.PhoneNumber = chSMS.TunePhoneNumber(model.PhoneNumber);
 
                     var user = new AppUser { UserName = model.PhoneNumber, PhoneNumber = model.PhoneNumber };
                    // model.Password = "Reset777!";
@@ -218,8 +224,7 @@ namespace WebServer.Controllers.Identity
             else
             {
                 TempData.Keep("cd");
-                ModelState.AddModelError("", "Incorrect SMS code");
-                ModelState.AddModelError("", TempData["cd"].ToString().Trim());
+                ModelState.AddModelError("", "Incorrect SMS code. Please try again.");
                 return View("AppCheckPhoneNumber", model);
             }
             return View(model);
@@ -232,7 +237,12 @@ namespace WebServer.Controllers.Identity
         public async Task<ActionResult> SendCodeRegister(AppAccountsSelfRegister model)
         {
 
-            //!!!!!!!!!!
+            if (!_smsService.IsValidPhoneNumber(model.PhoneNumber))
+            {
+                ModelState.AddModelError("", "Wrong phone number format");
+                return View("AppCreateSelfAccount", model);
+            }
+
             WebServer.Models.Identity.AppUser user;
 
             try
@@ -243,45 +253,30 @@ namespace WebServer.Controllers.Identity
             {
                 user = null;
             }
-            //var user = await userManag.FindByNameAsync(model.PhoneNumber);
+
             if (user != null)
             {
-
-
                 ModelState.AddModelError("", $"User with phone {model.PhoneNumber} exist");
-                return View("AppCreateSelfAccount",model);
-                //return RedirectToAction("AppAccountManagement", "AppCreateSelfAccount");
+                return View("AppCreateSelfAccount", model);
             }
-            else
+
+            try
             {
-                model.Message = "Piska";
-                model.CodeReq = true;
+                string cd = _smsService.GenerateCode();
+                TempData["cd"] = cd;
 
-                try
+                var sent = await _smsService.SendCodeAsync(model.PhoneNumber, "takecharger", cd);
+                if (!sent)
                 {
-
-                    SMS sms = new SMS();
-                    string cd = sms.Gen4Code();
-                    //HttpContext.Session.SetString("cd", cd);
-                    TempData["cd"] = cd;
-                    var phone = sms.TunePhoneNumber(model.PhoneNumber);
-
-                    if (phone.Length != 11)
-                    {
-                        ModelState.AddModelError("", $"Wrong phone number format");
-                        return View("AppCreateSelfAccount", model);
-                    }
-
-                        sms.Send(phone, "takecharger", cd);
-                    return View("AppCheckPhoneNumber", model);
-                }
-                catch
-                {
-                    ModelState.AddModelError("", $"Problem with sms-gate");
+                    ModelState.AddModelError("", "Problem with sms-gate");
                     return View("AppCreateSelfAccount", model);
                 }
-                
-
+                return View("AppCheckPhoneNumber", model);
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Problem with sms-gate");
+                return View("AppCreateSelfAccount", model);
             }
 
 
@@ -345,31 +340,30 @@ namespace WebServer.Controllers.Identity
         public async Task<ActionResult> SendCodePassReset(AppAccountSelfPassReset model)
         {
 
-            model.Message = "Piska";
-            model.CodeReq = true;
-           
+            if (!_smsService.IsValidPhoneNumber(model.PhoneNumber))
+            {
+                ModelState.AddModelError("", "Wrong phone number format");
+                return View("AppResetSelfAccountPass", model);
+            }
+
             try
             {
-
-                SMS sms = new SMS();
-                string cd = sms.Gen4Code();
+                string cd = _smsService.GenerateCode();
                 TempData["cd"] = cd;
-                var phone = sms.TunePhoneNumber(model.PhoneNumber);
-                if (phone.Length != 11)
+
+                var sent = await _smsService.SendCodeAsync(model.PhoneNumber, "takecharger", cd);
+                if (!sent)
                 {
-                    ModelState.AddModelError("", $"Wrong phone number format");
+                    ModelState.AddModelError("", "Problem with sms-gate");
                     return View("AppResetSelfAccountPass", model);
                 }
-                sms.Send(phone, "takecharger", cd);
                 return View("AppResetPassCheckPhoneNumber", model);
             }
             catch
             {
-                ModelState.AddModelError("", $"Problem with sms-gate");
+                ModelState.AddModelError("", "Problem with sms-gate");
                 return View("AppResetSelfAccountPass", model);
             }
-
-            //return View("AppResetPassCheckPhoneNumber", model);
         }
 
         [HttpPost("{phoneNumber}")]

@@ -8,14 +8,20 @@
 {
     <script type="text/javascript">
         function savePricingPlan(planName) {
+            // Helper to parse numbers with comma or dot as decimal separator
+            function parseNumber(val) {
+                if (!val) return 0;
+                return parseFloat(val.toString().replace(',', '.')) || 0;
+            }
+
             var plan = {
                 PlanName: planName,
                 DisplayName: $(`#${planName}_DisplayName`).val(),
-                HoldAmount: parseFloat($(`#${planName}_HoldAmount`).val()),
-                BaseFee: parseFloat($(`#${planName}_BaseFee`).val()),
-                HourlyRate: parseFloat($(`#${planName}_HourlyRate`).val()),
-                DailyRate: parseFloat($(`#${planName}_DailyRate`).val()),
-                MaxDaysBeforeCapture: parseInt($(`#${planName}_MaxDaysBeforeCapture`).val()),
+                HoldAmount: parseNumber($(`#${planName}_HoldAmount`).val()),
+                BaseFee: parseNumber($(`#${planName}_BaseFee`).val()),
+                HourlyRate: parseNumber($(`#${planName}_HourlyRate`).val()),
+                DailyRate: parseNumber($(`#${planName}_DailyRate`).val()),
+                MaxDaysBeforeCapture: parseInt($(`#${planName}_MaxDaysBeforeCapture`).val()) || 0,
                 Currency: $(`#${planName}_Currency`).val()
             };
 
@@ -27,6 +33,9 @@
                 type: "POST",
                 url: '@Url.Action("SavePricingPlanAjax", "Settings")',
                 contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
                 data: JSON.stringify(plan),
                 success: function(response) {
                     btn.html('<i class="fas fa-check"></i> Saved!').removeClass('btn-primary').addClass('btn-success');
@@ -59,8 +68,45 @@
                 switchSection(section);
             });
         });
+
+        function reloadDatabase() {
+            var btn = $('#btnReloadDb');
+            var resultDiv = $('#reloadResult');
+            var resultText = $('#reloadResultText');
+
+            btn.html('<i class="fas fa-sync-alt"></i> Reloading...').addClass('loading').prop('disabled', true);
+            resultDiv.hide();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("ReloadDatabase", "Settings")',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    btn.html('<i class="fas fa-check"></i> Done!').removeClass('loading');
+                    resultDiv.removeClass('error').addClass('success').show();
+                    resultText.text('Loaded ' + response.devices + ' devices and ' + response.powerBanks + ' powerbanks');
+
+                    setTimeout(function() {
+                        btn.html('<i class="fas fa-sync-alt"></i> Reload Database').prop('disabled', false);
+                    }, 3000);
+                },
+                error: function(xhr) {
+                    btn.html('<i class="fas fa-times"></i> Error').removeClass('loading');
+                    resultDiv.removeClass('success').addClass('error').show();
+                    resultText.text(xhr.responseJSON?.message || 'Failed to reload database');
+
+                    setTimeout(function() {
+                        btn.html('<i class="fas fa-sync-alt"></i> Reload Database').prop('disabled', false);
+                    }, 3000);
+                }
+            });
+        }
     </script>
 }
+
+@Html.AntiForgeryToken()
 
 <style>
     .settings-container {
@@ -247,6 +293,114 @@
         color: #6B7280;
         font-weight: 500;
     }
+
+    /* System Settings Styles */
+    .system-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+        max-width: 500px;
+    }
+
+    .system-card-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+        color: white;
+    }
+
+    .system-card-header > i {
+        font-size: 24px;
+        opacity: 0.9;
+    }
+
+    .system-card-header h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .system-card-header p {
+        margin: 4px 0 0 0;
+        font-size: 13px;
+        opacity: 0.85;
+    }
+
+    .system-card-body {
+        padding: 20px;
+    }
+
+    .system-card-body .text-muted {
+        color: #6B7280;
+        font-size: 14px;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .system-card-footer {
+        padding: 16px 20px;
+        background: #F9FAFB;
+        border-top: 1px solid #F3F4F6;
+    }
+
+    .btn-reload {
+        padding: 12px 24px;
+        background: #7C3AED;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-reload:hover {
+        background: #5B21B6;
+    }
+
+    .btn-reload:disabled {
+        background: #9CA3AF;
+        cursor: not-allowed;
+    }
+
+    .btn-reload.loading i {
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .reload-result {
+        margin-top: 16px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .reload-result.success {
+        background: #ECFDF5;
+        color: #047857;
+    }
+
+    .reload-result.error {
+        background: #FEF2F2;
+        color: #B91C1C;
+    }
+
+    .reload-result i {
+        font-size: 18px;
+    }
 </style>
 
 <div class="page-header">
@@ -374,10 +528,30 @@
                 <h2>System Settings</h2>
                 <p>Configure system-wide parameters and defaults.</p>
             </div>
-            <div class="coming-soon">
-                <i class="fas fa-server"></i>
-                <h3>Coming Soon</h3>
-                <p>System settings will be available in a future update.</p>
+
+            <div class="system-card">
+                <div class="system-card-header">
+                    <i class="fas fa-database"></i>
+                    <div>
+                        <h4>Database Reload</h4>
+                        <p>Reload devices and powerbanks data from database</p>
+                    </div>
+                </div>
+                <div class="system-card-body">
+                    <p class="text-muted">
+                        Use this if you have manually added or modified records in the database.
+                        The system will reload all Devices and PowerBanks from the database without restarting.
+                    </p>
+                    <div class="reload-result" id="reloadResult" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="reloadResultText"></span>
+                    </div>
+                </div>
+                <div class="system-card-footer">
+                    <button type="button" class="btn-reload" id="btnReloadDb" onclick="reloadDatabase()">
+                        <i class="fas fa-sync-alt"></i> Reload Database
+                    </button>
+                </div>
             </div>
         </div>
 

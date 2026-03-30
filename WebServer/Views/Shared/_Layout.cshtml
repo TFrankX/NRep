@@ -160,12 +160,22 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
-        // Initialize Bootstrap dropdowns
+        // Initialize Bootstrap components after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            var dropdownElements = document.querySelectorAll('[data-bs-toggle="dropdown"]');
-            dropdownElements.forEach(function(element) {
-                new bootstrap.Dropdown(element);
-            });
+            console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
+
+            // Mobile menu toggle - simple approach
+            var toggler = document.querySelector('.navbar-toggler');
+            var menu = document.getElementById('navbarMain');
+
+            if (toggler && menu) {
+                toggler.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    menu.classList.toggle('show');
+                    toggler.setAttribute('aria-expanded', menu.classList.contains('show'));
+                    console.log('Menu toggled, show:', menu.classList.contains('show'));
+                });
+            }
         });
     </script>
 

@@ -11,11 +11,13 @@ namespace WebServer.Controllers.Identity
 {
     public class AppRoleManagementController : Controller
     {
+        private readonly ILogger<AppRoleManagementController> _logger;
         private readonly UserManager<AppUser> userManag;
         private readonly RoleManager<IdentityRole> roleManag;
 
-        public AppRoleManagementController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+        public AppRoleManagementController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<AppRoleManagementController> logger)
         {
+            _logger = logger;
             userManag = userManager;
             roleManag = roleManager;
         }

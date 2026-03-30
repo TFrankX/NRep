@@ -10,29 +10,31 @@ namespace WebServer.Data
     {
         public DevicesData()
         {
-            Servers = new List<Server>();
-            Devices = new List<Device>();
-            PowerBanks = new List<PowerBank>();
+            Servers = new ThreadSafeList<Server>(s => s.Id);
+            Devices = new ThreadSafeList<Device>(d => d.Id);
+            PowerBanks = new ThreadSafeList<PowerBank>(p => p.Id);
         }
 
-        public DevicesData(List<Server> servers, List<Device> devices, List<PowerBank> powerBanks)
+        public DevicesData(List<Server>? servers, List<Device>? devices, List<PowerBank>? powerBanks)
         {
-            Servers = servers;
-            Devices = devices;
-            PowerBanks = powerBanks;
+            Servers = new ThreadSafeList<Server>(s => s.Id);
+            Devices = new ThreadSafeList<Device>(d => d.Id);
+            PowerBanks = new ThreadSafeList<PowerBank>(p => p.Id);
+
+            if (servers != null)
+                foreach (var s in servers) Servers.Add(s);
+            if (devices != null)
+                foreach (var d in devices) Devices.Add(d);
+            if (powerBanks != null)
+                foreach (var p in powerBanks) PowerBanks.Add(p);
         }
 
-        public List<Server> Servers { get; set; }
-        public List<Device> Devices { get; set; }
-        public List<PowerBank> PowerBanks { get; set; }
+        public ThreadSafeList<Server> Servers { get; }
+        public ThreadSafeList<Device> Devices { get; }
+        public ThreadSafeList<PowerBank> PowerBanks { get; }
 
-        public void Sort()
-        {
-            Servers = Servers.OrderBy(c => c.Host).ToList();
-            Devices = Devices.OrderBy(c => c.DeviceName).ToList();
-            PowerBanks = PowerBanks.OrderBy(c => c.HostDeviceName).ToList();
-        }
-
-
+        public List<Server> GetServersSorted() => Servers.ToList().OrderBy(c => c.Host).ToList();
+        public List<Device> GetDevicesSorted() => Devices.ToList().OrderBy(c => c.DeviceName).ToList();
+        public List<PowerBank> GetPowerBanksSorted() => PowerBanks.ToList().OrderBy(c => c.HostDeviceName).ToList();
     }
 }

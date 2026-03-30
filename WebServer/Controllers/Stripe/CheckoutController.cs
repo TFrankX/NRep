@@ -3,6 +3,7 @@ using Stripe.Checkout;
 using Stripe;
 using Microsoft.AspNetCore.Mvc;
 using WebServer.Models.Stripe;
+using WebServer.Models.Action;
 
 namespace WebServer.Controllers.Stripe
 {
@@ -10,11 +11,15 @@ namespace WebServer.Controllers.Stripe
     [Route("[controller]")]
     public class CheckoutController : Controller
     {
-
+        private readonly ILogger<CheckoutController> _logger;
         private readonly IConfiguration _configuration;
-        public CheckoutController(IConfiguration configuration)
+        private readonly ActionProcess _actionProcess;
+
+        public CheckoutController(IConfiguration configuration, ILogger<CheckoutController> logger, IServiceScopeFactory scopeFactory)
         {
             _configuration = configuration;
+            _logger = logger;
+            _actionProcess = new ActionProcess(scopeFactory);
         }
 
         //[HttpPost("make-payment")]
@@ -227,9 +232,60 @@ namespace WebServer.Controllers.Stripe
 
 
         [HttpGet("success")]
-        public IActionResult Success()
+        public IActionResult Success([FromQuery] string session_id, [FromQuery] ulong? stationId, [FromQuery] ulong? powerBankId)
         {
-            //new { sessionId = model.SessionId }
+            if (!string.IsNullOrEmpty(session_id))
+            {
+                try
+                {
+                    StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
+
+                    // Get session with expanded customer and payment intent
+                    var sessionService = new SessionService();
+                    var session = sessionService.Get(session_id, new SessionGetOptions
+                    {
+                        Expand = new List<string> { "customer", "payment_intent", "payment_intent.payment_method" }
+                    });
+
+                    string customerName = "Unknown";
+                    string paymentInfo = $"SessionId: {session_id}";
+
+                    // Get customer name
+                    if (session.Customer != null)
+                    {
+                        customerName = session.Customer.Name ?? session.Customer.Email ?? "Unknown";
+                    }
+                    else if (session.CustomerDetails != null)
+                    {
+                        customerName = session.CustomerDetails.Name ?? session.CustomerDetails.Email ?? "Unknown";
+                    }
+
+                    // Get card details from payment method
+                    if (session.PaymentIntent?.PaymentMethod?.Card != null)
+                    {
+                        var card = session.PaymentIntent.PaymentMethod.Card;
+                        paymentInfo = $"{card.Brand?.ToUpper()} *{card.Last4}, Exp: {card.ExpMonth:D2}/{card.ExpYear}";
+
+                        // Add billing name if available
+                        var billingName = session.PaymentIntent.PaymentMethod.BillingDetails?.Name;
+                        if (!string.IsNullOrEmpty(billingName))
+                        {
+                            customerName = billingName;
+                        }
+                    }
+
+                    // Update the action record
+                    _actionProcess.UpdatePaymentInfo(session_id, customerName, paymentInfo);
+
+                    _logger.LogInformation("Payment success: SessionId={SessionId}, Customer={Customer}, Card={Card}",
+                        session_id, customerName, paymentInfo);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting payment details for session {SessionId}", session_id);
+                }
+            }
+
             return View();
         }
 

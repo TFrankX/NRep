@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,10 +7,20 @@ using System.Text.RegularExpressions;
 
 namespace WebServer.Utils.Requests
 {
+    /// <summary>
+    /// Legacy SMS class. Prefer using WebServer.Services.Sms.SmsService via DI instead.
+    /// </summary>
 	public class SMS
 	{
+        private readonly string _smsApiSecret;
 
+        public SMS(IConfiguration configuration)
+        {
+            _smsApiSecret = configuration["SmsApi:Secret"] ??
+                throw new InvalidOperationException("SMS API secret not configured. Add SmsApi:Secret to configuration.");
+        }
 
+        [Obsolete("Use SmsService.SendCodeAsync instead")]
         public string Send2(string phoneNumber, string sender, string text)
         {
             APIRequest api;
@@ -17,11 +28,11 @@ namespace WebServer.Utils.Requests
             //var resp = api.GetResponse();
             return api.Status;
         }
+
         public string Send(string phoneNumber, string sender, string text)
         {
             APIRequest api;
-            //api = new APIRequest("https://api3.mobilipay.com:8209/omn/api/v2/init", "POST", "{\n\t\"messageText\":\"VGVzdCBNZXNzYWdl\",\n\t\"msisdn\":\"35795506767\",\n\t\"partnerId\":\"takecharger\"\n}", "Signature: c1b845685898dc9718faadc06e35b2d582dcaf35d366b533ebae97e557d33569");
-            api = new APIRequest("https://api3.mobilipay.com:8209/omn/api/v2/init", "POST", $"{{\n\t\"messageText\":\"{Base64Encode(text)}\",\n\t\"msisdn\":\"{phoneNumber}\",\n\t\"partnerId\":\"{sender}\"\n}}", $"Signature: {HmacSha256("vaepheexaithah3Oozei3Shi", $"{Base64Encode(text)}{phoneNumber}{sender}")}");
+            api = new APIRequest("https://api3.mobilipay.com:8209/omn/api/v2/init", "POST", $"{{\n\t\"messageText\":\"{Base64Encode(text)}\",\n\t\"msisdn\":\"{phoneNumber}\",\n\t\"partnerId\":\"{sender}\"\n}}", $"Signature: {HmacSha256(_smsApiSecret, $"{Base64Encode(text)}{phoneNumber}{sender}")}");
             return api.Status;
         }
 

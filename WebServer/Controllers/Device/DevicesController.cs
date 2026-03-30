@@ -124,7 +124,7 @@ namespace WebServer.Controllers.Device
                 }
             }
 
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
 
             return RedirectToAction("Devices", "Devices");
@@ -173,7 +173,7 @@ namespace WebServer.Controllers.Device
                 }
             }
 
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
 
             return RedirectToAction("Devices", "Devices");
@@ -221,7 +221,7 @@ namespace WebServer.Controllers.Device
                 }
             }
 
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
             return RedirectToAction("Devices", "Devices");
         }
@@ -253,7 +253,7 @@ namespace WebServer.Controllers.Device
 
             scanDevices.Activate(DeviceToAct.DeviceId, userName, roles);
 
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
 
             return RedirectToAction("Devices", "Devices");
@@ -286,7 +286,7 @@ namespace WebServer.Controllers.Device
 
             scanDevices.CanReg(DeviceToCanReg.DeviceId, userName, roles);
 
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
 
             return RedirectToAction("Devices", "Devices");
@@ -319,7 +319,7 @@ namespace WebServer.Controllers.Device
 
             scanDevices.Register(DeviceToReg.DeviceId, userName, roles);
 
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
 
             return RedirectToAction("Devices", "Devices");
@@ -384,7 +384,7 @@ namespace WebServer.Controllers.Device
 
             //    }
             // }
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
             //return RedirectToAction("ServerDetails", "ServerDetails");
             return RedirectToAction("Devices", "Devices");
@@ -399,27 +399,26 @@ namespace WebServer.Controllers.Device
                 var user = await userManager.FindByIdAsync(userId);
 
                 var roles = await userManager.GetRolesAsync(user);
-                DevicesData serversTable;
+                List<WebServer.Models.Device.Device> deviceList;
 
                 var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
                 if (allowAdminAndManager)
                 {
-                     serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
+                    deviceList = scanDevices.DevicesData.Devices.OrderBy(d => d.DeviceName).ToList();
                 }
                 else
                 {
-                    var deviceList = scanDevices.DevicesData.Devices.Where(p => p.Owners == user.UserName).ToList<WebServer.Models.Device.Device>();
-                    var powerBankList = scanDevices.DevicesData.PowerBanks.Where(p => deviceList.Select(b => b.DeviceName).Contains(p.HostDeviceName)).ToList<WebServer.Models.Device.PowerBank>();
-                     serversTable = new DevicesData(null, deviceList, powerBankList);
+                    deviceList = scanDevices.DevicesData.Devices
+                        .Where(p => p.Owners == user.UserName)
+                        .OrderBy(d => d.DeviceName)
+                        .ToList();
                 }
 
-                serversTable.Sort();
-
                 // Get fresh powerbanks data
-                var allPowerBanks = scanDevices.DevicesData.PowerBanks;
+                var allPowerBanks = scanDevices.DevicesData.PowerBanks.ToList();
 
                 // Create extended device data with slot charge levels
-                var devicesWithSlots = serversTable.Devices.Select(d => new {
+                var devicesWithSlots = deviceList.Select(d => new {
                     d.Id_str,
                     d.DeviceName,
                     d.HostDeviceId_str,

@@ -38,15 +38,13 @@ internal class Program
                 {
                     // Run database migrations
                     var migrator = services.GetRequiredService<IDatabaseMigrator>();
-                    migrator.MigrateAsync().Wait();
+                    migrator.MigrateAsync().GetAwaiter().GetResult();
 
-                    Task t;
                     var configuration = GetConfiguration();
                     var defAdminPass = configuration.GetSection("DefaultAdminPass").Get<string>();
                     var userManager = services.GetRequiredService<UserManager<AppUser>>();
                     var rolesManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-                    t = RoleInitializer.InitializeAsync(userManager, rolesManager, defAdminPass);
-                    t.Wait();
+                    RoleInitializer.InitializeAsync(userManager, rolesManager, defAdminPass).GetAwaiter().GetResult();
 
                 }
                 catch (Exception ex)

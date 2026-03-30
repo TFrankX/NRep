@@ -402,12 +402,12 @@ namespace WebServer.Workers
 
                     foreach (var powerbank in dbDevice.PowerBank)
                     {
+                        DevicesData.PowerBanks.Add(powerbank);
+                        var hostDevice = DevicesData.Devices.GetById(powerbank.HostDeviceId);
+                        if (hostDevice != null)
                         {
-                            DevicesData.PowerBanks.Add(powerbank);
-                            //powerbank.Plugged = false;
-                            var servId = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == powerbank.HostDeviceId)].HostDeviceId;
-                            //var servHost = DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == devId)].Id;
-                           //- actionProcess.ActionSave((int)ActionsDescription.ServiceInitPowerBank, "System", servId, powerbank.HostDeviceId, powerbank.Id, powerbank.HostSlot, "");
+                            var servId = hostDevice.HostDeviceId;
+                            //- actionProcess.ActionSave((int)ActionsDescription.ServiceInitPowerBank, "System", servId, powerbank.HostDeviceId, powerbank.Id, powerbank.HostSlot, "");
                         }
                     }
 
@@ -422,8 +422,9 @@ namespace WebServer.Workers
 
                     foreach (var dev in dbDevice.Device)
                     {
+                        var server = DevicesData.Servers.GetById(dev.HostDeviceId);
+                        if (server == null) continue;
 
-                        var server = DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == dev.HostDeviceId)];
                         server.EvQueryTheInventory -= Srv_EvQueryTheInventory;
                         server.EvQueryTheInventory += Srv_EvQueryTheInventory;
                         server.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
@@ -444,6 +445,74 @@ namespace WebServer.Workers
             }
         }
 
+        /// <summary>
+        /// Перезагружает данные из базы данных.
+        /// Очищает текущие коллекции и загружает свежие данные из БД.
+        /// Используется для подхвата изменений, внесённых напрямую в БД.
+        /// </summary>
+        public async Task<(int devices, int powerBanks)> ReloadFromDatabaseAsync()
+        {
+            Logger.LogInformation("Starting database reload...");
+
+            using var dbDevice = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DeviceContext>();
+
+            // Сохраняем текущее состояние серверов (соединения)
+            var serverConnections = DevicesData.Servers.ToDictionary(s => s.Id, s => s.Connected);
+
+            // Очищаем только Devices и PowerBanks, серверы остаются (они управляют соединениями)
+            DevicesData.Devices.Clear();
+            DevicesData.PowerBanks.Clear();
+
+            int devicesCount = 0;
+            int powerBanksCount = 0;
+
+            try
+            {
+                // Загружаем устройства
+                foreach (var dev in dbDevice.Device)
+                {
+                    dev.Online = false;
+                    dev.Stored = true; // Уже в БД
+                    DevicesData.Devices.Add(dev);
+                    devicesCount++;
+                }
+                Logger.LogInformation($"Loaded {devicesCount} devices from database");
+
+                // Загружаем павербанки
+                foreach (var powerbank in dbDevice.PowerBank)
+                {
+                    powerbank.Stored = true; // Уже в БД
+                    DevicesData.PowerBanks.Add(powerbank);
+                    powerBanksCount++;
+                }
+                Logger.LogInformation($"Loaded {powerBanksCount} powerbanks from database");
+
+                // Переподписываемся на события устройств
+                foreach (var dev in DevicesData.Devices)
+                {
+                    var server = DevicesData.Servers.GetById(dev.HostDeviceId);
+                    if (server == null) continue;
+
+                    server.EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                    server.EvQueryTheInventory += Srv_EvQueryTheInventory;
+                    server.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                    server.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
+                    server.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
+                    server.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
+                    server.SubScript(dev.DeviceName);
+                    server.CmdQueryTheInventory(dev.DeviceName);
+                }
+
+                Logger.LogInformation("Database reload completed successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error during database reload");
+                throw;
+            }
+
+            return (devicesCount, powerBanksCount);
+        }
 
 
         private void ReconnectServers()
@@ -598,7 +667,10 @@ namespace WebServer.Workers
 
                 
 
-                if (DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev)) < 0)
+                var deviceId = GetGUID(dev);
+                var existingDevice = DevicesData.Devices.GetById(deviceId);
+
+                if (existingDevice == null)
                 {
                     Device device = new Device(dev, ((Server)(sender)).Id, true);
                     device.HostDeviceId = ((Server)(sender)).Id;
@@ -613,10 +685,10 @@ namespace WebServer.Workers
                 }
                 else
                 {
-                    DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].LastOnlineTime = DateTime.Now;
-                    DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].Online = true;
-                    DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].Stored = false;
-                    actionProcess.ActionSave((int)ActionsDescription.StationConnect, DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].Owners, DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].HostDeviceId, DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id == GetGUID(dev))].Id, 0, 0, "");
+                    existingDevice.LastOnlineTime = DateTime.Now;
+                    existingDevice.Online = true;
+                    existingDevice.Stored = false;
+                    actionProcess.ActionSave((int)ActionsDescription.StationConnect, existingDevice.Owners, existingDevice.HostDeviceId, existingDevice.Id, 0, 0, "");
                     Logger.LogInformation($"Exist device login - {dev} \n");
                 }
                 ((Server)(sender)).EvQueryTheInventory -= Srv_EvQueryTheInventory;
@@ -710,11 +782,16 @@ namespace WebServer.Workers
         {
             //EvReturnThePowerBank?.Invoke(this, topic, data);
             string dev = "";
-            Device device;
+            Device? device;
             try
             {
                 dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
-                device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)];
+                device = DevicesData.Devices.FirstOrDefault(item => item.DeviceName == dev);
+                if (device == null)
+                {
+                    Logger.LogInformation($"Device not found: {dev}\n");
+                    return;
+                }
             }
             catch
             {
@@ -729,8 +806,8 @@ namespace WebServer.Workers
 
             lock (_powerBanksLock)
             {
-                var existingIndex = DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid);
-                if (existingIndex < 0)
+                var pb = DevicesData.PowerBanks.GetById(data.RlPbid);
+                if (pb == null)
                 {
                     DevicesData.PowerBanks.Add(new PowerBank(data.RlPbid, device.DeviceName, data.RlSlot, data.RlLock > 0, true, false, (PowerBankChargeLevel)data.RlQoe));
                     actionProcess.ActionSave((int)ActionsDescription.PowerBankFindNew, "System", device.HostDeviceId, device.Id, data.RlPbid, data.RlSlot, "");
@@ -739,7 +816,6 @@ namespace WebServer.Workers
                 {
                     try
                     {
-                        var pb = DevicesData.PowerBanks[existingIndex];
 
                         // Если powerbank уже plugged в этом же месте - ничего не делаем
                         if (pb.Plugged && pb.HostDeviceName == device.DeviceName && pb.HostSlot == data.RlSlot)
@@ -764,6 +840,11 @@ namespace WebServer.Workers
                     //{
                     //float cost = DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Price * (DateTime.Now - DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].LastGetTime).Minutes / 60;
                     //!!   EvReturnThePowerBank(device.DeviceName, data.RlPbid, data.RlSlot, DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Cost);
+
+                    // Если павербанк был взят пользователем - записываем событие возврата
+                    var wasTaken = pb.Taken;
+                    var returnUserId = pb.UserId;
+
                     pb.Taken = false;
                     pb.Stored = false;
                     //}
@@ -833,8 +914,17 @@ namespace WebServer.Workers
                         pb.SessionId = "";
                         pb.Stored = false;
 
-                        var userId = string.IsNullOrEmpty(pb.UserId) ? "" : pb.UserId;
-                        actionProcess.ActionSave((int)ActionsDescription.PowerBankInsert, userId, device.HostDeviceId, device.Id, data.RlPbid, data.RlSlot, "");
+                        // Записываем событие: PowerBankReturn если был взят пользователем, иначе PowerBankInsert
+                        var userId = string.IsNullOrEmpty(returnUserId) ? "" : returnUserId;
+                        if (wasTaken)
+                        {
+                            actionProcess.ActionSave((int)ActionsDescription.PowerBankReturn, userId, device.HostDeviceId, device.Id, data.RlPbid, data.RlSlot, $"Cost: {pb.Cost:F2}");
+                            Logger.LogInformation($"PowerBank {data.RlPbid} returned by user {userId}, cost: {pb.Cost:F2}");
+                        }
+                        else
+                        {
+                            actionProcess.ActionSave((int)ActionsDescription.PowerBankInsert, userId, device.HostDeviceId, device.Id, data.RlPbid, data.RlSlot, "");
+                        }
                     }
                     catch
                     {
@@ -854,11 +944,16 @@ namespace WebServer.Workers
         private void Srv_EvQueryTheInventory(object sender, string topic, RplQueryTheInventory data)
         {
             string dev = "";
-            Device device;
+            Device? device;
             try
             {
                 dev = topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).Substring(0, topic.Substring(topic.IndexOf("cabinet") + 8, topic.Length - 8).IndexOf('/'));
-                device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == dev)];
+                device = DevicesData.Devices.FirstOrDefault(item => item.DeviceName == dev);
+                if (device == null)
+                {
+                    Logger.LogInformation($"Device not found: {dev}\n");
+                    return;
+                }
             }
             catch
             {
@@ -899,8 +994,8 @@ namespace WebServer.Workers
                     {
                         slots = slots | ((uint)Math.Pow(2, pbank.RlSlot - 1));
 
-                        var existingIndex = DevicesData.PowerBanks.FindIndex(item => item.Id == pbank.RlPbid);
-                        if (existingIndex < 0)
+                        var pb = DevicesData.PowerBanks.GetById(pbank.RlPbid);
+                        if (pb == null)
                         {
                             // Новый powerbank - добавляем
                             DevicesData.PowerBanks.Add(new PowerBank(pbank.RlPbid, device.DeviceName, pbank.RlSlot,
@@ -910,7 +1005,6 @@ namespace WebServer.Workers
                         }
                         else
                         {
-                            var pb = DevicesData.PowerBanks[existingIndex];
 
                             // Если powerbank был не plugged (или был в другом устройстве) - это insert
                             if (!pb.Plugged || pb.HostDeviceName != device.DeviceName)
@@ -958,129 +1052,63 @@ namespace WebServer.Workers
 
         public int SetTypeOfUse(string deviceIdToSetTypeOfUse, int TypeOfUse, string? userId, List<string> roles)
         {
-            try
-            {
-                Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id_str == deviceIdToSetTypeOfUse)];
-                device.TypeOfUse = (TypeOfUse)TypeOfUse;
-                return 200;
-            }
-            catch
-            {
-                return 404;
+            var device = DevicesData.Devices.FirstOrDefault(item => item.Id_str == deviceIdToSetTypeOfUse);
+            if (device == null) return 404;
 
-            }
-
+            device.TypeOfUse = (TypeOfUse)TypeOfUse;
+            device.Stored = false;
+            return 200;
         }
 
         public int SetOwner(string deviceIdToOwn, string Owner, string? userId, List<string> roles)
         {
-            try
-            {
-                Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id_str == deviceIdToOwn)];
-                device.Owners = Owner;
-                return 200;
-            }
-            catch
-            {
-                return 404;
+            var device = DevicesData.Devices.FirstOrDefault(item => item.Id_str == deviceIdToOwn);
+            if (device == null) return 404;
 
-            }
-
+            device.Owners = Owner;
+            device.Stored = false;
+            return 200;
         }
 
         public int SetDescription(string deviceId, string description, string? userId, List<string> roles)
         {
-            try
-            {
-                Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id_str == deviceId)];
-                device.Description = description;
-                device.Stored = false;  // Mark for saving to DB
-                return 200;
-            }
-            catch
-            {
-                return 404;
-            }
+            var device = DevicesData.Devices.FirstOrDefault(item => item.Id_str == deviceId);
+            if (device == null) return 404;
+
+            device.Description = description;
+            device.Stored = false;
+            return 200;
         }
 
         public int Activate(string deviceIdToAct, string? userId, List<string> roles)
         {
-            try
-            {
-                Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id_str == deviceIdToAct)];
-                if (!device.Activated)
-                {
-                    device.Activated = true;
-                }
-                else
-                {
-                    device.Activated = false;
-                }
+            var device = DevicesData.Devices.FirstOrDefault(item => item.Id_str == deviceIdToAct);
+            if (device == null) return 404;
 
-
-
-                return 200;
-            }
-            catch
-            {
-                return 404;
-
-            }
-
+            device.Activated = !device.Activated;
+            device.Stored = false;
+            return 200;
         }
 
 
         public int Register(string deviceIdToReg, string? userId, List<string> roles)
         {
-            try
-            {
-                Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id_str == deviceIdToReg)];
-                if (!device.Registered)
-                {
-                    device.Registered = true;
-                }
-                else
-                {
-                    device.Registered = false;
-                }
+            var device = DevicesData.Devices.FirstOrDefault(item => item.Id_str == deviceIdToReg);
+            if (device == null) return 404;
 
-
-
-                return 200;
-            }
-            catch
-            {
-                return 404;
-
-            }
-
+            device.Registered = !device.Registered;
+            device.Stored = false;
+            return 200;
         }
-
 
         public int CanReg(string deviceIdToCanReg, string? userId, List<string> roles)
         {
-            try
-            {
-                Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.Id_str == deviceIdToCanReg)];
-                if (!device.CanRegister)
-                {
-                    device.CanRegister = true;
-                }
-                else
-                {
-                    device.CanRegister = false;
-                }
+            var device = DevicesData.Devices.FirstOrDefault(item => item.Id_str == deviceIdToCanReg);
+            if (device == null) return 404;
 
-
-
-                return 200;
-            }
-            catch
-            {
-                return 404;
-
-            }
-
+            device.CanRegister = !device.CanRegister;
+            device.Stored = false;
+            return 200;
         }
         //public int RemovePowerBank(string deviceName, uint numberPB, string? userId)
         //{
@@ -1204,37 +1232,36 @@ namespace WebServer.Workers
 
                 if (powerBankPush != null)
                     {
-
-
-                        try
+                        var device = DevicesData.Devices.FirstOrDefault(item => item.DeviceName == deviceName);
+                        if (device == null)
                         {
-                            Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == deviceName)];
-                            device.Slots = device.Slots & ~(uint)Math.Pow(2, powerBankPush.HostSlot - 1);
-                            Server server = DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == device.HostDeviceId)];
-                            actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, powerBankPush.Id, powerBankPush.HostSlot, "");
-                            powerBankPush.Plugged = false;
-                            server.CmdPushPowerBank(powerBankPush.HostSlot, powerBankPush.HostDeviceName);                          
-                            powerBankPush.LastGetTime = DateTime.Now;
-                            if (allowAdminAndManager)
-                            {
-
-
-                                powerBankPush.Price = 0;
-
-                            }
-                            powerBankPush.UserId = userId;
-                            powerBankPush.Taken = true;
-                            powerBankPush.Stored = false;
-                            taken = true;
-                            pushPbId = powerBankPush.Id;
-
-                            DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == device.HostDeviceId)].CmdQueryTheInventory(device.DeviceName);                            
-                        }
-                        catch
-                        {
-                            Logger.LogInformation($"Get invalid device with topic: {deviceName}; Waiting somthing like - cabinet/<name of device>/...\n");
+                            Logger.LogInformation($"Device not found: {deviceName}\n");
                             return 502;
                         }
+
+                        var server = DevicesData.Servers.GetById(device.HostDeviceId);
+                        if (server == null)
+                        {
+                            Logger.LogInformation($"Server not found for device: {deviceName}\n");
+                            return 502;
+                        }
+
+                        device.Slots = device.Slots & ~(uint)Math.Pow(2, powerBankPush.HostSlot - 1);
+                        actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, powerBankPush.Id, powerBankPush.HostSlot, "");
+                        powerBankPush.Plugged = false;
+                        server.CmdPushPowerBank(powerBankPush.HostSlot, powerBankPush.HostDeviceName);
+                        powerBankPush.LastGetTime = DateTime.Now;
+                        if (allowAdminAndManager)
+                        {
+                            powerBankPush.Price = 0;
+                        }
+                        powerBankPush.UserId = userId;
+                        powerBankPush.Taken = true;
+                        powerBankPush.Stored = false;
+                        taken = true;
+                        pushPbId = powerBankPush.Id;
+
+                        server.CmdQueryTheInventory(device.DeviceName);
                     }
                     else
                     {
@@ -1250,46 +1277,53 @@ namespace WebServer.Workers
                 }
                 else
                 {
-                    foreach (var powerBank in DevicesData.PowerBanks.ToList())
+                    Logger.LogInformation($"PushPowerBank: Looking for powerbank in slot {numberPB} device {deviceName}");
+
+                    var powerBank = DevicesData.PowerBanks.FirstOrDefault(p =>
+                        p.Plugged && p.HostDeviceName == deviceName && p.HostSlot == numberPB);
+
+                    if (powerBank != null)
                     {
-                        if ((powerBank.Plugged) &&
-                            (powerBank.HostDeviceName == deviceName) &&
-                            (powerBank.HostSlot == numberPB))
+                        Logger.LogInformation($"PushPowerBank: Found powerbank {powerBank.Id}");
+
+                        var device = DevicesData.Devices.FirstOrDefault(item => item.DeviceName == deviceName);
+                        if (device == null)
                         {
-
-                            try
-                            {
-                                Device device = DevicesData.Devices[DevicesData.Devices.FindIndex(item => item.DeviceName == deviceName)];
-                                device.Slots = device.Slots & ~(uint)Math.Pow(2, powerBank.HostSlot - 1);
-
-                                Server server = DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == device.HostDeviceId)];
-                                actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, powerBank.Id, powerBank.HostSlot, "");
-                                powerBank.Plugged = false;
-                                server.CmdPushPowerBank(numberPB, deviceName);                                
-                                powerBank.LastGetTime = DateTime.Now;
-                                if (allowAdminAndManager)
-                                {
-
-
-                                    powerBank.Price = 0;
-
-                                }
-                                powerBank.UserId = userId;
-                                powerBank.Taken = true;
-                                taken = true;
-                                pushPbId = powerBank.Id;
-                                powerBank.Stored = false;
-                                
-                            DevicesData.Servers[DevicesData.Servers.FindIndex(item => item.Id == device.HostDeviceId)].CmdQueryTheInventory(device.DeviceName);
-
-                            }
-                            catch
-                            {
-                                Logger.LogInformation($"Get invalid device with topic: {deviceName}; Waiting somthing like - cabinet/<name of device>/...\n");
-                                return 502;
-                            }
+                            Logger.LogInformation($"Device not found: {deviceName}\n");
+                            return 502;
                         }
-                            
+
+                        var server = DevicesData.Servers.GetById(device.HostDeviceId);
+                        if (server == null)
+                        {
+                            Logger.LogInformation($"Server not found for device: {deviceName}\n");
+                            return 502;
+                        }
+
+                        device.Slots = device.Slots & ~(uint)Math.Pow(2, powerBank.HostSlot - 1);
+                        actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, powerBank.Id, powerBank.HostSlot, "");
+                        powerBank.Plugged = false;
+                        server.CmdPushPowerBank(numberPB, deviceName);
+                        powerBank.LastGetTime = DateTime.Now;
+                        if (allowAdminAndManager)
+                        {
+                            powerBank.Price = 0;
+                        }
+                        powerBank.UserId = userId;
+                        powerBank.Taken = true;
+                        taken = true;
+                        pushPbId = powerBank.Id;
+                        powerBank.Stored = false;
+
+                        server.CmdQueryTheInventory(device.DeviceName);
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"PushPowerBank: Powerbank not found for slot {numberPB} device {deviceName}. Checking all powerbanks in device...");
+                        foreach (var pb in DevicesData.PowerBanks.Where(p => p.HostDeviceName == deviceName))
+                        {
+                            Logger.LogInformation($"  - PB {pb.Id}: Slot={pb.HostSlot}, Plugged={pb.Plugged}, Taken={pb.Taken}, Reserved={pb.Reserved}");
+                        }
                     }
                 }
 

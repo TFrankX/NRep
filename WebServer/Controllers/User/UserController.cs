@@ -24,7 +24,7 @@ using System.Data;
 using System;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Security.Claims;
-using WebServer.Utils.Requests;
+using WebServer.Services.Sms;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WebServer.Models.Stripe;
@@ -81,12 +81,12 @@ namespace WebServer.Controllers.User
         private readonly IConfiguration _configuration;
         private readonly IStripeRoutines _stripeRoutines;
         private readonly IPricingService _pricingService;
-
+        private readonly ISmsService _smsService;
 
         private readonly HttpClient _httpClient;
 
 
-        public UserController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<UserController> logger, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IStripeRoutines stripeRoutines, IPricingService pricingService)
+        public UserController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<UserController> logger, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IStripeRoutines stripeRoutines, IPricingService pricingService, ISmsService smsService)
         {
             userManager = _userManager;
             Logger = logger;
@@ -97,6 +97,7 @@ namespace WebServer.Controllers.User
             _configuration = configuration;
             _stripeRoutines = stripeRoutines;
             _pricingService = pricingService;
+            _smsService = smsService;
         }
 
         //public IActionResult InitiatePayment(StripeCheckout paymentRequest)
@@ -281,10 +282,14 @@ namespace WebServer.Controllers.User
 
 
 
-            var pbPush = scanDevices.DevicesData.PowerBanks[scanDevices.DevicesData.PowerBanks.FindIndex(item => item.Id == powerBankIdn)];
-            var pbDevice = scanDevices.DevicesData.Devices.FirstOrDefault(d => d.Id == stationIdn);
+            var pbPush = scanDevices.DevicesData.PowerBanks.GetById(powerBankIdn);
+            var pbDevice = scanDevices.DevicesData.Devices.GetById(stationIdn);
             var typeOfUse = pbDevice?.TypeOfUse ?? TypeOfUse.PayByCard;
 
+            if (pbPush == null)
+            {
+                return BadRequest("PowerBank not found");
+            }
 
             if (pbPush.Reserved && !pbPush.Taken && pbPush.Plugged)
             {
@@ -312,9 +317,12 @@ namespace WebServer.Controllers.User
                 pbPush.PaymentInfo = $"Name: {session.CustomerDetails?.Name ?? "Unknown"},amount:{(session.AmountTotal / 100m).ToString()},time: {paymentDateTime?.ToString("g") ?? "Unknown".ToString()}, email:{session.CustomerDetails?.Email}, card country:{charge.PaymentMethodDetails?.Card.Country}, type: {charge.PaymentMethodDetails?.Card.Brand}, card last 4 digs: {charge.PaymentMethodDetails?.Card.Last4.ToString()}, card expired: {charge.PaymentMethodDetails?.Card.ExpMonth.ToString("D2")}/{charge.PaymentMethodDetails?.Card.ExpYear.ToString()}";
                 pbPush.Stored = false;
 
+                Logger.LogInformation($"AlreadyPaid: Pushing powerbank {pbPush.Id} from slot {pbPush.HostSlot} device {pbPush.HostDeviceName}, Plugged={pbPush.Plugged}");
+
                 var pbId = scanDevices.PushPowerBank(pbPush.HostDeviceName, pbPush.HostSlot, userId, roles);
 
-  
+                Logger.LogInformation($"AlreadyPaid: PushPowerBank returned {pbId}, pbPush.Taken={pbPush.Taken}");
+
                 if ((pbPush.Id > 1000) && (pbPush != null))
                 {
 
@@ -329,7 +337,7 @@ namespace WebServer.Controllers.User
                     return View("Do",payInfo);
 
                 };
-                Thread.Sleep(100);
+                await Task.Delay(100);
 
 
             }
@@ -371,14 +379,9 @@ namespace WebServer.Controllers.User
 
 
 
-            Models.Device.Device device;
-            try
+            var device = scanDevices.DevicesData.Devices.FirstOrDefault(item => item.Id_str == deviceId);
+            if (device == null)
             {
-                device = scanDevices.DevicesData.Devices[scanDevices.DevicesData.Devices.FindIndex(item => item.Id_str == deviceId)];
-            }
-            catch
-            {
-                device = null;
                 Logger.LogInformation($"Trying to get invalid device with Id: {deviceId}\n");
                 return StatusCode(404);
             }
@@ -587,16 +590,9 @@ namespace WebServer.Controllers.User
 
 
                 var pbId = scanDevices.PushPowerBank(device.DeviceName, maxChargedSlot, userId, roles);
-                PowerBank pbPush=null;
-                try
-                {
-                    pbPush=scanDevices.DevicesData.PowerBanks[scanDevices.DevicesData.PowerBanks.FindIndex(item => item.Id == pbId)];
-                }
-                catch
-                {
+                var pbPush = scanDevices.DevicesData.PowerBanks.GetById(pbId);
 
-                }
-                if ((pbId > 1000) && (pbPush!=null))
+                if ((pbId > 1000) && (pbPush != null))
                 {
                     
                     //set the key value in Cookie 
@@ -609,7 +605,7 @@ namespace WebServer.Controllers.User
                     return View(payInfo);
 
                 };
-                Thread.Sleep(100);
+                await Task.Delay(100);
             }
 
             payInfo.Cost = 0;
@@ -623,36 +619,30 @@ namespace WebServer.Controllers.User
         [AllowAnonymous]
         public async Task<ActionResult> SendSMSCode(UserSMS model)
         {
-            //!!!!!!!!!!
-            WebServer.Models.Identity.AppUser user;
+            if (!_smsService.IsValidPhoneNumber(model.PhoneNumber))
+            {
+                ModelState.AddModelError("", "Wrong phone number format");
+                return View("DoSMS", model);
+            }
 
+            try
+            {
+                string cd = _smsService.GenerateCode();
+                TempData["cd"] = cd;
 
-                model.Message = "Piska";
-                model.CodeReq = true;
-
-                try
+                var sent = await _smsService.SendCodeAsync(model.PhoneNumber, "takecharger", cd);
+                if (!sent)
                 {
-
-                    SMS sms = new SMS();
-                    string cd = sms.Gen4Code();
-                    //HttpContext.Session.SetString("cd", cd);
-                    TempData["cd"] = cd;
-                    var phone = sms.TunePhoneNumber(model.PhoneNumber);
-
-                    if (phone.Length != 11)
-                    {
-                        ModelState.AddModelError("", $"Wrong phone number format");
-                        return View("DoSMS", model);
-                }
-
-                    sms.Send(phone, "takecharger", cd);
-                    return View("DoCheckSMSCode", model);
-                }
-                catch
-                {
-                    ModelState.AddModelError("", $"Problem with sms-gate");
+                    ModelState.AddModelError("", "Problem with sms-gate");
                     return View("DoSMS", model);
                 }
+                return View("DoCheckSMSCode", model);
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Problem with sms-gate");
+                return View("DoSMS", model);
+            }
 
 
             
@@ -670,21 +660,6 @@ namespace WebServer.Controllers.User
             {
 
 
-                WebServer.Models.Identity.AppUser user;
-
-                SMS chSMS = new SMS();
-                model.PhoneNumber = chSMS.TunePhoneNumber(model.PhoneNumber);
-
-                //try
-                //{
-                //    user = userManag.Users.Where(x => x.PhoneNumber == model.PhoneNumber).First();
-                //}
-                //catch
-                //{
-                //    user = null;
-                //}
-
-                //var user = await userManag.FindByNameAsync(model.PhoneNumber);
                 if (model.SMSCode == TempData["cd"].ToString().Trim())
                 {
 
@@ -705,76 +680,45 @@ namespace WebServer.Controllers.User
 
 
                     Models.Device.Device device;
-                    try
+                    device = scanDevices.DevicesData.Devices.GetById(model.StationId);
+                    if (device == null)
                     {
-                        device = scanDevices.DevicesData.Devices[scanDevices.DevicesData.Devices.FindIndex(item => item.Id == model.StationId)];
-                    }
-                    catch
-                    {
-                        device = null;
                         Logger.LogInformation($"Trying to get invalid device with Id: {model.StationId}\n");
                         return StatusCode(404);
                     }
 
-
-                    Models.Device.Device matches;
-                    try
+                    var maxCharge = 0;
+                    uint maxChargedSlot = 0;
+                    foreach (PowerBank pb in devicePbs)
                     {
-                        matches = scanDevices.DevicesData.Devices.Where(p => p.Id == model.StationId).FirstOrDefault();
-                    }
-                    catch
-                    {
-                        matches = null;
-                    }
-                    if (matches != null)
-                    {
-
-                        var maxCharge = 0;
-                        uint maxChargedSlot = 0;
-                        foreach (PowerBank pb in devicePbs)
+                        if (!pb.Taken && pb.Plugged)
                         {
-                            if (!pb.Taken && pb.Plugged)
+                            if ((int)pb.ChargeLevel > maxCharge)
                             {
-                                if ((int)pb.ChargeLevel > maxCharge)
-                                {
-                                    maxCharge = (int)pb.ChargeLevel;
-                                    maxChargedSlot = pb.HostSlot;
-                                }
-
+                                maxCharge = (int)pb.ChargeLevel;
+                                maxChargedSlot = pb.HostSlot;
                             }
                         }
-
-                        if (maxChargedSlot == 0)
-                            RedirectToAction("User", "User");
-
-                        var pbId = scanDevices.PushPowerBank(device.DeviceName, maxChargedSlot, model.PhoneNumber, new List<string>{"Guest"});
-                        PowerBank pbPush = null;
-                        try
-                        {
-                            pbPush = scanDevices.DevicesData.PowerBanks[scanDevices.DevicesData.PowerBanks.FindIndex(item => item.Id == pbId)];
-                        }
-                        catch
-                        {
-
-                        }
-                        if ((pbId > 1000) && (pbPush != null))
-                        {
-
-                            //set the key value in Cookie 
-                            Set("KeyCharge911", model.PhoneNumber, 1500);
-
-                            payInfo.Taken = pbPush.Taken ? 1 : 0;
-                            payInfo.UserId = model.PhoneNumber;
-                            payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
-                            payInfo.Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken);
-                            return View("User",payInfo);
-
-                        };
-                        Thread.Sleep(100);
-
                     }
 
+                    if (maxChargedSlot == 0)
+                        RedirectToAction("User", "User");
 
+                    var pbId = scanDevices.PushPowerBank(device.DeviceName, maxChargedSlot, model.PhoneNumber, new List<string>{"Guest"});
+                    var pbPush = scanDevices.DevicesData.PowerBanks.GetById(pbId);
+
+                    if ((pbId > 1000) && (pbPush != null))
+                    {
+                        //set the key value in Cookie
+                        Set("KeyCharge911", model.PhoneNumber, 1500);
+
+                        payInfo.Taken = pbPush.Taken ? 1 : 0;
+                        payInfo.UserId = model.PhoneNumber;
+                        payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
+                        payInfo.Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken);
+                        return View("User", payInfo);
+                    }
+                    await Task.Delay(100);
                 }
                 else
                 {
@@ -835,7 +779,7 @@ namespace WebServer.Controllers.User
                     //set the key value in Cookie 
                     Set("KeyCharge911", UserId, 1500);
                 };
-                Thread.Sleep(100);
+                await Task.Delay(100);
             }
 
 
@@ -880,7 +824,7 @@ namespace WebServer.Controllers.User
         private void ShowInfo(string deviceName, ulong pbId, uint slot, float price)
         {
 
-             Thread.Sleep(100);
+            // Event handler callback - no action needed
         }
 
     }

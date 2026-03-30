@@ -59,7 +59,7 @@ namespace WebServer.Controllers.Device
             }
 
             scanDevices.PushPowerBank( powerBankToPush?.DeviceName, Convert.ToUInt32(powerBankToPush.PowerBankNum), userName, roles);
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
             //return RedirectToAction("ServerDetails", "ServerDetails");
             return RedirectToAction("Devices", "Devices");
@@ -90,35 +90,29 @@ namespace WebServer.Controllers.Device
                 var userId = userManager.GetUserId(User);
                 var user = await userManager.FindByIdAsync(userId);
                 var roles = await userManager.GetRolesAsync(user);
-                DevicesData serversTable;
-
+                
                 var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
+                List<WebServer.Models.Device.PowerBank> powerBankList;
+
                 if (allowAdminAndManager)
                 {
-                    serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
+                    powerBankList = scanDevices.DevicesData.PowerBanks
+                        .OrderBy(p => p.HostDeviceName)
+                        .ToList();
                 }
                 else
                 {
-                    var deviceList = scanDevices.DevicesData.Devices.Where(p => p.Owners == user.UserName).ToList<WebServer.Models.Device.Device>();
-                    var powerBankList = scanDevices.DevicesData.PowerBanks.Where(p => deviceList.Select(b => b.DeviceName).Contains(p.HostDeviceName)).ToList<WebServer.Models.Device.PowerBank>();
-                    //foreach (var device in deviceList)
-                    //{
-                    //    foreach
-                    //}
-                    serversTable = new DevicesData(null, deviceList, powerBankList);
+                    var deviceNames = scanDevices.DevicesData.Devices
+                        .Where(p => p.Owners == user.UserName)
+                        .Select(d => d.DeviceName)
+                        .ToList();
+                    powerBankList = scanDevices.DevicesData.PowerBanks
+                        .Where(p => deviceNames.Contains(p.HostDeviceName))
+                        .OrderBy(p => p.HostDeviceName)
+                        .ToList();
                 }
 
-
-                //DevicesData serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
-
-                // serversTable.AddRange(new List<Server>
-                // {                                 
-                //       { new Server ( "yaup.ru", 8884, "devclient", "Potato345!", 30 ) },
-                // });
-
-                //serversTable.Servers = serversTable.Servers.OrderBy(c => c.Host).ToList();
-                serversTable.Sort();
-                return Json(serversTable.PowerBanks, new JsonSerializerOptions { PropertyNamingPolicy = null });
+                return Json(powerBankList, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)
             {

@@ -22,6 +22,8 @@ using WebServer.Services.Stripe;
 using WebServer.Services.Pricing;
 using WebServer.Services;
 using WebServer.Services.Settings;
+using WebServer.Services.Sms;
+using WebServer.Services.User;
 
 namespace WebServer
 {
@@ -113,6 +115,8 @@ namespace WebServer
             services.AddSingleton<IPricingService, PricingService>();
             services.AddSingleton<IDatabaseMigrator, DatabaseMigrator>();
             services.AddSingleton<IAppSettingsService, AppSettingsService>();
+            services.AddScoped<ISmsService, SmsService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.AddSession(options =>
             {
@@ -122,15 +126,21 @@ namespace WebServer
             });
             services.Configure<IdentityOptions>(options =>
             {
-                // Default SignIn settings.
+                // SignIn settings
                 options.SignIn.RequireConfirmedEmail = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
-                options.Password.RequiredLength = 3;
-                options.Password.RequireLowercase = false;
+
+                // Password requirements - strengthened for security
+                options.Password.RequiredLength = 8;
+                options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireDigit = false;
+                options.Password.RequireDigit = true;
 
+                // Lockout settings
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
             });
 
             services.ConfigureApplicationCookie(options =>
