@@ -27,7 +27,8 @@ namespace WebServer.Controllers.Settings
             var model = new SettingsViewModel
             {
                 ActiveSection = section,
-                PricingPlans = await _settingsService.GetPricingPlansAsync()
+                PricingPlans = await _settingsService.GetPricingPlansAsync(),
+                Support = await _settingsService.GetSupportSettingsAsync()
             };
 
             return View(model);
@@ -71,6 +72,29 @@ namespace WebServer.Controllers.Settings
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to save pricing plan {Plan}", plan.PlanName);
+                return StatusCode(500, new { success = false, message = "Failed to save settings" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveSupportSettingsAjax([FromBody] SupportSettings support)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { success = false, message = "Invalid data" });
+            }
+
+            try
+            {
+                var userName = User.Identity?.Name ?? "unknown";
+                await _settingsService.SaveSupportSettingsAsync(support, userName);
+
+                return Ok(new { success = true, message = "Support settings saved" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save support settings");
                 return StatusCode(500, new { success = false, message = "Failed to save settings" });
             }
         }

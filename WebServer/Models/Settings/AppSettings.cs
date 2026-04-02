@@ -77,11 +77,22 @@ namespace WebServer.Models.Settings
     }
 
     /// <summary>
+    /// View model for support contact settings
+    /// </summary>
+    public class SupportSettings
+    {
+        public string Phone { get; set; } = "+357 99 123 456";
+        public string Email { get; set; } = "support@a-charger.com";
+        public string WorkingHours { get; set; } = "24/7";
+    }
+
+    /// <summary>
     /// View model for settings page
     /// </summary>
     public class SettingsViewModel
     {
         public List<PricingPlanSettings> PricingPlans { get; set; } = new();
+        public SupportSettings Support { get; set; } = new();
         public string ActiveSection { get; set; } = "pricing";
     }
 }

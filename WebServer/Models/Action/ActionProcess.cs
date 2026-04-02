@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using WebServer.Controllers.Device;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -6,15 +6,16 @@ namespace WebServer.Models.Action
 {
 	public class ActionProcess
 	{
-        IServiceScope scope;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public ActionProcess(IServiceScopeFactory scopeFactory)
 		{
-            scope = scopeFactory.CreateScope();
+            _scopeFactory = scopeFactory;
         }
 
         public void ActionSave(int actionCode, string userID, ulong actionServerId, ulong actionStationId, ulong actionPowerBankId,uint actionPowerBankSlot, string actionText)
         {
+            using var scope = _scopeFactory.CreateScope();
             using (var dbActions = scope.ServiceProvider.GetRequiredService<ActionContext>())
             {
                 try
@@ -33,6 +34,7 @@ namespace WebServer.Models.Action
 
         public void ActionSavePayment(int actionCode, string userID, ulong? actionStationId, ulong? actionPowerBankId, float paymentAmount, string paymentInfo)
         {
+            using var scope = _scopeFactory.CreateScope();
             using (var dbActions = scope.ServiceProvider.GetRequiredService<ActionContext>())
             {
                 try
@@ -65,6 +67,7 @@ namespace WebServer.Models.Action
         /// </summary>
         public bool UpdatePaymentInfo(string sessionId, string customerName, string paymentInfo)
         {
+            using var scope = _scopeFactory.CreateScope();
             using (var dbActions = scope.ServiceProvider.GetRequiredService<ActionContext>())
             {
                 try

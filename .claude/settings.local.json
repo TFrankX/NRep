@@ -21,7 +21,20 @@
       "Bash(/usr/local/share/dotnet/dotnet list:*)",
       "Bash(cat /Users/tomfrank/repository/ShareCharging/WebServer/logs/errors/*.log)",
       "Bash(cat /Users/tomfrank/repository/ShareCharging/WebServer/logs/*.log)",
-      "Bash(tail -100 /Users/tomfrank/repository/ShareCharging/WebServer/logs/nlog-webserver-*.log)"
+      "Bash(tail -100 /Users/tomfrank/repository/ShareCharging/WebServer/logs/nlog-webserver-*.log)",
+      "Read(//usr/local/share/dotnet/**)",
+      "Bash(brew list:*)",
+      "Bash(/usr/bin/git status:*)",
+      "Bash(/usr/local/share/dotnet/dotnet ef:*)",
+      "Bash(/usr/local/share/dotnet/dotnet tool:*)",
+      "Bash(export PATH=\"$PATH:/Users/tomfrank/.dotnet/tools\")",
+      "Bash(export PATH=\"/usr/local/share/dotnet:$PATH:/Users/tomfrank/.dotnet/tools\")",
+      "Bash(dotnet ef:*)",
+      "Bash(tail -100 logs/*.log)",
+      "Bash(find . -name *.log -mmin -10)",
+      "Bash(grep -r \"ASPNETCORE_ENVIRONMENT\" ./bin/Debug/net7.0/*.json)",
+      "Bash(echo $ASPNETCORE_ENVIRONMENT)",
+      "Bash(echo:*)"
     ]
   }
 }

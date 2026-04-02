@@ -58,6 +58,8 @@ namespace WebServer.Models.Action
         {
             get { return ActionStationId.ToString(); }
         }
+        [NotMapped]
+        public string DeviceName { get; set; }
 
         public ulong ActionPowerBankId { get; set; }
         [NotMapped]

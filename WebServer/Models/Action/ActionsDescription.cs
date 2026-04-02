@@ -56,7 +56,7 @@ namespace WebServer.Models.Action
         StationFindNew = 0x250,
 
 
-        [Description("take powerbank")]
+        [Description("taken")]
         PowerBankTake = 0x310,
 
         [Description("insert powerbank")]
@@ -65,7 +65,7 @@ namespace WebServer.Models.Action
         [Description("found the new powerbank")]
         PowerBankFindNew = 0x330,
 
-        [Description("powerbank returned")]
+        [Description("returned")]
         PowerBankReturn = 0x340,
 
         // Payment

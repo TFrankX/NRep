@@ -14,6 +14,8 @@ namespace WebServer.Services.Settings
         Task SetAsync(string category, string key, string value, string modifiedBy);
         Task<List<PricingPlanSettings>> GetPricingPlansAsync();
         Task SavePricingPlanAsync(PricingPlanSettings plan, string modifiedBy);
+        Task<SupportSettings> GetSupportSettingsAsync();
+        Task SaveSupportSettingsAsync(SupportSettings support, string modifiedBy);
     }
 
     public class AppSettingsService : IAppSettingsService
@@ -141,6 +143,35 @@ namespace WebServer.Services.Settings
             _pricingService.ReloadPlans();
 
             _logger.LogInformation("Pricing plan {Plan} saved and reloaded by {User}", plan.PlanName, modifiedBy);
+        }
+
+        public async Task<SupportSettings> GetSupportSettingsAsync()
+        {
+            var settings = await GetByCategoryAsync("Support");
+
+            var result = new SupportSettings
+            {
+                Phone = GetSettingValue(settings, "Phone", "+357 99 123 456"),
+                Email = GetSettingValue(settings, "Email", "support@a-charger.com"),
+                WorkingHours = GetSettingValue(settings, "WorkingHours", "24/7")
+            };
+
+            _logger.LogDebug("GetSupportSettingsAsync: Found {Count} settings in Support category. Phone={Phone}, Email={Email}",
+                settings.Count, result.Phone, result.Email);
+
+            return result;
+        }
+
+        public async Task SaveSupportSettingsAsync(SupportSettings support, string modifiedBy)
+        {
+            _logger.LogInformation("SaveSupportSettingsAsync: Saving Phone={Phone}, Email={Email}, WorkingHours={WorkingHours} by {User}",
+                support.Phone, support.Email, support.WorkingHours, modifiedBy);
+
+            await SetAsync("Support", "Phone", support.Phone, modifiedBy);
+            await SetAsync("Support", "Email", support.Email, modifiedBy);
+            await SetAsync("Support", "WorkingHours", support.WorkingHours, modifiedBy);
+
+            _logger.LogInformation("Support settings saved successfully by {User}", modifiedBy);
         }
 
         private static T GetSettingValue<T>(List<AppSetting> settings, string key, T defaultValue)

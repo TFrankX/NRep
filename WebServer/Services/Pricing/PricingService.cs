@@ -123,38 +123,57 @@ namespace WebServer.Services.Pricing
 
         public float CalculateCost(TypeOfUse typeOfUse, DateTime rentalStartTime, bool powerBankTaken)
         {
-            var plan = GetPlan(typeOfUse);
-            var duration = DateTime.Now - rentalStartTime;
-
-            // If returned within 1 minute, no charge
-            if (duration.TotalMinutes < 1)
+            // Free modes don't charge anything
+            if (!IsPaidOption(typeOfUse))
             {
                 return 0;
             }
 
-            float cost;
+            var plan = GetPlan(typeOfUse);
+            var duration = DateTime.Now - rentalStartTime;
 
-            if (duration.Days == 0)
+            // If returned within 1 minute, no charge (grace period)
+            if (duration.TotalMinutes < 1)
             {
-                // First day: base fee + hourly rate
-                cost = plan.BaseFee + (float)Math.Ceiling(duration.TotalHours) * plan.HourlyRate;
+                return 0;
             }
-            else
-            {
-                // Subsequent days: first day max + daily rate for additional days
-                float firstDayCost = plan.BaseFee + 24 * plan.HourlyRate;
-                float additionalDaysCost = duration.Days * plan.DailyRate;
-                cost = firstDayCost + additionalDaysCost;
-            }
-
-            // Cap at hold amount (max charge)
-            cost = Math.Min(cost, plan.HoldAmount);
 
             // If powerbank not taken (still held), return full daily rate as estimate
             if (!powerBankTaken)
             {
                 return plan.DailyRate;
             }
+
+            // Алгоритм расчёта:
+            // 1. До 1 часа: BaseFee (фиксированная плата за первый час)
+            // 2. Больше 1 часа: количество часов × HourlyRate (BaseFee не учитывается)
+            // 3. Лимит за первые сутки: DailyRate
+            // 4. После суток: количество дней × DailyRate
+            // 5. Общий лимит: HoldAmount
+
+            float cost;
+
+            if (duration.TotalHours <= 1)
+            {
+                // До 1 часа - только BaseFee
+                cost = plan.BaseFee;
+            }
+            else if (duration.TotalHours < 24)
+            {
+                // Больше часа - только почасовая ставка (BaseFee не добавляется)
+                int hours = (int)Math.Ceiling(duration.TotalHours);
+                float hourlyCost = hours * plan.HourlyRate;
+                cost = Math.Min(hourlyCost, plan.DailyRate);
+            }
+            else
+            {
+                // После суток - количество дней × DailyRate
+                int days = (int)Math.Ceiling(duration.TotalDays);
+                cost = days * plan.DailyRate;
+            }
+
+            // Общий лимит - сумма блокировки (HoldAmount)
+            cost = Math.Min(cost, plan.HoldAmount);
 
             return (float)Math.Round(cost, 2);
         }

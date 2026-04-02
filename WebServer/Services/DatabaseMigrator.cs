@@ -14,7 +14,7 @@ namespace WebServer.Services
         private readonly IConfiguration _configuration;
 
         // Current schema version - increment when adding new migrations
-        private const int CURRENT_SCHEMA_VERSION = 2;
+        private const int CURRENT_SCHEMA_VERSION = 4;
 
         public DatabaseMigrator(IServiceProvider serviceProvider, ILogger<DatabaseMigrator> logger, IConfiguration configuration)
         {
@@ -29,6 +29,7 @@ namespace WebServer.Services
 
             try
             {
+
                 // Migrate Actions database
                 var actionsConnStr = _configuration.GetConnectionString("DbActions");
                 if (!string.IsNullOrEmpty(actionsConnStr))
@@ -140,6 +141,12 @@ namespace WebServer.Services
                 // v2.1: Fix pricing values (comma to dot issue)
                 await MigrateAppSettings_v2_1_FixPricingValuesAsync(connection);
 
+                // v3: Add TotalEarnings column to PowerBank
+                await MigratePowerBank_v3_TotalEarningsAsync(connection);
+
+                // v4: Seed default support settings
+                await MigrateAppSettings_v4_SeedSupportAsync(connection);
+
                 _logger.LogInformation("Device database migration completed");
             }
             catch (Exception ex)
@@ -215,6 +222,21 @@ namespace WebServer.Services
             await AddColumnIfNotExistsAsync(connection, "PowerBank", "ReserveTime", "timestamp without time zone", "NULL");
             await AddColumnIfNotExistsAsync(connection, "PowerBank", "PaymentInfo", "text", "''");
             await AddColumnIfNotExistsAsync(connection, "PowerBank", "SessionId", "text", "''");
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigratePowerBank_v3_TotalEarningsAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "PowerBank_v3_TotalEarnings";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            // Add TotalEarnings column for cumulative earnings tracking
+            await AddColumnIfNotExistsAsync(connection, "PowerBank", "TotalEarnings", "real", "0");
 
             await RecordMigrationAsync(connection, migrationName);
         }
@@ -337,6 +359,23 @@ namespace WebServer.Services
 
             if (affected > 0)
                 _logger.LogInformation("Fixed {Count} pricing values with comma separator", affected);
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateAppSettings_v4_SeedSupportAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "AppSettings_v4_SeedSupport";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            // Default support settings
+            await InsertSettingIfNotExistsAsync(connection, "Support", "Phone", "+357 99 123 456", "string", "Support phone number", 0);
+            await InsertSettingIfNotExistsAsync(connection, "Support", "Email", "support@a-charger.com", "string", "Support email", 1);
+            await InsertSettingIfNotExistsAsync(connection, "Support", "WorkingHours", "24/7", "string", "Support working hours", 2);
 
             await RecordMigrationAsync(connection, migrationName);
         }

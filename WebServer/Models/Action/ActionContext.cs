@@ -15,7 +15,7 @@ namespace WebServer.Models.Action
             {
                 //TableName = "DevActions";
                 Database.EnsureCreated();
-            
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -51,12 +51,14 @@ namespace WebServer.Models.Action
                 // Station
                 if ((actLine.ActionCode & 0x0200) == 0x0200)
                 {
-                    text = $"Station {actLine.ActionStationId} - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))}";
+                    var stationName = !string.IsNullOrEmpty(actLine.DeviceName) ? actLine.DeviceName : actLine.ActionStationId.ToString();
+                    text = $"Station {stationName} - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))}";
                 }
                 // Powerbank
                 if ((actLine.ActionCode & 0x0300) == 0x0300)
                 {
-                    text = $"Powerbank {actLine.ActionPowerBankId} in device {actLine.ActionStationId} slot {actLine.ActionPowerBankSlot} - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} user {actLine.UserId}";
+                    var stationName = !string.IsNullOrEmpty(actLine.DeviceName) ? actLine.DeviceName : actLine.ActionStationId.ToString();
+                    text = $"Powerbank {actLine.ActionPowerBankId} in device {stationName} slot {actLine.ActionPowerBankSlot} - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} by user {actLine.UserId}";
                 }
 
                 // User
@@ -68,7 +70,8 @@ namespace WebServer.Models.Action
                 // Payment
                 if ((actLine.ActionCode & 0x4000) == 0x4000)
                 {
-                    text = $"Payment {actLine.PaymentAmount} EUR - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} for powerbank {actLine.ActionPowerBankId} station {actLine.ActionStationId}. {actLine.PaymentInfo}";
+                    var stationName = !string.IsNullOrEmpty(actLine.DeviceName) ? actLine.DeviceName : actLine.ActionStationId.ToString();
+                    text = $"Payment {actLine.PaymentAmount} EUR - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} for powerbank {actLine.ActionPowerBankId} station {stationName}. {actLine.PaymentInfo}";
                 }
                 actLine.ActionText = text;
             }

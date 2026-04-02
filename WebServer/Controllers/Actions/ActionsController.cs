@@ -59,10 +59,40 @@ namespace WebServer.Controllers.Device
 
 
         [Authorize]
-        public async Task<ActionResult> Refresh()
+        public async Task<ActionResult> Refresh(DateTime? fromDate = null, DateTime? toDate = null, string period = "day")
         {
             try
             {
+                // Определяем диапазон дат
+                DateTime dateFrom, dateTo;
+                dateTo = DateTime.Now;
+
+                if (fromDate.HasValue && toDate.HasValue)
+                {
+                    // Пользовательский диапазон
+                    dateFrom = fromDate.Value;
+                    dateTo = toDate.Value;
+                }
+                else
+                {
+                    // Предустановленные периоды
+                    switch (period?.ToLower())
+                    {
+                        case "hour":
+                            dateFrom = DateTime.Now.AddHours(-1);
+                            break;
+                        case "month":
+                            dateFrom = DateTime.Now.AddMonths(-1);
+                            break;
+                        case "all":
+                            dateFrom = DateTime.MinValue;
+                            break;
+                        case "day":
+                        default:
+                            dateFrom = DateTime.Now.AddDays(-1);
+                            break;
+                    }
+                }
                 //var userId = userManager.GetUserId(User);
                 //var user = await userManager.FindByIdAsync(userId);
                 //var roles = await userManager.GetRolesAsync(user);
@@ -128,26 +158,44 @@ namespace WebServer.Controllers.Device
                     var allowAdmin = roles.Contains("admin");
 
 
+                    // Получаем словарь устройств для поиска DeviceName по Id
+                    var devicesDict = scanDevices.DevicesData.Devices.ToDictionary(d => d.Id, d => d.DeviceName);
+
                     if (allowAdminAndManager)
                     {
-
-                        var actionsTable = db.Actions.ToList();
+                        var query = db.Actions.AsQueryable();
+                        if (dateFrom != DateTime.MinValue)
+                        {
+                            query = query.Where(a => a.ActionTime >= dateFrom && a.ActionTime <= dateTo);
+                        }
+                        var actionsTable = query.OrderByDescending(a => a.ActionTime).ToList();
                         foreach (var actLine in actionsTable)
                         {
+                            // Сначала заполняем DeviceName, потом вызываем FillText
+                            actLine.DeviceName = devicesDict.TryGetValue(actLine.ActionStationId, out var name) && !string.IsNullOrEmpty(name)
+                                ? name
+                                : actLine.ActionStationId.ToString();
                             db.FillText(actLine);
                         }
-                        //return Vaiew("ActionsAdmin", model);
                         return Json(actionsTable, new JsonSerializerOptions { PropertyNamingPolicy = null });
                     }
                     else
                     {
                         var deviceList = scanDevices.DevicesData.Devices.Where(p => p.Owners == user.UserName).ToList<WebServer.Models.Device.Device>();
-                        var actionsTable = db.Actions.Where(a => deviceList.Select(b => b.Owners).Contains(a.UserId));
+                        var query = db.Actions.Where(a => deviceList.Select(b => b.Owners).Contains(a.UserId));
+                        if (dateFrom != DateTime.MinValue)
+                        {
+                            query = query.Where(a => a.ActionTime >= dateFrom && a.ActionTime <= dateTo);
+                        }
+                        var actionsTable = query.OrderByDescending(a => a.ActionTime).ToList();
                         foreach (var actLine in actionsTable)
                         {
+                            // Сначала заполняем DeviceName, потом вызываем FillText
+                            actLine.DeviceName = devicesDict.TryGetValue(actLine.ActionStationId, out var name2) && !string.IsNullOrEmpty(name2)
+                                ? name2
+                                : actLine.ActionStationId.ToString();
                             db.FillText(actLine);
                         }
-                        var actionsUserTable = actionsTable.Select(a => new { a.ActionTime, a.ActionStationId, a.ActionPowerBankId, a.ActionText }).ToList();
 
                         return Json(actionsTable, new JsonSerializerOptions { PropertyNamingPolicy = null });
                     }
@@ -216,8 +264,15 @@ namespace WebServer.Controllers.Device
 
                 var actionsTable = actionsQuery.ToList();
 
+                // Получаем словарь устройств для поиска DeviceName по Id
+                var devicesDict = scanDevices.DevicesData.Devices.ToDictionary(d => d.Id, d => d.DeviceName);
+
                 foreach (var actLine in actionsTable)
                 {
+                    // Сначала заполняем DeviceName, потом вызываем FillText
+                    actLine.DeviceName = devicesDict.TryGetValue(actLine.ActionStationId, out var name) && !string.IsNullOrEmpty(name)
+                        ? name
+                        : actLine.ActionStationId.ToString();
                     db.FillText(actLine);
                 }
 

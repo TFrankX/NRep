@@ -274,7 +274,7 @@ namespace WebServer.Controllers.Stripe
                         }
                     }
 
-                    // Update the action record
+                    // Update the action record (PaymentHold action)
                     _actionProcess.UpdatePaymentInfo(session_id, customerName, paymentInfo);
 
                     _logger.LogInformation("Payment success: SessionId={SessionId}, Customer={Customer}, Card={Card}",

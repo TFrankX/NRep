@@ -73,9 +73,25 @@ namespace WebServer
             }
             else if (dbType == "postgress")
             {
-                services.AddDbContextPool<DeviceContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DbDevice")));
-                services.AddDbContext<AppIdentityContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DbAppAccounts")));
-                services.AddDbContextPool<ActionContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DbActions")));
+                // EnableRetryOnFailure автоматически повторяет запросы при временных сбоях сети
+                services.AddDbContextPool<DeviceContext>(options => options.UseNpgsql(
+                    Configuration.GetConnectionString("DbDevice"),
+                    npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorCodesToAdd: null)));
+                services.AddDbContext<AppIdentityContext>(options => options.UseNpgsql(
+                    Configuration.GetConnectionString("DbAppAccounts"),
+                    npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorCodesToAdd: null)));
+                services.AddDbContextPool<ActionContext>(options => options.UseNpgsql(
+                    Configuration.GetConnectionString("DbActions"),
+                    npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorCodesToAdd: null)));
 
             }
             else
@@ -120,7 +136,7 @@ namespace WebServer
 
             services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.IdleTimeout = TimeSpan.FromMinutes(10);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
@@ -168,6 +184,7 @@ namespace WebServer
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime hostAapplicationLifetime,IServiceScopeFactory scopeFactory)
         {
             ScopeFactory = scopeFactory;
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

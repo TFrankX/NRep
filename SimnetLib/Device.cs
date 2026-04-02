@@ -57,7 +57,7 @@ namespace SimnetLib
         private string deviceName;
         private string login;
         private string pass;
-        private string clientName="DeviceLibrary_" +  new System.Net.WebClient().DownloadString("https://api.ipify.org");
+        private string clientName = "DeviceLibrary_" + Environment.MachineName + "_" + Guid.NewGuid().ToString("N").Substring(0, 8);
         private string certCA;
         private string certCli;
         private string certPass;

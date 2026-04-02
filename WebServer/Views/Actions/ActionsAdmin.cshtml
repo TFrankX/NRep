@@ -1,4 +1,6 @@
-﻿  <script src="~/jqwidgets/jqxbuttons.js"></script>
+﻿<script src="~/jqwidgets/jqxcore.js"></script>
+<script src="~/jqwidgets/jqxdata.js"></script>
+<script src="~/jqwidgets/jqxbuttons.js"></script>
 <script src="~/jqwidgets/jqxscrollbar.js"></script>
 <script src="~/jqwidgets/jqxgrid.js"></script>
 <script src="~/jqwidgets/jqxgrid.edit.js"></script>
@@ -13,11 +15,12 @@
 <script src="~/jqwidgets/jqxlistbox.js"></script>
 <script src="~/jqwidgets/jqxdropdownlist.js"></script>
 <script src="~/jqwidgets/jqxwindow.js"></script>
-<script src="~/jqwidgets/jqxcore.js"></script>
-<script src="~/jqwidgets/jqxdata.js"></script>
 <script src="~/jqwidgets/jqxdraw.js"></script>
 <script src="~/jqwidgets/jqxchart.core.js"></script>
 <script src="~/jqwidgets/jqxchart.rangeselector.js"></script>
+<script src="~/jqwidgets/jqxcalendar.js"></script>
+<script src="~/jqwidgets/jqxdatetimeinput.js"></script>
+<script src="~/jqwidgets/globalization/globalize.js"></script>
 
 
 
@@ -123,45 +126,68 @@
             isFirstLoad = false;
         }
 
+        // Текущий период и пользовательские даты
+        var currentPeriod = 'day';
+        var customFromDate = null;
+        var customToDate = null;
+
         function refresh() {
             showLoader();
+
+            var url = '@Url.Action("Refresh", "Actions")' + '?period=' + currentPeriod;
+            if (customFromDate && customToDate) {
+                url = '@Url.Action("Refresh", "Actions")' + '?fromDate=' + customFromDate.toISOString() + '&toDate=' + customToDate.toISOString();
+            }
+
             $.ajax({
-                type: "POST",
-                url: '@Url.Action("Refresh", "Actions")',
-                contentType: 'application/json',
-                data: JSON.stringify({ cnt: 0 }),
+                type: "GET",
+                url: url,
                 success: function(Data) {
-                    var strData = JSON.stringify(Data,
-                        function(key, value) {
-                            if (value && typeof value === 'object') {
-                                var replacement = {};
-                                for (var k in value) {
-                                    if (Object.hasOwnProperty.call(value, k)) {
-                                        replacement[k && k.charAt(0).toUpperCase() + k.substring(1)] = value[k];
-                                    }
-                                }
-                                return replacement;
-                            }
-                            return value;
-                        });
                     source.localdata = Data;
                     if (!newdata) {
                         $("#jqxgrid").jqxGrid({ source: source });
                         newdata = true;
+                        $("#jqxgrid").jqxGrid('autoresizecolumn', 'ActionText');
                     }
-
-                    //
-                    //$("#jqxgrid").trigger('reloadGrid');
-                    //$("#jqxgrid").jqxGrid('refresh');
-                    $("#jqxgrid").jqxGrid('updatebounddata', 'sort');
-                    //$("#jqxgrid").jqxGrid('updatebounddata', 'filter');
-                    //alert('x');
+                    $("#jqxgrid").jqxGrid('updatebounddata', 'data');
+                    $('#recordCount').text(Data.length + ' records');
                     hideLoader();
                 },
                 error: function() {
                     hideLoader();
                 }
             });
+        }
+
+        function setPeriod(period) {
+            currentPeriod = period;
+            customFromDate = null;
+            customToDate = null;
+
+            // Обновляем активную кнопку
+            $('.period-btn').removeClass('active');
+            $('#btn-' + period).addClass('active');
+            $('#customRangeInfo').hide();
+
+            refresh();
+        }
+
+        function applyCustomRange() {
+            var fromDate = $('#dateFrom').jqxDateTimeInput('getDate');
+            var toDate = $('#dateTo').jqxDateTimeInput('getDate');
+
+            if (fromDate && toDate) {
+                customFromDate = fromDate;
+                customToDate = toDate;
+                currentPeriod = 'custom';
+
+                $('.period-btn').removeClass('active');
+                $('#customRangeInfo').show().text(
+                    fromDate.toLocaleDateString() + ' - ' + toDate.toLocaleDateString()
+                );
+
+                refresh();
+            }
         }
 
 
@@ -186,18 +212,44 @@
         {
             datatype: "json",
             datafields: [
-//                { name: 'ActionTime', type: 'date', format: "yyyy-MM-ddTHH:mm:ss.fff"},
                 { name: 'ActionTime', type: 'date' },
                 { name: 'ActionCode', type: 'numeric' },
                 { name: 'UserId', type: 'string' },
-                { name: 'ActionServerId_Str', type: 'string' },
-                { name: 'ActionStationId_Str', type: 'string' },
+                { name: 'DeviceName', type: 'string' },
                 { name: 'ActionPowerBankId_Str', type: 'string' },
                 { name: 'ActionPowerBankSlot', type: 'string' },
                 { name: 'ActionText', type: 'string' }
             ]
 
         };
+
+        // Колонки для скрытия в компактном виде
+        var compactHiddenColumns = ['ActionCode', 'UserId', 'DeviceName', 'ActionPowerBankId_Str', 'ActionPowerBankSlot'];
+
+        function toggleView() {
+            var isCompact = localStorage.getItem('actionsCompactView') === 'true';
+            isCompact = !isCompact;
+            localStorage.setItem('actionsCompactView', isCompact);
+            applyView(isCompact);
+        }
+
+        function applyView(isCompact) {
+            if (isCompact) {
+                compactHiddenColumns.forEach(function(col) {
+                    $("#jqxgrid").jqxGrid('hidecolumn', col);
+                });
+                $('#viewToggle').addClass('active');
+                $('#viewToggleText').text('Full View');
+                $('#viewToggleIcon').removeClass('fa-compress').addClass('fa-expand');
+            } else {
+                compactHiddenColumns.forEach(function(col) {
+                    $("#jqxgrid").jqxGrid('showcolumn', col);
+                });
+                $('#viewToggle').removeClass('active');
+                $('#viewToggleText').text('Compact');
+                $('#viewToggleIcon').removeClass('fa-expand').addClass('fa-compress');
+            }
+        }
 
 
         var dataAdapter = new $.jqx.dataAdapter(source);
@@ -219,22 +271,46 @@
                     height: 720,
                     columnsresize: true,
                     columns: [
-                        { text: "Time", datafield: "ActionTime", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Action Code", datafield: "ActionCode", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "User", datafield: "UserId", width: "10%", cellsrenderer: cellsrenderer },
-                        { text: "Server Id", datafield: "ActionServerId_Str", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Station Id", datafield: "ActionStationId_Str", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "PowerBank Id", datafield: "ActionPowerBankId_Str", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "PowerBank Slot", datafield: "ActionPowerBankSlot", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "ActionText", datafield: "ActionText", width: "55%", cellsrenderer: cellsrenderer },
+                        { text: "Time", datafield: "ActionTime", width: 160, cellsrenderer: cellsrenderer },
+                        { text: "Action Code", datafield: "ActionCode", width: 100, cellsrenderer: cellsrenderer },
+                        { text: "User", datafield: "UserId", width: 100, cellsrenderer: cellsrenderer },
+                        { text: "Device", datafield: "DeviceName", width: 140, cellsrenderer: cellsrenderer },
+                        { text: "PowerBank Id", datafield: "ActionPowerBankId_Str", width: 150, cellsrenderer: cellsrenderer },
+                        { text: "Slot", datafield: "ActionPowerBankSlot", width: 50, cellsrenderer: cellsrenderer },
+                        { text: "Action Text", datafield: "ActionText", minwidth: 400, cellsrenderer: cellsrenderer },
                      ]
                 });
+            // Инициализация date picker
+            var now = new Date();
+            var weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+
+            $("#dateFrom").jqxDateTimeInput({
+                width: 190,
+                height: 32,
+                theme: 'material-purple',
+                formatString: 'dd.MM.yyyy HH:mm',
+                showTimeButton: true,
+                value: weekAgo
+            });
+
+            $("#dateTo").jqxDateTimeInput({
+                width: 190,
+                height: 32,
+                theme: 'material-purple',
+                formatString: 'dd.MM.yyyy HH:mm',
+                showTimeButton: true,
+                value: now
+            });
+
             refresh();
-            // Sort by ActionTime descending (newest first)
-            $("#jqxgrid").jqxGrid('sortby', 'ActionTime', 'desc');
             $("#jqxWidget").css('display', 'block');
 
-
+            // Применяем сохранённый режим просмотра
+            var isCompact = localStorage.getItem('actionsCompactView') === 'true';
+            if (isCompact) {
+                applyView(true);
+            }
         });
 
 
@@ -416,14 +492,112 @@
 
         .grid-container {
             position: relative;
+            overflow-x: auto;
+        }
+
+        #jqxgrid {
+            min-width: 1200px;
+        }
+
+        .filter-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .period-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .period-btn {
+            padding: 8px 16px;
+            border: 1px solid #E5E7EB;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6B7280;
+            transition: all 0.2s;
+        }
+
+        .period-btn:hover {
+            border-color: #7C3AED;
+            color: #7C3AED;
+        }
+
+        .period-btn.active {
+            background: #7C3AED;
+            border-color: #7C3AED;
+            color: white;
+        }
+
+        .date-range-picker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .date-range-picker label {
+            font-size: 0.85rem;
+            color: #6B7280;
+        }
+
+        #customRangeInfo {
+            display: none;
+            padding: 6px 12px;
+            background: #EDE9FE;
+            color: #7C3AED;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        #recordCount {
+            margin-left: auto;
+            font-size: 0.85rem;
+            color: #6B7280;
         }
     </style>
 
 
 
-<div class="page-header">
-    <h1><i class="fas fa-list-alt"></i> Actions Log</h1>
-    <p class="page-subtitle">System events and user actions</p>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+        <h1><i class="fas fa-list-alt"></i> Actions Log</h1>
+        <p class="page-subtitle">System events and user actions</p>
+    </div>
+    <button id="viewToggle" class="btn-acharger btn-secondary-acharger" onclick="toggleView()" style="white-space: nowrap;">
+        <i id="viewToggleIcon" class="fas fa-compress"></i>
+        <span id="viewToggleText">Compact</span>
+    </button>
+</div>
+
+<div class="filter-toolbar">
+    <div class="period-buttons">
+        <button id="btn-hour" class="period-btn" onclick="setPeriod('hour')">Hour</button>
+        <button id="btn-day" class="period-btn active" onclick="setPeriod('day')">Day</button>
+        <button id="btn-month" class="period-btn" onclick="setPeriod('month')">Month</button>
+        <button id="btn-all" class="period-btn" onclick="setPeriod('all')">All</button>
+    </div>
+    <div class="date-range-picker">
+        <label>From:</label>
+        <div id="dateFrom"></div>
+        <label>To:</label>
+        <div id="dateTo"></div>
+        <button class="period-btn" onclick="applyCustomRange()">
+            <i class="fas fa-filter"></i> Apply
+        </button>
+    </div>
+    <span id="customRangeInfo"></span>
+    <span id="recordCount">0 records</span>
 </div>
 
 <div class="grid-container">

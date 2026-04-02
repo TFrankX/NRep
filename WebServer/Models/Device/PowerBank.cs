@@ -60,7 +60,8 @@ namespace WebServer.Models.Device
         public DateTime LastPutTime { get; set; }        
         public DateTimeOffset ClientTime { get; set; }
         public float Price { get; set; }
-        public float Cost { get; set; }
+        public float Cost { get; set; }  // Стоимость текущей/последней аренды
+        public float TotalEarnings { get; set; }  // Накопительный доход от этого PowerBank
         public DateTime LastUpdate { get; set; }
         public bool Taken { get; set; }
         public string UserId { get; set; }

@@ -69,6 +69,41 @@
             });
         });
 
+        function saveSupportSettings() {
+            var support = {
+                Phone: $('#support_phone').val(),
+                Email: $('#support_email').val(),
+                WorkingHours: $('#support_hours').val()
+            };
+
+            var btn = $('#save_support');
+            var originalText = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SaveSupportSettingsAjax", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify(support),
+                success: function(response) {
+                    btn.html('<i class="fas fa-check"></i> Saved!').removeClass('btn-primary').addClass('btn-success');
+                    setTimeout(function() {
+                        btn.html(originalText).removeClass('btn-success').addClass('btn-primary').prop('disabled', false);
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    btn.html('<i class="fas fa-times"></i> Error').removeClass('btn-primary').addClass('btn-danger');
+                    setTimeout(function() {
+                        btn.html(originalText).removeClass('btn-danger').addClass('btn-primary').prop('disabled', false);
+                    }, 2000);
+                    alert('Failed to save: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
+
         function reloadDatabase() {
             var btn = $('#btnReloadDb');
             var resultDiv = $('#reloadResult');
@@ -414,6 +449,10 @@
                 <i class="fas fa-tags"></i>
                 <span>Pricing Plans</span>
             </a>
+            <a href="#" class="settings-nav-item @(Model.ActiveSection == "support" ? "active" : "")" data-section="support">
+                <i class="fas fa-headset"></i>
+                <span>Support</span>
+            </a>
             <a href="#" class="settings-nav-item @(Model.ActiveSection == "notifications" ? "active" : "")" data-section="notifications">
                 <i class="fas fa-bell"></i>
                 <span>Notifications</span>
@@ -506,6 +545,43 @@
                         </div>
                     </div>
                 }
+            </div>
+        </div>
+
+        <!-- Support Section -->
+        <div id="section-support" class="settings-section" style="@(Model.ActiveSection == "support" ? "display: block;" : "")">
+            <div class="section-header">
+                <h2>Support Contacts</h2>
+                <p>Configure support phone and email displayed to customers.</p>
+            </div>
+
+            <div class="system-card" style="max-width: 500px;">
+                <div class="system-card-header">
+                    <i class="fas fa-headset"></i>
+                    <div>
+                        <h4>Customer Support</h4>
+                        <p>Contact information for customers</p>
+                    </div>
+                </div>
+                <div class="system-card-body">
+                    <div class="setting-row">
+                        <span class="setting-label">Phone Number</span>
+                        <input type="tel" class="setting-input wide" id="support_phone" value="@Model.Support.Phone" placeholder="+357 99 123 456">
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Email</span>
+                        <input type="email" class="setting-input wide" id="support_email" value="@Model.Support.Email" placeholder="support@example.com">
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Working Hours</span>
+                        <input type="text" class="setting-input wide" id="support_hours" value="@Model.Support.WorkingHours" placeholder="24/7">
+                    </div>
+                </div>
+                <div class="system-card-footer">
+                    <button type="button" class="btn-save-plan" id="save_support" onclick="saveSupportSettings()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
             </div>
         </div>
 

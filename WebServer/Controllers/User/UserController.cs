@@ -34,6 +34,7 @@ using System.Drawing;
 using WebServer.Models.Stripe;
 using WebServer.Services.Stripe;
 using WebServer.Services.Pricing;
+using WebServer.Services.Settings;
 
 
 
@@ -45,6 +46,16 @@ namespace WebServer.Controllers.User
         public string DeviceId { get; set; }
     }
 
+    public class PowerBankInfo
+    {
+        public string PowerBankId { get; set; } = "";
+        public string Time { get; set; } = "-";
+        public string StartTime { get; set; } = "-";
+        public float Cost { get; set; }
+        public ulong StationId { get; set; }
+        public bool Returned { get; set; } = false;
+    }
+
     public class PayInfo
     {
         public int Taken;
@@ -52,6 +63,12 @@ namespace WebServer.Controllers.User
         public string Time;
         public float Cost;
         public int Available;
+        public List<PowerBankInfo> PowerBanks { get; set; } = new List<PowerBankInfo>();
+        public bool CanTakeMore { get; set; }
+        public ulong StationId { get; set; }
+        public string TypeOfUse { get; set; } = "";
+        public string SupportPhone { get; set; } = "+357 99 123 456";
+        public string SupportEmail { get; set; } = "support@a-charger.com";
 
         public PayInfo()
         {
@@ -82,11 +99,12 @@ namespace WebServer.Controllers.User
         private readonly IStripeRoutines _stripeRoutines;
         private readonly IPricingService _pricingService;
         private readonly ISmsService _smsService;
+        private readonly IAppSettingsService _appSettingsService;
 
         private readonly HttpClient _httpClient;
 
 
-        public UserController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<UserController> logger, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IStripeRoutines stripeRoutines, IPricingService pricingService, ISmsService smsService)
+        public UserController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<UserController> logger, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IStripeRoutines stripeRoutines, IPricingService pricingService, ISmsService smsService, IAppSettingsService appSettingsService)
         {
             userManager = _userManager;
             Logger = logger;
@@ -98,6 +116,7 @@ namespace WebServer.Controllers.User
             _stripeRoutines = stripeRoutines;
             _pricingService = pricingService;
             _smsService = smsService;
+            _appSettingsService = appSettingsService;
         }
 
         //public IActionResult InitiatePayment(StripeCheckout paymentRequest)
@@ -216,6 +235,12 @@ namespace WebServer.Controllers.User
         public async Task<IActionResult> AlreadyPaid( string session_Id,  string stationId, string powerBankId)
         {
             PayInfo payInfo = new PayInfo();
+
+            // Загружаем настройки поддержки
+            var supportSettings = await _appSettingsService.GetSupportSettingsAsync();
+            payInfo.SupportPhone = supportSettings.Phone;
+            payInfo.SupportEmail = supportSettings.Email;
+
             ulong stationIdn=0;
             ulong powerBankIdn = 0;
             if (!ulong.TryParse(stationId, out stationIdn))
@@ -317,22 +342,43 @@ namespace WebServer.Controllers.User
                 pbPush.PaymentInfo = $"Name: {session.CustomerDetails?.Name ?? "Unknown"},amount:{(session.AmountTotal / 100m).ToString()},time: {paymentDateTime?.ToString("g") ?? "Unknown".ToString()}, email:{session.CustomerDetails?.Email}, card country:{charge.PaymentMethodDetails?.Card.Country}, type: {charge.PaymentMethodDetails?.Card.Brand}, card last 4 digs: {charge.PaymentMethodDetails?.Card.Last4.ToString()}, card expired: {charge.PaymentMethodDetails?.Card.ExpMonth.ToString("D2")}/{charge.PaymentMethodDetails?.Card.ExpYear.ToString()}";
                 pbPush.Stored = false;
 
-                Logger.LogInformation($"AlreadyPaid: Pushing powerbank {pbPush.Id} from slot {pbPush.HostSlot} device {pbPush.HostDeviceName}, Plugged={pbPush.Plugged}");
+                // Для PayByCard используем имя плательщика из Stripe, а не login ID
+                var customerName = session.CustomerDetails?.Name ?? "Unknown";
 
-                var pbId = scanDevices.PushPowerBank(pbPush.HostDeviceName, pbPush.HostSlot, userId, roles);
+                Logger.LogInformation($"AlreadyPaid: Pushing powerbank {pbPush.Id} from slot {pbPush.HostSlot} device {pbPush.HostDeviceName}, Plugged={pbPush.Plugged}, Customer={customerName}");
+
+                var pbId = scanDevices.PushPowerBank(pbPush.HostDeviceName, pbPush.HostSlot, customerName, roles);
 
                 Logger.LogInformation($"AlreadyPaid: PushPowerBank returned {pbId}, pbPush.Taken={pbPush.Taken}");
 
                 if ((pbPush.Id > 1000) && (pbPush != null))
                 {
 
-                    //set the key value in Cookie 
+                    //set the key value in Cookie
                     Set("KeyCharge911", userId, 1500);
 
                     payInfo.Taken = pbPush.Taken ? 1 : 0;
                     payInfo.UserId = $"{session.CustomerDetails?.Name ?? "Unknown"}";
-                    payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
-                    payInfo.Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken);
+
+                    // Fill PowerBanks list for new UI
+                    if (pbPush.Taken)
+                    {
+                        var duration = DateTime.Now - pbPush.LastGetTime;
+                        payInfo.PowerBanks = new List<PowerBankInfo>
+                        {
+                            new PowerBankInfo
+                            {
+                                PowerBankId = pbPush.Id_str,
+                                StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
+                                Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
+                                Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken),
+                                StationId = pbPush.HostDeviceId
+                            }
+                        };
+                        payInfo.Time = payInfo.PowerBanks[0].Time;
+                        payInfo.Cost = payInfo.PowerBanks[0].Cost;
+                        payInfo.StationId = pbPush.HostDeviceId;
+                    }
 
                     return View("Do",payInfo);
 
@@ -344,9 +390,26 @@ namespace WebServer.Controllers.User
 
             payInfo.Taken = pbPush.Taken ? 1 : 0;
             payInfo.UserId = $"{ session.CustomerDetails?.Name ?? "Unknown"}";
-            //payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
-            payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes).ToString()} min" : "-";
-            payInfo.Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken);
+
+            // Fill PowerBanks list for new UI
+            if (pbPush.Taken)
+            {
+                var duration = DateTime.Now - pbPush.LastGetTime;
+                payInfo.PowerBanks = new List<PowerBankInfo>
+                {
+                    new PowerBankInfo
+                    {
+                        PowerBankId = pbPush.Id_str,
+                        StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
+                        Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
+                        Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken),
+                        StationId = pbPush.HostDeviceId
+                    }
+                };
+                payInfo.Time = payInfo.PowerBanks[0].Time;
+                payInfo.Cost = payInfo.PowerBanks[0].Cost;
+                payInfo.StationId = pbPush.HostDeviceId;
+            }
 
             return View("Do", payInfo);
 
@@ -369,16 +432,6 @@ namespace WebServer.Controllers.User
                 return StatusCode(403);
             }
 
-            //// read cookie from IHttpContextAccessor
-            //string cookieValueFromContext = _httpContextAccessor.HttpContext.Request.Cookies["KeyCharge911"];
-            ////read cookie from Request object  
-            //string cookieValueFromReq = Request.Cookies["KeyCharge911"];
-
-
-            //read cookie from Request object
-
-
-
             var device = scanDevices.DevicesData.Devices.FirstOrDefault(item => item.Id_str == deviceId);
             if (device == null)
             {
@@ -386,10 +439,13 @@ namespace WebServer.Controllers.User
                 return StatusCode(404);
             }
 
-
-
             string cookieValueFromReq = Request.Cookies["KeyCharge911"];
             PayInfo payInfo = new PayInfo();
+
+            // Загружаем настройки поддержки для всех путей
+            var supportSettings = await _appSettingsService.GetSupportSettingsAsync();
+            payInfo.SupportPhone = supportSettings.Phone;
+            payInfo.SupportEmail = supportSettings.Email;
             //foreach (PowerBank pb in scanDevices.DevicesData.PowerBanks)
             //{
             //    if (((int)pb.ChargeLevel > 3) && pb.Plugged && pb.IsOk)
@@ -414,11 +470,23 @@ namespace WebServer.Controllers.User
                 {
                     if ((pb.UserId == cookieValueFromReq) && (pb.Taken))
                     {
-                        payInfo.Taken = pb.Taken ? 1 : 0;
+                        var duration = DateTime.Now - pb.LastGetTime;
+                        payInfo.Taken = 1;
                         payInfo.UserId = cookieValueFromReq;
-                        //payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
-                        payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes).ToString()} min" : "-";
-                        payInfo.Cost = _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken);
+                        payInfo.StationId = device.Id;
+                        payInfo.PowerBanks = new List<PowerBankInfo>
+                        {
+                            new PowerBankInfo
+                            {
+                                PowerBankId = pb.Id_str,
+                                StartTime = pb.LastGetTime.ToString("dd.MM HH:mm"),
+                                Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
+                                Cost = _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken),
+                                StationId = pb.HostDeviceId
+                            }
+                        };
+                        payInfo.Time = payInfo.PowerBanks[0].Time;
+                        payInfo.Cost = payInfo.PowerBanks[0].Cost;
 
                         return View(payInfo);
                     }
@@ -594,14 +662,30 @@ namespace WebServer.Controllers.User
 
                 if ((pbId > 1000) && (pbPush != null))
                 {
-                    
-                    //set the key value in Cookie 
+
+                    //set the key value in Cookie
                     Set("KeyCharge911", userId, 1500);
 
-                    payInfo.Taken = pbPush.Taken ? 1 : 0;
-                    payInfo.UserId = userId;
-                    payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
-                    payInfo.Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken);
+                    if (pbPush.Taken)
+                    {
+                        var duration = DateTime.Now - pbPush.LastGetTime;
+                        payInfo.Taken = 1;
+                        payInfo.UserId = userId;
+                        payInfo.StationId = device.Id;
+                        payInfo.PowerBanks = new List<PowerBankInfo>
+                        {
+                            new PowerBankInfo
+                            {
+                                PowerBankId = pbPush.Id_str,
+                                StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
+                                Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
+                                Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken),
+                                StationId = pbPush.HostDeviceId
+                            }
+                        };
+                        payInfo.Time = payInfo.PowerBanks[0].Time;
+                        payInfo.Cost = payInfo.PowerBanks[0].Cost;
+                    }
                     return View(payInfo);
 
                 };
@@ -610,10 +694,22 @@ namespace WebServer.Controllers.User
 
             payInfo.Cost = 0;
             return View(payInfo);
-
-
-
         }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult DoSMS(ulong stationId)
+        {
+            var device = scanDevices.DevicesData.Devices.GetById(stationId);
+            if (device == null)
+            {
+                Logger.LogWarning($"DoSMS: Device not found: {stationId}");
+                return NotFound("Station not found");
+            }
+
+            return View("DoSMS", new UserSMS { StationId = stationId });
+        }
+
         [HttpPost("{phoneNumber}")]
         [Route("SendSMSCode")]
         [AllowAnonymous]
@@ -625,10 +721,26 @@ namespace WebServer.Controllers.User
                 return View("DoSMS", model);
             }
 
+            // Проверяем cooldown - не чаще чем раз в 3 минуты
+            var lastSentStr = HttpContext.Session.GetString("sms_last_sent");
+            if (!string.IsNullOrEmpty(lastSentStr) && DateTime.TryParse(lastSentStr, out var lastSent))
+            {
+                var elapsed = DateTime.Now - lastSent;
+                if (elapsed.TotalSeconds < 180) // 3 минуты
+                {
+                    var remaining = 180 - (int)elapsed.TotalSeconds;
+                    ViewBag.ResendCooldown = remaining;
+                    return View("DoCheckSMSCode", model);
+                }
+            }
+
             try
             {
                 string cd = _smsService.GenerateCode();
-                TempData["cd"] = cd;
+                // Сохраняем код и время отправки в Session
+                HttpContext.Session.SetString("sms_code", cd);
+                HttpContext.Session.SetString("sms_phone", model.PhoneNumber);
+                HttpContext.Session.SetString("sms_last_sent", DateTime.Now.ToString("O"));
 
                 var sent = await _smsService.SendCodeAsync(model.PhoneNumber, "takecharger", cd);
                 if (!sent)
@@ -636,6 +748,7 @@ namespace WebServer.Controllers.User
                     ModelState.AddModelError("", "Problem with sms-gate");
                     return View("DoSMS", model);
                 }
+                ViewBag.ResendCooldown = 180; // 3 минуты cooldown после отправки
                 return View("DoCheckSMSCode", model);
             }
             catch
@@ -655,13 +768,30 @@ namespace WebServer.Controllers.User
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckSMSCode(UserSMS model)
         {
-            var errors = ModelState.Values.SelectMany(v => v.Errors);
-            if (ModelState.IsValid)
+            // Получаем сохранённый код из Session
+            var savedCode = HttpContext.Session.GetString("sms_code");
+            var savedPhone = HttpContext.Session.GetString("sms_phone");
+
+            Logger.LogInformation($"CheckSMSCode: SMSCode='{model.SMSCode}', savedCode='{savedCode}', savedPhone='{savedPhone}'");
+
+            if (string.IsNullOrEmpty(savedCode))
             {
+                ModelState.AddModelError("", "SMS code expired. Please request a new code.");
+                return View("DoCheckSMSCode", model);
+            }
 
+            if (string.IsNullOrEmpty(model.SMSCode))
+            {
+                ModelState.AddModelError("SMSCode", "Please enter the SMS code");
+                return View("DoCheckSMSCode", model);
+            }
 
-                if (model.SMSCode == TempData["cd"].ToString().Trim())
-                {
+            if (model.SMSCode?.Trim() == savedCode.Trim())
+            {
+                Logger.LogInformation($"CheckSMSCode: Code matched for phone {savedPhone}");
+                    // Очищаем код после успешной проверки
+                    HttpContext.Session.Remove("sms_code");
+                    HttpContext.Session.Remove("sms_phone");
 
 
                     PayInfo payInfo = new PayInfo();
@@ -720,18 +850,322 @@ namespace WebServer.Controllers.User
                     }
                     await Task.Delay(100);
                 }
-                else
-                {
-                    ModelState.AddModelError("", "Incorrect SMS code");
-                    return View("DoSMS", model);
-                }
-
-                // return RedirectToAction("Servers", "Servers");
-
+            else
+            {
+                Logger.LogWarning($"CheckSMSCode: Code mismatch - entered '{model.SMSCode?.Trim()}' vs saved '{savedCode.Trim()}'");
+                ModelState.AddModelError("", "Incorrect SMS code");
+                return View("DoCheckSMSCode", model);
             }
-            return View("DoSMS", model);
+
+            // Сюда не должны попасть
+            return View("DoCheckSMSCode", model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckSMSCodeAjax(UserSMS model)
+        {
+            var savedCode = HttpContext.Session.GetString("sms_code");
+            var savedPhone = HttpContext.Session.GetString("sms_phone");
+
+            Logger.LogInformation($"CheckSMSCodeAjax: SMSCode='{model.SMSCode}', savedCode='{savedCode}'");
+
+            if (string.IsNullOrEmpty(savedCode))
+            {
+                return Json(new { success = false, message = "SMS code expired. Please request a new code", expired = true });
+            }
+
+            if (string.IsNullOrEmpty(model.SMSCode))
+            {
+                return Json(new { success = false, message = "Please enter the SMS code" });
+            }
+
+            if (model.SMSCode?.Trim() == savedCode.Trim())
+            {
+                Logger.LogInformation($"CheckSMSCodeAjax: Code matched for phone {savedPhone}");
+
+                // Очищаем код после успешной проверки
+                HttpContext.Session.Remove("sms_code");
+                HttpContext.Session.Remove("sms_phone");
+
+                var devicePbs = scanDevices.DevicesData.PowerBanks.Where(p => p.HostDeviceId == model.StationId).ToList<WebServer.Models.Device.PowerBank>();
+
+                Models.Device.Device device = scanDevices.DevicesData.Devices.GetById(model.StationId);
+                if (device == null)
+                {
+                    Logger.LogWarning($"CheckSMSCodeAjax: Device not found: {model.StationId}");
+                    return Json(new { success = false, message = "Station not found" });
+                }
+
+                var maxCharge = 0;
+                uint maxChargedSlot = 0;
+                foreach (PowerBank pb in devicePbs)
+                {
+                    if (!pb.Taken && pb.Plugged)
+                    {
+                        if ((int)pb.ChargeLevel > maxCharge)
+                        {
+                            maxCharge = (int)pb.ChargeLevel;
+                            maxChargedSlot = pb.HostSlot;
+                        }
+                    }
+                }
+
+                if (maxChargedSlot == 0)
+                {
+                    return Json(new { success = false, message = "No powerbanks available" });
+                }
+
+                var pbId = scanDevices.PushPowerBank(device.DeviceName, maxChargedSlot, model.PhoneNumber, new List<string> { "Guest" });
+                var pbPush = scanDevices.DevicesData.PowerBanks.GetById(pbId);
+
+                if ((pbId > 1000) && (pbPush != null))
+                {
+                    Set("KeyCharge911", model.PhoneNumber, 1500);
+
+                    // Сохраняем данные в Session
+                    HttpContext.Session.SetString("SmsUserId", model.PhoneNumber);
+                    HttpContext.Session.SetString("SmsStationId", device.Id.ToString());
+
+                    return Json(new { success = true, redirectUrl = "/User/SmsSuccess" });
+                }
+
+                // Повербанк не выдан - возможно занят или ошибка
+                return Json(new { success = false, message = "Failed to dispense powerbank. Please try again." });
+            }
+
+            Logger.LogWarning($"CheckSMSCodeAjax: Code mismatch - entered '{model.SMSCode?.Trim()}' vs saved '{savedCode.Trim()}'");
+            return Json(new { success = false, message = "The SMS code is incorrect" });
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> SmsSuccess()
+        {
+            var userId = HttpContext.Session.GetString("SmsUserId") ?? "";
+            var stationIdStr = HttpContext.Session.GetString("SmsStationId");
+            ulong stationId = 0;
+            if (!string.IsNullOrEmpty(stationIdStr))
+                ulong.TryParse(stationIdStr, out stationId);
+
+            // Очищаем одноразовые данные
+            HttpContext.Session.Remove("SmsTaken");
+            HttpContext.Session.Remove("SmsTime");
+            HttpContext.Session.Remove("SmsCost");
+
+            // Получаем все повербанки этого пользователя
+            var payInfo = await BuildPayInfoAsync(userId, stationId);
+
+            return View("Do", payInfo);
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> TakeMorePowerbank([FromBody] TakeMoreRequest request)
+        {
+            if (request == null || request.StationId == 0)
+            {
+                return Json(new { success = false, message = "Invalid request" });
+            }
+
+            // Получаем userId из cookie
+            var userId = Request.Cookies["KeyCharge911"];
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, message = "User not identified" });
+            }
+
+            var device = scanDevices.DevicesData.Devices.GetById(request.StationId);
+            if (device == null)
+            {
+                return Json(new { success = false, message = "Station not found" });
+            }
+
+            // Проверяем, разрешен ли MultiTake
+            if (device.TypeOfUse != TypeOfUse.FreeMultiTake && device.TypeOfUse != TypeOfUse.SMSTake)
+            {
+                return Json(new { success = false, message = "Multiple powerbanks not allowed for this station" });
+            }
+
+            // Проверяем сколько уже взято (максимум 4)
+            var userPbs = scanDevices.DevicesData.PowerBanks
+                .Where(p => p.UserId == userId && p.Taken)
+                .Count();
+            if (userPbs >= 4)
+            {
+                return Json(new { success = false, message = "Maximum 4 powerbanks allowed" });
+            }
+
+            // Ищем доступный повербанк
+            var devicePbs = scanDevices.DevicesData.PowerBanks
+                .Where(p => p.HostDeviceId == device.Id)
+                .ToList();
+
+            var maxCharge = 0;
+            uint maxChargedSlot = 0;
+            foreach (var pb in devicePbs)
+            {
+                if (!pb.Taken && pb.Plugged)
+                {
+                    if ((int)pb.ChargeLevel > maxCharge)
+                    {
+                        maxCharge = (int)pb.ChargeLevel;
+                        maxChargedSlot = pb.HostSlot;
+                    }
+                }
+            }
+
+            if (maxChargedSlot == 0)
+            {
+                return Json(new { success = false, message = "No powerbanks available" });
+            }
+
+            var pbId = scanDevices.PushPowerBank(device.DeviceName, maxChargedSlot, userId, new List<string> { "Guest" });
+            var pbPush = scanDevices.DevicesData.PowerBanks.GetById(pbId);
+
+            if ((pbId > 1000) && (pbPush != null))
+            {
+                Logger.LogInformation($"TakeMorePowerbank: User {userId} took additional powerbank {pbId}");
+                return Json(new { success = true });
+            }
+
+            return Json(new { success = false, message = "Failed to dispense powerbank" });
+        }
+
+        private async Task<PayInfo> BuildPayInfoAsync(string userId, ulong stationId)
+        {
+            var payInfo = new PayInfo
+            {
+                UserId = userId,
+                StationId = stationId
+            };
+
+            // Загружаем настройки поддержки
+            var supportSettings = await _appSettingsService.GetSupportSettingsAsync();
+            payInfo.SupportPhone = supportSettings.Phone;
+            payInfo.SupportEmail = supportSettings.Email;
+
+            // Получаем все повербанки этого пользователя
+            var userPbs = scanDevices.DevicesData.PowerBanks
+                .Where(p => p.UserId == userId && p.Taken)
+                .ToList();
+
+            if (userPbs.Count > 0)
+            {
+                payInfo.Taken = 1;
+                payInfo.PowerBanks = new List<PowerBankInfo>();
+
+                float totalCost = 0;
+                foreach (var pb in userPbs)
+                {
+                    var device = scanDevices.DevicesData.Devices.GetById(pb.HostDeviceId);
+                    var typeOfUse = device?.TypeOfUse ?? TypeOfUse.PayByCard;
+                    var cost = _pricingService.CalculateCost(typeOfUse, pb.LastGetTime, pb.Taken);
+                    var duration = DateTime.Now - pb.LastGetTime;
+
+                    payInfo.PowerBanks.Add(new PowerBankInfo
+                    {
+                        PowerBankId = pb.Id_str,
+                        Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
+                        StartTime = pb.LastGetTime.ToString("dd.MM HH:mm"),
+                        Cost = cost,
+                        StationId = pb.HostDeviceId
+                    });
+
+                    totalCost += cost;
+
+                    // Сохраняем StationId первого повербанка для кнопки "Take More"
+                    if (payInfo.StationId == 0)
+                        payInfo.StationId = pb.HostDeviceId;
+                }
+
+                payInfo.Cost = totalCost;
+                payInfo.Time = payInfo.PowerBanks.FirstOrDefault()?.Time ?? "-";
+
+                // Определяем, можно ли взять ещё
+                var device2 = scanDevices.DevicesData.Devices.GetById(payInfo.StationId);
+                if (device2 != null)
+                {
+                    payInfo.TypeOfUse = device2.TypeOfUse.ToString();
+
+                    // Проверяем есть ли доступные повербанки на станции
+                    var availablePbs = scanDevices.DevicesData.PowerBanks
+                        .Where(p => p.HostDeviceId == payInfo.StationId && p.Plugged && !p.Taken && !p.Reserved)
+                        .Any();
+
+                    payInfo.CanTakeMore = (device2.TypeOfUse == TypeOfUse.FreeMultiTake || device2.TypeOfUse == TypeOfUse.SMSTake)
+                                          && userPbs.Count < 4
+                                          && availablePbs;
+                }
+            }
+
+            return payInfo;
+        }
+
+        public class TakeMoreRequest
+        {
+            public ulong StationId { get; set; }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult CheckPowerBankStatus()
+        {
+            try
+            {
+                var userId = Request.Cookies["KeyCharge911"];
+                if (string.IsNullOrEmpty(userId))
+                {
+                    userId = HttpContext.Session.GetString("SmsUserId");
+                }
+
+                Logger.LogInformation("CheckPowerBankStatus: userId={UserId}", userId ?? "null");
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Json(new { success = false, message = "User not identified" });
+                }
+
+                var userPbs = scanDevices.DevicesData.PowerBanks
+                    .Where(p => p.UserId == userId && p.Taken)
+                    .ToList();
+
+                Logger.LogInformation("CheckPowerBankStatus: Found {Count} powerbanks for userId={UserId}", userPbs.Count, userId);
+
+                var powerBanks = new List<object>();
+                float totalCost = 0;
+
+                foreach (var pb in userPbs)
+                {
+                    var device = scanDevices.DevicesData.Devices.GetById(pb.HostDeviceId);
+                    var typeOfUse = device?.TypeOfUse ?? TypeOfUse.PayByCard;
+                    var cost = _pricingService.CalculateCost(typeOfUse, pb.LastGetTime, pb.Taken);
+                    var duration = DateTime.Now - pb.LastGetTime;
+
+                    powerBanks.Add(new
+                    {
+                        powerBankId = pb.Id_str,
+                        time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
+                        cost = cost
+                    });
+
+                    totalCost += cost;
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    count = powerBanks.Count,
+                    powerBanks = powerBanks,
+                    totalCost = totalCost
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "CheckPowerBankStatus error");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
 
         [Microsoft.AspNetCore.Mvc.HttpPost]
         [Authorize]

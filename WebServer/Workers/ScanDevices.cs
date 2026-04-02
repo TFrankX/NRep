@@ -46,7 +46,7 @@ namespace WebServer.Workers
         private readonly ILogger<ScanDevices> Logger;
         //private IActionTable actionTable;
         public event dReturnThePowerBank EvReturnThePowerBank;
-        IServiceScope scope;
+        // IServiceScope scope; // Removed - use _scopeFactory.CreateScope() for each operation
         private IConfiguration config;
         private ActionProcess actionProcess;
         private readonly UserManager<AppUser> userManager;
@@ -66,7 +66,7 @@ namespace WebServer.Workers
             _scopeFactory = scopeFactory;
             DevicesData = devicesData;
             Logger = logger;
-            scope = scopeFactory.CreateScope();
+            // scope removed - now creating scope per-operation to avoid concurrency issues
             _pricingService = pricingService;
             //           userManager = _userManager;
 
@@ -199,7 +199,8 @@ namespace WebServer.Workers
             // Server server = new Server("yaup.ru", 8884, "devclient", "Potato345!", 30);
             Server server = new Server(server1address, server1port, server1user, server1pass, server1reconnectTime,certCA,certCli,certPass);
             actionProcess.ActionSave((int)ActionsDescription.ServiceStart, "System", 0, 0, 0,0, "");
-            using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+            using (var startScope = _scopeFactory.CreateScope())
+            using (var dbDevice = startScope.ServiceProvider.GetRequiredService<DeviceContext>())
             {
                 AddOrUpdate(dbDevice.Server, dbDevice, c => c.Id, server);
                 server.Stored = true;
@@ -247,8 +248,8 @@ namespace WebServer.Workers
 
         private void UpdateDb()
         {
-
-            using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+            using var updateScope = _scopeFactory.CreateScope();
+            using (var dbDevice = updateScope.ServiceProvider.GetRequiredService<DeviceContext>())
             {
                
                 //dbActions.SaveChanges();
@@ -288,11 +289,16 @@ namespace WebServer.Workers
                                     Amount = pricingPlan.HoldAmount,
                                 };
 
+                                // Stripe routines автоматически логируют PaymentCapture с деталями карты
                                 using (var stripeScope = _scopeFactory.CreateScope())
                                 {
                                     var stripeRoutines = stripeScope.ServiceProvider.GetRequiredService<IStripeRoutines>();
                                     stripeRoutines.MakePostPayment(stripeCapture);
                                 }
+                                // Добавляем к накопительному доходу (полная сумма холда)
+                                powbank.TotalEarnings += pricingPlan.HoldAmount;
+                                Logger.LogInformation($"PowerBank {powbank.Id} exceeded {pricingPlan.MaxDaysBeforeCapture} days, captured full hold amount {pricingPlan.HoldAmount:F2}");
+
                                 powbank.SessionId = "";
                             }
 
@@ -355,7 +361,8 @@ namespace WebServer.Workers
 
         private void InitDevices()
         {
-            using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
+            using var initScope = _scopeFactory.CreateScope();
+            using (var dbDevice = initScope.ServiceProvider.GetRequiredService<DeviceContext>())
             {
 
                 try
@@ -780,6 +787,7 @@ namespace WebServer.Workers
 
         private void Srv_EvReturnThePowerBank(object sender, string topic, RptReturnThePowerBank data)
         {
+            Logger.LogInformation($"=== Srv_EvReturnThePowerBank EVENT received: topic={topic}, PbId={data.RlPbid}, Slot={data.RlSlot} ===");
             //EvReturnThePowerBank?.Invoke(this, topic, data);
             string dev = "";
             Device? device;
@@ -806,6 +814,12 @@ namespace WebServer.Workers
 
             lock (_powerBanksLock)
             {
+                // Игнорируем сообщения с ID=0 (пустой слот или ошибка)
+                if (data.RlPbid == 0)
+                {
+                    return;
+                }
+
                 var pb = DevicesData.PowerBanks.GetById(data.RlPbid);
                 if (pb == null)
                 {
@@ -833,9 +847,10 @@ namespace WebServer.Workers
                     pb.ChargeLevel = (PowerBankChargeLevel)data.RlQoe;
                     pb.IsOk = data.RlCode == 0 ? true : false;
                     pb.LastPutTime = DateTime.Now;
-                    //pb.Cost = pb.Price * (DateTime.Now - pb.LastGetTime).Minutes / 60;
-                    //pb.Cost = (float)Math.Round(pb.Taken ? (2 + Math.Round(((DateTime.Now - pb.LastGetTime).Hours) * pb.Price / 6)) : pb.Cost);
-                    pb.Cost = _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken);
+                    // Стоимость начисляем только если есть SessionId (оплата через Stripe)
+                    pb.Cost = !string.IsNullOrEmpty(pb.SessionId) && pb.SessionId != "\"\""
+                        ? _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken)
+                        : 0;
                     //if (DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Taken)
                     //{
                     //float cost = DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].Price * (DateTime.Now - DevicesData.PowerBanks[DevicesData.PowerBanks.FindIndex(item => item.Id == data.RlPbid)].LastGetTime).Minutes / 60;
@@ -866,9 +881,9 @@ namespace WebServer.Workers
 
 
                             //Если сначла захватываем а потом списываем:
+                            // Stripe routines автоматически логируют PaymentCapture/PaymentRelease с деталями карты
                             if (pb.Cost > 0)
                             {
-
                                 var stripeCapture = new StripeCapture
                                 {
                                     SessionId = pb.SessionId,
@@ -881,7 +896,8 @@ namespace WebServer.Workers
                                     var stripeRoutines = stripeScope.ServiceProvider.GetRequiredService<IStripeRoutines>();
                                     stripeRoutines.MakePostPayment(stripeCapture);
                                 }
-
+                                // Добавляем к накопительному доходу
+                                pb.TotalEarnings += pb.Cost;
                             }
                             else
                             {
@@ -890,7 +906,7 @@ namespace WebServer.Workers
                                     SessionId = pb.SessionId,
                                     StationId = device.Id,
                                     PowerBankId = pb.Id,
-                                    Amount = pb.Cost,
+                                    Amount = 0,
                                 };
                                 using (var stripeScope = _scopeFactory.CreateScope())
                                 {
@@ -1005,12 +1021,79 @@ namespace WebServer.Workers
                         }
                         else
                         {
+                            // Проверяем: был ли powerbank взят пользователем (offline return)?
+                            var wasTaken = pb.Taken;
+                            var returnUserId = string.IsNullOrEmpty(pb.UserId) ? "" : pb.UserId;
+                            var timeSinceTaken = DateTime.Now - pb.LastGetTime;
 
-                            // Если powerbank был не plugged (или был в другом устройстве) - это insert
-                            if (!pb.Plugged || pb.HostDeviceName != device.DeviceName)
+                            // Если powerbank был взят (Taken=true) и теперь в inventory - это ВОЗВРАТ (offline return)
+                            // Но игнорируем "возврат" если прошло меньше 2 секунд - это ложное срабатывание при выдаче
+                            if (wasTaken && timeSinceTaken.TotalSeconds >= 2)
                             {
-                                var userId = string.IsNullOrEmpty(pb.UserId) ? "" : pb.UserId;
-                                actionProcess.ActionSave((int)ActionsDescription.PowerBankInsert, userId, device.HostDeviceId, device.Id, pbank.RlPbid, pbank.RlSlot, "");
+                                // Рассчитываем стоимость аренды (только если есть SessionId - оплата через Stripe)
+                                pb.Cost = !string.IsNullOrEmpty(pb.SessionId) && pb.SessionId != "\"\""
+                                    ? _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, true)
+                                    : 0;
+                                pb.LastPutTime = DateTime.Now;
+
+                                // Обрабатываем Stripe платёж если есть SessionId
+                                if (!string.IsNullOrEmpty(pb.SessionId) && pb.SessionId != "\"\"")
+                                {
+                                    try
+                                    {
+                                        // Stripe routines автоматически логируют PaymentCapture/PaymentRelease с деталями карты
+                                        if (pb.Cost > 0)
+                                        {
+                                            var stripeCapture = new StripeCapture
+                                            {
+                                                SessionId = pb.SessionId,
+                                                StationId = device.Id,
+                                                PowerBankId = pb.Id,
+                                                Amount = pb.Cost,
+                                            };
+                                            using (var stripeScope = _scopeFactory.CreateScope())
+                                            {
+                                                var stripeRoutines = stripeScope.ServiceProvider.GetRequiredService<IStripeRoutines>();
+                                                stripeRoutines.MakePostPayment(stripeCapture);
+                                            }
+                                            // Добавляем к накопительному доходу
+                                            pb.TotalEarnings += pb.Cost;
+                                            Logger.LogInformation($"Stripe capture {pb.Cost:F2} for offline return of PowerBank {pb.Id}");
+                                        }
+                                        else
+                                        {
+                                            var stripeCapture = new StripeCapture
+                                            {
+                                                SessionId = pb.SessionId,
+                                                StationId = device.Id,
+                                                PowerBankId = pb.Id,
+                                                Amount = 0,
+                                            };
+                                            using (var stripeScope = _scopeFactory.CreateScope())
+                                            {
+                                                var stripeRoutines = stripeScope.ServiceProvider.GetRequiredService<IStripeRoutines>();
+                                                stripeRoutines.ReleaseHeldPayment(stripeCapture);
+                                            }
+                                            Logger.LogInformation($"Stripe release for offline return of PowerBank {pb.Id} (grace period)");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Logger.LogError($"Problem with Stripe payment for offline return: {ex}");
+                                    }
+                                }
+
+                                // Логируем событие возврата
+                                actionProcess.ActionSave((int)ActionsDescription.PowerBankReturn, returnUserId, device.HostDeviceId, device.Id, pbank.RlPbid, pbank.RlSlot, $"Cost: {pb.Cost:F2} (offline)");
+                                Logger.LogInformation($"PowerBank {pbank.RlPbid} returned (offline) by user {returnUserId} in device {dev} slot {pbank.RlSlot}, cost: {pb.Cost:F2}");
+
+                                // Очищаем SessionId и UserId
+                                pb.SessionId = "";
+                            }
+                            // Если powerbank был не plugged (или был в другом устройстве) - это обычный insert
+                            else if (!pb.Plugged || pb.HostDeviceName != device.DeviceName)
+                            {
+                                actionProcess.ActionSave((int)ActionsDescription.PowerBankInsert, returnUserId, device.HostDeviceId, device.Id, pbank.RlPbid, pbank.RlSlot, "");
                                 Logger.LogInformation($"PowerBank {pbank.RlPbid} inserted in device {dev} slot {pbank.RlSlot}");
                             }
 
