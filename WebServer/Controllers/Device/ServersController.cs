@@ -38,34 +38,39 @@ namespace WebServer.Controllers.Device
         {
             try
             {
-                //var userId = userManager.GetUserId(User);
-                //var user = await userManager.FindByIdAsync(userId);
-                //var roles = await userManager.GetRolesAsync(user);
-                //var filterNotMoney = roles.Contains("support") || roles.Contains("manager");
-                //var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
-                //var allowAdminManagerSupport = roles.Contains("support") || roles.Contains("admin") || roles.Contains("manager");
-                //var allowAdmin = roles.Contains("admin");
-
-                // DevicesData serversTable = new DevicesData(scanDevices.DevicesData.Servers, scanDevices.DevicesData.Devices, scanDevices.DevicesData.PowerBanks);
-
-
                 var userId = userManager.GetUserId(User);
                 var user = await userManager.FindByIdAsync(userId);
                 var roles = await userManager.GetRolesAsync(user);
 
                 var allowAdminAndManager = roles.Contains("admin") || roles.Contains("manager");
-                List<WebServer.Models.Device.Server> serversList;
 
-                if (allowAdminAndManager)
+                if (!allowAdminAndManager)
                 {
-                    serversList = scanDevices.DevicesData.Servers.OrderBy(s => s.Host).ToList();
-                }
-                else
-                {
-                    serversList = new List<WebServer.Models.Device.Server>();
+                    return Json(new List<object>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
                 }
 
-                return Json(serversList, new JsonSerializerOptions { PropertyNamingPolicy = null });
+                var serversList = scanDevices.DevicesData.Servers.OrderBy(s => s.Host).ToList();
+                var devices = scanDevices.DevicesData.Devices.ToList();
+
+                // Build response with calculated device counts
+                var result = serversList.Select(srv => new
+                {
+                    srv.Host,
+                    srv.Port,
+                    srv.Error,
+                    srv.Connected,
+                    // Count all devices belonging to this server
+                    DevicesCount = devices.Count(d => d.HostDeviceId == srv.Id),
+                    // Count online devices belonging to this server
+                    OnlineDevicesCount = devices.Count(d => d.HostDeviceId == srv.Id && d.Online),
+                    // Count not authorized devices (for backward compatibility)
+                    NotAuthDevicesCount = devices.Count(d => d.HostDeviceId == srv.Id && !d.Online),
+                    srv.ReconnectTime,
+                    srv.ConnectTime,
+                    srv.DisconnectTime
+                }).ToList();
+
+                return Json(result, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)
             {

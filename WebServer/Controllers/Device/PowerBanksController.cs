@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using WebServer.Models.Device;
 using WebServer.Models.Identity;
+using WebServer.Models.Action;
 using WebServer.Workers;
 using WebServer.Data;
 using System.Data;
@@ -23,14 +24,16 @@ namespace WebServer.Controllers.Device
         private readonly ScanDevices scanDevices;
         private readonly IPricingService _pricingService;
         private readonly DeviceContext _deviceContext;
+        private readonly ActionProcess _actionProcess;
 
-        public PowerBanksController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<PowerBanksController> logger, IPricingService pricingService, DeviceContext deviceContext)
+        public PowerBanksController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<PowerBanksController> logger, IPricingService pricingService, DeviceContext deviceContext, ActionProcess actionProcess)
         {
             userManager = _userManager;
             Logger = logger;
             this.scanDevices = scanDevices;
             _pricingService = pricingService;
             _deviceContext = deviceContext;
+            _actionProcess = actionProcess;
         }
 
         [HttpGet]
@@ -210,18 +213,26 @@ namespace WebServer.Controllers.Device
                             currentCost = pb.Cost;
                         }
 
-                        // Определяем статус:
-                        // - In station: если в станции и никогда не брали
-                        // - Returned: если вернули (Taken=false и Plugged=true и была аренда)
-                        // - On hands: если взяли, станция онлайн и не вернули
-                        // - Offline: если взяли, но станция офлайн
+                        // Определяем статус с учетом состояния станции
                         string status;
                         bool hasRentalHistory = pb.LastGetTime > new DateTime(2000, 1, 1);
+                        var isStationOnline = device?.Online ?? false;
 
-                        if (pb.Taken)
+                        // If station is offline, show offline status with last known state
+                        if (!isStationOnline)
                         {
-                            var isStationOnline = device?.Online ?? false;
-                            status = isStationOnline ? "On hands" : "Offline";
+                            if (pb.Taken)
+                                status = "Offline";
+                            else if (pb.Plugged && hasRentalHistory)
+                                status = "Returned (Offline)";
+                            else if (pb.Plugged)
+                                status = "In station (Offline)";
+                            else
+                                status = "Offline";
+                        }
+                        else if (pb.Taken)
+                        {
+                            status = "On hands";
                         }
                         else if (pb.Plugged && hasRentalHistory)
                         {
@@ -237,7 +248,8 @@ namespace WebServer.Controllers.Device
                         }
 
                         return new {
-                            PowerBankId = pb.Id_str,
+                            PowerBankId = pb.Name,
+                            PowerBankIdNum = pb.Id_str,  // Keep numeric ID for delete operation
                             StationName = pb.HostDeviceName,
                             StationId = device?.Id_str ?? "",
                             Slot = pb.HostSlot,
@@ -317,6 +329,80 @@ namespace WebServer.Controllers.Device
             }
         }
 
+        [HttpPost]
+        [Authorize(Roles = "admin,manager")]
+        public async Task<ActionResult> DeletePowerBank([FromBody] DeletePowerBankRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request?.PowerBankId) || !ulong.TryParse(request.PowerBankId, out ulong pbId))
+                {
+                    return Json(new { success = false, message = "Invalid PowerBank ID" });
+                }
+
+                // Получаем информацию о текущем пользователе
+                var currentUser = await userManager.GetUserAsync(User);
+                var userName = currentUser?.UserName ?? "unknown";
+
+                // Проверяем что повербанк можно удалить (только Offline или On hands)
+                var memPowerBank = scanDevices.DevicesData.PowerBanks.FirstOrDefault(p => p.Id == pbId);
+                string deviceName = "";
+                ulong deviceId = 0;
+                uint slot = 0;
+
+                if (memPowerBank != null)
+                {
+                    if (memPowerBank.Plugged && !memPowerBank.Taken)
+                    {
+                        return Json(new { success = false, message = "Cannot delete a powerbank that is currently in station. Only offline or taken powerbanks can be deleted." });
+                    }
+                    deviceName = memPowerBank.HostDeviceName;
+                    deviceId = memPowerBank.HostDeviceId;
+                    slot = memPowerBank.HostSlot;
+                }
+
+                // Удаляем из БД
+                var dbPowerBank = await _deviceContext.PowerBank.FirstOrDefaultAsync(p => p.Id == pbId);
+                if (dbPowerBank != null)
+                {
+                    if (string.IsNullOrEmpty(deviceName))
+                    {
+                        deviceName = dbPowerBank.HostDeviceName;
+                        deviceId = dbPowerBank.HostDeviceId;
+                        slot = dbPowerBank.HostSlot;
+                    }
+                    _deviceContext.PowerBank.Remove(dbPowerBank);
+                    await _deviceContext.SaveChangesAsync();
+                    Logger.LogInformation($"Deleted PowerBank {pbId} from database");
+                }
+
+                // Удаляем из памяти
+                if (memPowerBank != null)
+                {
+                    scanDevices.DevicesData.PowerBanks.Remove(memPowerBank);
+                    Logger.LogInformation($"Removed PowerBank {pbId} from memory");
+                }
+
+                // Логируем в Actions
+                _actionProcess.ActionSave(
+                    (int)ActionsDescription.PowerBankDelete,
+                    userName,
+                    0,  // serverId
+                    deviceId,
+                    pbId,
+                    slot,
+                    $"PowerBank {pbId} in device {deviceName} slot {slot} - deleted from system by user {userName}"
+                );
+
+                return Json(new { success = true, message = "PowerBank deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"{nameof(PowerBanksController)} -> {nameof(DeletePowerBank)} throw Exception");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
     }
 
     public class ResetEarningsRequest
@@ -324,5 +410,10 @@ namespace WebServer.Controllers.Device
         public string PowerBankId { get; set; }
         public bool ResetCost { get; set; }
         public bool ResetTotal { get; set; }
+    }
+
+    public class DeletePowerBankRequest
+    {
+        public string PowerBankId { get; set; }
     }
 }

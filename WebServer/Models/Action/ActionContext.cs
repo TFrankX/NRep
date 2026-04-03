@@ -58,7 +58,7 @@ namespace WebServer.Models.Action
                 if ((actLine.ActionCode & 0x0300) == 0x0300)
                 {
                     var stationName = !string.IsNullOrEmpty(actLine.DeviceName) ? actLine.DeviceName : actLine.ActionStationId.ToString();
-                    text = $"Powerbank {actLine.ActionPowerBankId} in device {stationName} slot {actLine.ActionPowerBankSlot} - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} by user {actLine.UserId}";
+                    text = $"Powerbank {actLine.PowerBankName} in device {stationName} slot {actLine.ActionPowerBankSlot} - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} by user {actLine.UserId}";
                 }
 
                 // User
@@ -71,7 +71,7 @@ namespace WebServer.Models.Action
                 if ((actLine.ActionCode & 0x4000) == 0x4000)
                 {
                     var stationName = !string.IsNullOrEmpty(actLine.DeviceName) ? actLine.DeviceName : actLine.ActionStationId.ToString();
-                    text = $"Payment {actLine.PaymentAmount} EUR - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} for powerbank {actLine.ActionPowerBankId} station {stationName}. {actLine.PaymentInfo}";
+                    text = $"Payment {actLine.PaymentAmount} EUR - {GetEnumDescription((ActionsDescription)(actLine.ActionCode))} for powerbank {actLine.PowerBankName} station {stationName}. {actLine.PaymentInfo}";
                 }
                 actLine.ActionText = text;
             }

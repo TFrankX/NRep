@@ -16,6 +16,9 @@ namespace WebServer.Services.Settings
         Task SavePricingPlanAsync(PricingPlanSettings plan, string modifiedBy);
         Task<SupportSettings> GetSupportSettingsAsync();
         Task SaveSupportSettingsAsync(SupportSettings support, string modifiedBy);
+        Task<List<ServerConfigSettings>> GetServerConfigsAsync();
+        Task SaveServerConfigAsync(ServerConfigSettings server, string modifiedBy);
+        Task DeleteServerConfigAsync(int index, string modifiedBy);
     }
 
     public class AppSettingsService : IAppSettingsService
@@ -194,6 +197,79 @@ namespace WebServer.Services.Settings
             {
                 return defaultValue;
             }
+        }
+
+        public async Task<List<ServerConfigSettings>> GetServerConfigsAsync()
+        {
+            var settings = await GetByCategoryAsync("Servers");
+            var servers = new List<ServerConfigSettings>();
+
+            // Support up to 5 servers (indexes 0-4)
+            for (int i = 0; i < 5; i++)
+            {
+                var address = GetSettingValue(settings, $"Server{i}.Address", "");
+                if (string.IsNullOrEmpty(address))
+                    continue;
+
+                servers.Add(new ServerConfigSettings
+                {
+                    Index = i,
+                    Address = address,
+                    Port = GetSettingValue(settings, $"Server{i}.Port", 8884),
+                    User = GetSettingValue(settings, $"Server{i}.User", ""),
+                    Pass = GetSettingValue(settings, $"Server{i}.Pass", ""),
+                    ReconnectTime = GetSettingValue(settings, $"Server{i}.ReconnectTime", 30),
+                    CertCA = GetSettingValue(settings, $"Server{i}.CertCA", ""),
+                    CertCli = GetSettingValue(settings, $"Server{i}.CertCli", ""),
+                    CertPass = GetSettingValue(settings, $"Server{i}.CertPass", ""),
+                    Enabled = GetSettingValue(settings, $"Server{i}.Enabled", false)
+                });
+            }
+
+            return servers;
+        }
+
+        public async Task SaveServerConfigAsync(ServerConfigSettings server, string modifiedBy)
+        {
+            if (server.Index < 0 || server.Index > 4)
+                throw new ArgumentException("Server index must be 0-4");
+
+            var prefix = $"Server{server.Index}";
+            await SetAsync("Servers", $"{prefix}.Address", server.Address, modifiedBy);
+            await SetAsync("Servers", $"{prefix}.Port", server.Port.ToString(), modifiedBy);
+            await SetAsync("Servers", $"{prefix}.User", server.User, modifiedBy);
+            await SetAsync("Servers", $"{prefix}.Pass", server.Pass, modifiedBy);
+            await SetAsync("Servers", $"{prefix}.ReconnectTime", server.ReconnectTime.ToString(), modifiedBy);
+            await SetAsync("Servers", $"{prefix}.CertCA", server.CertCA, modifiedBy);
+            await SetAsync("Servers", $"{prefix}.CertCli", server.CertCli, modifiedBy);
+            await SetAsync("Servers", $"{prefix}.CertPass", server.CertPass, modifiedBy);
+            await SetAsync("Servers", $"{prefix}.Enabled", server.Enabled.ToString(), modifiedBy);
+
+            _logger.LogInformation("Server config {Index} ({Address}:{Port}) saved by {User}",
+                server.Index, server.Address, server.Port, modifiedBy);
+        }
+
+        public async Task DeleteServerConfigAsync(int index, string modifiedBy)
+        {
+            if (index < 0 || index > 4)
+                throw new ArgumentException("Server index must be 0-4");
+
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+
+            var prefix = $"Server{index}";
+            var keysToDelete = new[] { "Address", "Port", "User", "Pass", "ReconnectTime", "CertCA", "CertCli", "CertPass", "Enabled" };
+
+            foreach (var key in keysToDelete)
+            {
+                var setting = await db.AppSettings
+                    .FirstOrDefaultAsync(s => s.Category == "Servers" && s.Key == $"{prefix}.{key}");
+                if (setting != null)
+                    db.AppSettings.Remove(setting);
+            }
+
+            await db.SaveChangesAsync();
+            _logger.LogInformation("Server config {Index} deleted by {User}", index, modifiedBy);
         }
     }
 }

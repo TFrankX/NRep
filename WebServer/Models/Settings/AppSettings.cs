@@ -87,12 +87,30 @@ namespace WebServer.Models.Settings
     }
 
     /// <summary>
+    /// View model for MQTT server configuration
+    /// </summary>
+    public class ServerConfigSettings
+    {
+        public int Index { get; set; } = 0;  // 0-4
+        public string Address { get; set; } = string.Empty;
+        public int Port { get; set; } = 8884;
+        public string User { get; set; } = string.Empty;
+        public string Pass { get; set; } = string.Empty;
+        public int ReconnectTime { get; set; } = 30;
+        public string CertCA { get; set; } = string.Empty;
+        public string CertCli { get; set; } = string.Empty;
+        public string CertPass { get; set; } = string.Empty;
+        public bool Enabled { get; set; } = false;
+    }
+
+    /// <summary>
     /// View model for settings page
     /// </summary>
     public class SettingsViewModel
     {
         public List<PricingPlanSettings> PricingPlans { get; set; } = new();
         public SupportSettings Support { get; set; } = new();
+        public List<ServerConfigSettings> Servers { get; set; } = new();
         public string ActiveSection { get; set; } = "pricing";
     }
 }

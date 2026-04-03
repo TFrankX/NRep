@@ -405,8 +405,76 @@ namespace WebServer.Controllers.Identity
                 ModelState.AddModelError("", "Incorrect SMS code");
                 return View("AppResetPassCheckPhoneNumber", model);
             }
-           
+
             return RedirectToActionPreserveMethod("AppEditSelfAccountData", "AppAccountManagement", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public IActionResult VerifyResetCodeAjax(AppAccountSelfPassReset model)
+        {
+            try
+            {
+                var savedCode = TempData.Peek("cd")?.ToString()?.Trim();
+                if (string.IsNullOrEmpty(savedCode))
+                {
+                    return Json(new { success = false, expired = true, message = "Code expired. Please request a new one." });
+                }
+
+                if (model.SMSCode != savedCode)
+                {
+                    return Json(new { success = false, message = "Incorrect SMS code" });
+                }
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> ResetPasswordAjax(AppAccountSelfPassReset model)
+        {
+            try
+            {
+                var savedCode = TempData.Peek("cd")?.ToString()?.Trim();
+                if (string.IsNullOrEmpty(savedCode))
+                {
+                    return Json(new { success = false, message = "Code expired. Please request a new one." });
+                }
+
+                if (model.SMSCode != savedCode)
+                {
+                    return Json(new { success = false, message = "Incorrect SMS code" });
+                }
+
+                var user = await userManag.FindByIdAsync(model.Id);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "User not found" });
+                }
+
+                var token = await userManag.GeneratePasswordResetTokenAsync(user);
+                var result = await userManag.ResetPasswordAsync(user, token, model.NewPassword);
+
+                if (result.Succeeded)
+                {
+                    TempData.Remove("cd");
+                    return Json(new { success = true, redirectUrl = Url.Action("AppEditSelfAccountData", "AppAccountManagement") });
+                }
+
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return Json(new { success = false, message = errors });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred" });
+            }
         }
 
 

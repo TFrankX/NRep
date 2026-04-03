@@ -409,11 +409,63 @@ namespace WebServer.Controllers.Identity
                 }
                  
                 // return RedirectToAction("Servers", "Servers");
-                    
+
             }
             return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> CheckLoginSMSCodeAjax(AppAccountsLoginSMS model)
+        {
+            try
+            {
+                // Check if code exists in TempData
+                var savedCode = TempData.Peek("cd")?.ToString()?.Trim();
+                if (string.IsNullOrEmpty(savedCode))
+                {
+                    return Json(new { success = false, expired = true, message = "Code expired. Please request a new one." });
+                }
+
+                // Find user by phone
+                var user = userManag.Users.FirstOrDefault(x => x.PhoneNumber == model.PhoneNumber);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "User not found" });
+                }
+
+                // Verify code
+                if (model.SMSCode != savedCode)
+                {
+                    return Json(new { success = false, message = "Incorrect SMS code" });
+                }
+
+                // Code is correct - sign in user
+                await signInManag.SignInAsync(user, true);
+
+                // Handle new station assignment if provided
+                if (model.NewStationId > 0)
+                {
+                    var device = scanDevices.DevicesData.Devices.FirstOrDefault(d => d.Id == model.NewStationId);
+                    if (device != null && string.IsNullOrEmpty(device.Owners))
+                    {
+                        device.Owners = user.Id;
+                    }
+                }
+
+                // Clear the code from TempData
+                TempData.Remove("cd");
+
+                var redirectUrl = !string.IsNullOrEmpty(model.ReturnUrl) ? model.ReturnUrl : Url.Action("Devices", "Devices");
+                return Json(new { success = true, redirectUrl });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CheckLoginSMSCodeAjax error");
+                return Json(new { success = false, message = "An error occurred" });
+            }
+        }
 
 
         [AllowAnonymous]

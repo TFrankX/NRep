@@ -49,6 +49,7 @@ namespace WebServer.Controllers.User
     public class PowerBankInfo
     {
         public string PowerBankId { get; set; } = "";
+        public string PowerBankName { get; set; } = "";
         public string Time { get; set; } = "-";
         public string StartTime { get; set; } = "-";
         public float Cost { get; set; }
@@ -369,6 +370,7 @@ namespace WebServer.Controllers.User
                             new PowerBankInfo
                             {
                                 PowerBankId = pbPush.Id_str,
+                                PowerBankName = pbPush.Name ?? pbPush.Id_str,
                                 StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
                                 Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                                 Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken),
@@ -400,6 +402,7 @@ namespace WebServer.Controllers.User
                     new PowerBankInfo
                     {
                         PowerBankId = pbPush.Id_str,
+                        PowerBankName = pbPush.Name ?? pbPush.Id_str,
                         StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
                         Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                         Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken),
@@ -464,31 +467,56 @@ namespace WebServer.Controllers.User
 
 
 
-            if (!string.IsNullOrEmpty(cookieValueFromReq) && (device.TypeOfUse != TypeOfUse.FreeMultiTake) )
+            if (!string.IsNullOrEmpty(cookieValueFromReq))
             {
-                foreach (PowerBank pb in userPbs)
+                // Для FreeMultiTake: проверяем защиту от дубль-запроса (если последний повербанк взят < 3 сек назад)
+                if (device.TypeOfUse == TypeOfUse.FreeMultiTake)
                 {
-                    if ((pb.UserId == cookieValueFromReq) && (pb.Taken))
+                    var takenPbs = userPbs.Where(p => p.Taken && p.UserId == cookieValueFromReq).ToList();
+                    if (takenPbs.Any())
                     {
-                        var duration = DateTime.Now - pb.LastGetTime;
-                        payInfo.Taken = 1;
-                        payInfo.UserId = cookieValueFromReq;
-                        payInfo.StationId = device.Id;
-                        payInfo.PowerBanks = new List<PowerBankInfo>
-                        {
-                            new PowerBankInfo
-                            {
-                                PowerBankId = pb.Id_str,
-                                StartTime = pb.LastGetTime.ToString("dd.MM HH:mm"),
-                                Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
-                                Cost = _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken),
-                                StationId = pb.HostDeviceId
-                            }
-                        };
-                        payInfo.Time = payInfo.PowerBanks[0].Time;
-                        payInfo.Cost = payInfo.PowerBanks[0].Cost;
+                        // Проверяем время последнего взятия - защита от двойного запроса браузера
+                        var lastTaken = takenPbs.Max(p => p.LastGetTime);
+                        var timeSinceLastTake = (DateTime.Now - lastTaken).TotalSeconds;
 
-                        return View(payInfo);
+                        if (timeSinceLastTake < 3)
+                        {
+                            // Слишком быстрый повторный запрос - показать текущее состояние без нового push
+                            Logger.LogInformation($"FreeMultiTake: Duplicate request detected ({timeSinceLastTake:F1}s), showing current state");
+                            var multiPayInfo = await BuildPayInfoAsync(cookieValueFromReq, device.Id);
+                            return View(multiPayInfo);
+                        }
+                        // Иначе продолжаем - выдадим ещё один повербанк ниже
+                    }
+                }
+                else
+                {
+                    // Для остальных режимов: стандартная логика - один повербанк
+                    foreach (PowerBank pb in userPbs)
+                    {
+                        if ((pb.UserId == cookieValueFromReq) && (pb.Taken))
+                        {
+                            var duration = DateTime.Now - pb.LastGetTime;
+                            payInfo.Taken = 1;
+                            payInfo.UserId = cookieValueFromReq;
+                            payInfo.StationId = device.Id;
+                            payInfo.PowerBanks = new List<PowerBankInfo>
+                            {
+                                new PowerBankInfo
+                                {
+                                    PowerBankId = pb.Id_str,
+                                    PowerBankName = pb.Name ?? pb.Id_str,
+                                    StartTime = pb.LastGetTime.ToString("dd.MM HH:mm"),
+                                    Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
+                                    Cost = _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken),
+                                    StationId = pb.HostDeviceId
+                                }
+                            };
+                            payInfo.Time = payInfo.PowerBanks[0].Time;
+                            payInfo.Cost = payInfo.PowerBanks[0].Cost;
+
+                            return View(payInfo);
+                        }
                     }
                 }
             }
@@ -524,7 +552,20 @@ namespace WebServer.Controllers.User
             }
 
 
-            if ((!taken)||(device.TypeOfUse == TypeOfUse.FreeMultiTake))
+            // Для FreeMultiTake проверяем лимит 4 повербанка
+            if (device.TypeOfUse == TypeOfUse.FreeMultiTake)
+            {
+                var userTakenCount = userPbs.Count(p => p.Taken && p.UserId == cookieValueFromReq);
+                if (userTakenCount >= 4)
+                {
+                    // Достигнут лимит - показать текущее состояние
+                    var multiPayInfo = await BuildPayInfoAsync(cookieValueFromReq, device.Id);
+                    multiPayInfo.CanTakeMore = false;
+                    return View(multiPayInfo);
+                }
+            }
+
+            if ((!taken) || (device.TypeOfUse == TypeOfUse.FreeMultiTake))
             {
                 var maxCharge = 0;
                 PowerBank? pbTake = null;
@@ -668,6 +709,14 @@ namespace WebServer.Controllers.User
 
                     if (pbPush.Taken)
                     {
+                        // Для FreeMultiTake: используем BuildPayInfoAsync для получения информации обо ВСЕХ повербанках
+                        if (device.TypeOfUse == TypeOfUse.FreeMultiTake)
+                        {
+                            var multiPayInfo = await BuildPayInfoAsync(userId, device.Id);
+                            return View(multiPayInfo);
+                        }
+
+                        // Для остальных режимов: только один повербанк
                         var duration = DateTime.Now - pbPush.LastGetTime;
                         payInfo.Taken = 1;
                         payInfo.UserId = userId;
@@ -677,6 +726,7 @@ namespace WebServer.Controllers.User
                             new PowerBankInfo
                             {
                                 PowerBankId = pbPush.Id_str,
+                                PowerBankName = pbPush.Name ?? pbPush.Id_str,
                                 StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
                                 Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                                 Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken),
@@ -1066,6 +1116,7 @@ namespace WebServer.Controllers.User
                     payInfo.PowerBanks.Add(new PowerBankInfo
                     {
                         PowerBankId = pb.Id_str,
+                        PowerBankName = pb.Name ?? pb.Id_str,
                         Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                         StartTime = pb.LastGetTime.ToString("dd.MM HH:mm"),
                         Cost = cost,
@@ -1145,6 +1196,7 @@ namespace WebServer.Controllers.User
                     powerBanks.Add(new
                     {
                         powerBankId = pb.Id_str,
+                        powerBankName = pb.Name ?? pb.Id_str,
                         time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                         cost = cost
                     });

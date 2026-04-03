@@ -133,6 +133,7 @@ namespace WebServer
             services.AddSingleton<IAppSettingsService, AppSettingsService>();
             services.AddScoped<ISmsService, SmsService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddSingleton<ActionProcess>();
 
             services.AddSession(options =>
             {

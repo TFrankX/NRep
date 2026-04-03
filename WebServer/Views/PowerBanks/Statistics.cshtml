@@ -39,8 +39,12 @@
                 backcolor = "#FEF3C7"; // Yellow - taken, station online
             } else if (status === "Returned") {
                 backcolor = "#D1FAE5"; // Green - returned
+            } else if (status === "Returned (Offline)" || status === "In station (Offline)") {
+                backcolor = "#E5E7EB"; // Gray - in offline station
             } else if (status === "Offline") {
                 backcolor = "#FEE2E2"; // Red - taken, station offline
+            } else if (status === "In station") {
+                backcolor = "#DBEAFE"; // Light blue - in station
             } else {
                 backcolor = "#F3F4F6"; // Gray - unknown
             }
@@ -56,9 +60,18 @@
                 } else if (status === "Returned") {
                     badgeClass = "badge-success";
                     icon = "fa-check-circle";
+                } else if (status === "Returned (Offline)") {
+                    badgeClass = "badge-secondary";
+                    icon = "fa-check-circle";
+                } else if (status === "In station (Offline)") {
+                    badgeClass = "badge-secondary";
+                    icon = "fa-charging-station";
                 } else if (status === "Offline") {
                     badgeClass = "badge-danger";
                     icon = "fa-wifi";
+                } else if (status === "In station") {
+                    badgeClass = "badge-info";
+                    icon = "fa-charging-station";
                 } else {
                     badgeClass = "badge-secondary";
                     icon = "fa-question-circle";

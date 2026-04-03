@@ -31,6 +31,7 @@ using WebServer.Utils.Requests;
 using Stripe;
 using WebServer.Services;
 using WebServer.Services.Pricing;
+using WebServer.Models.Settings;
 
 namespace WebServer.Workers
 {
@@ -56,6 +57,9 @@ namespace WebServer.Workers
 
         // Lock для thread-safe операций с PowerBanks
         private readonly object _powerBanksLock = new object();
+
+        // Lock для thread-safe операций с Servers
+        private readonly object _serversLock = new object();
 
         // DeviceContext dbDevice;
 
@@ -85,6 +89,249 @@ namespace WebServer.Workers
 
             actionProcess = new ActionProcess(scopeFactory);
 
+        }
+
+        /// <summary>
+        /// Loads server configurations from AppSettings database
+        /// </summary>
+        private async Task<List<ServerConfigSettings>> LoadServerConfigsFromSettingsAsync()
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+
+            var settings = await db.AppSettings
+                .Where(s => s.Category == "Servers")
+                .ToListAsync();
+
+            var servers = new List<ServerConfigSettings>();
+
+            for (int i = 0; i < 5; i++)
+            {
+                var address = settings.FirstOrDefault(s => s.Key == $"Server{i}.Address")?.Value ?? "";
+                if (string.IsNullOrEmpty(address))
+                    continue;
+
+                var enabled = settings.FirstOrDefault(s => s.Key == $"Server{i}.Enabled")?.Value ?? "False";
+                if (!bool.TryParse(enabled, out var isEnabled) || !isEnabled)
+                    continue;
+
+                servers.Add(new ServerConfigSettings
+                {
+                    Index = i,
+                    Address = address,
+                    Port = int.TryParse(settings.FirstOrDefault(s => s.Key == $"Server{i}.Port")?.Value, out var port) ? port : 8884,
+                    User = settings.FirstOrDefault(s => s.Key == $"Server{i}.User")?.Value ?? "",
+                    Pass = settings.FirstOrDefault(s => s.Key == $"Server{i}.Pass")?.Value ?? "",
+                    ReconnectTime = int.TryParse(settings.FirstOrDefault(s => s.Key == $"Server{i}.ReconnectTime")?.Value, out var rt) ? rt : 30,
+                    CertCA = settings.FirstOrDefault(s => s.Key == $"Server{i}.CertCA")?.Value ?? "",
+                    CertCli = settings.FirstOrDefault(s => s.Key == $"Server{i}.CertCli")?.Value ?? "",
+                    CertPass = settings.FirstOrDefault(s => s.Key == $"Server{i}.CertPass")?.Value ?? "",
+                    Enabled = isEnabled
+                });
+            }
+
+            return servers;
+        }
+
+        /// <summary>
+        /// Adds or updates a server dynamically at runtime
+        /// </summary>
+        public async Task AddOrUpdateServerAsync(ServerConfigSettings serverConfig)
+        {
+            if (!serverConfig.Enabled)
+            {
+                // If disabled, remove the server if it exists
+                await RemoveServerAsync(serverConfig.Address, serverConfig.Port);
+                return;
+            }
+
+            lock (_serversLock)
+            {
+                // Check if server already exists
+                var existingServer = DevicesData.Servers.FirstOrDefault(
+                    s => s.Host == serverConfig.Address && s.Port == (uint)serverConfig.Port);
+
+                if (existingServer != null)
+                {
+                    Logger.LogInformation("Server {Address}:{Port} already exists, updating...", serverConfig.Address, serverConfig.Port);
+                    // Update credentials if changed
+                    // Note: Server class doesn't support changing credentials at runtime,
+                    // so we need to remove and re-add
+                    DevicesData.Servers.Remove(existingServer);
+                }
+
+                var server = new Server(
+                    serverConfig.Address,
+                    (uint)serverConfig.Port,
+                    serverConfig.User,
+                    serverConfig.Pass,
+                    (uint)serverConfig.ReconnectTime,
+                    serverConfig.CertCA,
+                    serverConfig.CertCli,
+                    serverConfig.CertPass
+                );
+
+                server.Connected = false;
+                server.Stored = false;
+                DevicesData.Servers.Add(server);
+
+                Logger.LogInformation("Server {Address}:{Port} added to active servers list", serverConfig.Address, serverConfig.Port);
+            }
+
+            // Save to Device database for persistence
+            using var scope = _scopeFactory.CreateScope();
+            using var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+
+            var serverToSave = new Server(
+                serverConfig.Address,
+                (uint)serverConfig.Port,
+                serverConfig.User,
+                serverConfig.Pass,
+                (uint)serverConfig.ReconnectTime,
+                serverConfig.CertCA,
+                serverConfig.CertCli,
+                serverConfig.CertPass
+            );
+
+            AddOrUpdate(dbDevice.Server, dbDevice, c => c.Id, serverToSave);
+            await dbDevice.SaveChangesAsync();
+
+            // Trigger reconnection
+            ReconnectServers();
+        }
+
+        /// <summary>
+        /// Removes a server at runtime
+        /// </summary>
+        public Task RemoveServerAsync(string address, int port)
+        {
+            lock (_serversLock)
+            {
+                var server = DevicesData.Servers.FirstOrDefault(
+                    s => s.Host == address && s.Port == (uint)port);
+
+                if (server != null)
+                {
+                    DevicesData.Servers.Remove(server);
+                    Logger.LogInformation("Server {Address}:{Port} removed from active servers", address, port);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Tests connection to a server with given parameters
+        /// Returns (success, errorMessage)
+        /// </summary>
+        public async Task<(bool Success, string Message)> TestServerConnectionAsync(ServerConfigSettings serverConfig)
+        {
+            var testServer = new Server(
+                serverConfig.Address,
+                (uint)serverConfig.Port,
+                serverConfig.User,
+                serverConfig.Pass,
+                30, // reconnect time doesn't matter for test
+                serverConfig.CertCA,
+                serverConfig.CertCli,
+                serverConfig.CertPass
+            );
+
+            var tcs = new TaskCompletionSource<(bool, string)>();
+            var timeout = TimeSpan.FromSeconds(10);
+
+            void OnConnected(object sender)
+            {
+                tcs.TrySetResult((true, "Connection successful"));
+            }
+
+            void OnConnectError(object sender, string error)
+            {
+                tcs.TrySetResult((false, error));
+            }
+
+            void OnDisconnected(object sender)
+            {
+                tcs.TrySetResult((false, "Disconnected"));
+            }
+
+            testServer.EvConnected += OnConnected;
+            testServer.EvConnectError += OnConnectError;
+            testServer.EvDisconnected += OnDisconnected;
+
+            try
+            {
+                Logger.LogInformation("Testing connection to {Address}:{Port}...", serverConfig.Address, serverConfig.Port);
+                testServer.Connect();
+
+                // Wait for result with timeout
+                var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
+
+                if (completedTask == tcs.Task)
+                {
+                    return await tcs.Task;
+                }
+                else
+                {
+                    return (false, $"Connection timeout ({timeout.TotalSeconds}s)");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error testing server connection");
+                return (false, ex.Message);
+            }
+            finally
+            {
+                testServer.EvConnected -= OnConnected;
+                testServer.EvConnectError -= OnConnectError;
+                testServer.EvDisconnected -= OnDisconnected;
+            }
+        }
+
+        /// <summary>
+        /// Migrates server config from appsettings.json to AppSettings database
+        /// </summary>
+        private async Task MigrateServerToAppSettingsAsync(int index, string address, int port, string user, string pass,
+            int reconnectTime, string certCA, string certCli, string certPass)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+
+            var prefix = $"Server{index}";
+            var settings = new Dictionary<string, string>
+            {
+                { $"{prefix}.Address", address },
+                { $"{prefix}.Port", port.ToString() },
+                { $"{prefix}.User", user ?? "" },
+                { $"{prefix}.Pass", pass ?? "" },
+                { $"{prefix}.ReconnectTime", reconnectTime.ToString() },
+                { $"{prefix}.CertCA", certCA ?? "" },
+                { $"{prefix}.CertCli", certCli ?? "" },
+                { $"{prefix}.CertPass", certPass ?? "" },
+                { $"{prefix}.Enabled", "True" }
+            };
+
+            foreach (var kvp in settings)
+            {
+                var existing = await db.AppSettings
+                    .FirstOrDefaultAsync(s => s.Category == "Servers" && s.Key == kvp.Key);
+
+                if (existing == null)
+                {
+                    db.AppSettings.Add(new AppSetting
+                    {
+                        Category = "Servers",
+                        Key = kvp.Key,
+                        Value = kvp.Value,
+                        ValueType = "string",
+                        LastModified = DateTime.UtcNow,
+                        ModifiedBy = "System (migration)"
+                    });
+                }
+            }
+
+            await db.SaveChangesAsync();
         }
 
 
@@ -166,64 +413,71 @@ namespace WebServer.Workers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            string server1address = config.GetSection("Server1")["address"];
-            string server1portS = config.GetSection("Server1")["port"];
-            string server1user = config.GetSection("Server1")["user"];
-            string server1pass = config.GetSection("Server1")["pass"];
-            string server1reconnectTimeS = config.GetSection("Server1")["reconnectTime"];
-            string certCA = config.GetSection("Server1")["certCA"];
-            string certCli = config.GetSection("Server1")["certCli"];
-            string certPass = config.GetSection("Server1")["certPass"];
-            uint server1port;
-            uint server1reconnectTime;
-            try
-            {
-                server1port = Convert.ToUInt16(server1portS);
-            }
-            
-            catch
-            {
-                server1port = 8884;
-            }
+            actionProcess.ActionSave((int)ActionsDescription.ServiceStart, "System", 0, 0, 0, 0, "");
 
-            try
+            // Load servers from AppSettings database
+            var serverConfigs = await LoadServerConfigsFromSettingsAsync();
+
+            if (serverConfigs.Count > 0)
             {
-                server1reconnectTime = Convert.ToUInt16(server1reconnectTimeS);
-            }
+                Logger.LogInformation("Loading {Count} server(s) from Settings database", serverConfigs.Count);
+                foreach (var serverConfig in serverConfigs)
+                {
+                    var server = new Server(
+                        serverConfig.Address,
+                        (uint)serverConfig.Port,
+                        serverConfig.User,
+                        serverConfig.Pass,
+                        (uint)serverConfig.ReconnectTime,
+                        serverConfig.CertCA,
+                        serverConfig.CertCli,
+                        serverConfig.CertPass
+                    );
 
-            catch
+                    using var startScope = _scopeFactory.CreateScope();
+                    using var dbDevice = startScope.ServiceProvider.GetRequiredService<DeviceContext>();
+                    AddOrUpdate(dbDevice.Server, dbDevice, c => c.Id, server);
+                    server.Stored = true;
+                    dbDevice.SaveChanges();
+
+                    Logger.LogInformation("Server {Address}:{Port} loaded from settings", serverConfig.Address, serverConfig.Port);
+                }
+            }
+            else
             {
-                server1reconnectTime = 30;
+                // Fallback: load from appsettings.json for backward compatibility
+                Logger.LogInformation("No servers in Settings database, falling back to appsettings.json");
+                string server1address = config.GetSection("Server1")["address"];
+                string server1portS = config.GetSection("Server1")["port"];
+                string server1user = config.GetSection("Server1")["user"];
+                string server1pass = config.GetSection("Server1")["pass"];
+                string server1reconnectTimeS = config.GetSection("Server1")["reconnectTime"];
+                string certCA = config.GetSection("Server1")["certCA"];
+                string certCli = config.GetSection("Server1")["certCli"];
+                string certPass = config.GetSection("Server1")["certPass"];
+
+                uint server1port = 8884;
+                uint server1reconnectTime = 30;
+
+                try { server1port = Convert.ToUInt16(server1portS); } catch { }
+                try { server1reconnectTime = Convert.ToUInt16(server1reconnectTimeS); } catch { }
+
+                if (!string.IsNullOrEmpty(server1address))
+                {
+                    var server = new Server(server1address, server1port, server1user, server1pass, server1reconnectTime, certCA, certCli, certPass);
+
+                    using var startScope = _scopeFactory.CreateScope();
+                    using var dbDevice = startScope.ServiceProvider.GetRequiredService<DeviceContext>();
+                    AddOrUpdate(dbDevice.Server, dbDevice, c => c.Id, server);
+                    server.Stored = true;
+                    dbDevice.SaveChanges();
+
+                    // Migrate to AppSettings database so it appears in Settings UI
+                    await MigrateServerToAppSettingsAsync(0, server1address, (int)server1port, server1user, server1pass,
+                        (int)server1reconnectTime, certCA, certCli, certPass);
+                    Logger.LogInformation("Server {Address}:{Port} migrated from appsettings.json to Settings database", server1address, server1port);
+                }
             }
-
-            // Server server = new Server("yaup.ru", 8884, "devclient", "Potato345!", 30);
-            Server server = new Server(server1address, server1port, server1user, server1pass, server1reconnectTime,certCA,certCli,certPass);
-            actionProcess.ActionSave((int)ActionsDescription.ServiceStart, "System", 0, 0, 0,0, "");
-            using (var startScope = _scopeFactory.CreateScope())
-            using (var dbDevice = startScope.ServiceProvider.GetRequiredService<DeviceContext>())
-            {
-                AddOrUpdate(dbDevice.Server, dbDevice, c => c.Id, server);
-                server.Stored = true;
-                dbDevice.SaveChanges();
-            }
-
-            //try
-            //{
-            //    using (var dbDevice = scope.ServiceProvider.GetRequiredService<DeviceContext>())
-            //    {
-            //        if ((dbDevice.Server.Any(o => o.Id != server.Id)) || (dbDevice.Server.Count() == 0))
-            //        {
-            //            dbDevice.Server.Add(server);
-            //            dbDevice.SaveChanges();
-            //        }
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    //dbDevice.Entry(server).State = EntityState.Detached;
-            //    HandleDbException(ex);
-            //}
-
 
             InitDevices();
 
@@ -693,9 +947,13 @@ namespace WebServer.Workers
                 else
                 {
                     existingDevice.LastOnlineTime = DateTime.Now;
+                    // Log connect only if device was offline (to match disconnect logic)
+                    if (existingDevice.Online == false)
+                    {
+                        actionProcess.ActionSave((int)ActionsDescription.StationConnect, existingDevice.Owners, existingDevice.HostDeviceId, existingDevice.Id, 0, 0, "");
+                    }
                     existingDevice.Online = true;
                     existingDevice.Stored = false;
-                    actionProcess.ActionSave((int)ActionsDescription.StationConnect, existingDevice.Owners, existingDevice.HostDeviceId, existingDevice.Id, 0, 0, "");
                     Logger.LogInformation($"Exist device login - {dev} \n");
                 }
                 ((Server)(sender)).EvQueryTheInventory -= Srv_EvQueryTheInventory;

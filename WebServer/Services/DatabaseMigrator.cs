@@ -14,7 +14,7 @@ namespace WebServer.Services
         private readonly IConfiguration _configuration;
 
         // Current schema version - increment when adding new migrations
-        private const int CURRENT_SCHEMA_VERSION = 4;
+        private const int CURRENT_SCHEMA_VERSION = 5;
 
         public DatabaseMigrator(IServiceProvider serviceProvider, ILogger<DatabaseMigrator> logger, IConfiguration configuration)
         {
@@ -147,6 +147,9 @@ namespace WebServer.Services
                 // v4: Seed default support settings
                 await MigrateAppSettings_v4_SeedSupportAsync(connection);
 
+                // v5: Fix LastPutTime for old powerbanks
+                await MigratePowerBank_v5_FixLastPutTimeAsync(connection);
+
                 _logger.LogInformation("Device database migration completed");
             }
             catch (Exception ex)
@@ -237,6 +240,31 @@ namespace WebServer.Services
 
             // Add TotalEarnings column for cumulative earnings tracking
             await AddColumnIfNotExistsAsync(connection, "PowerBank", "TotalEarnings", "real", "0");
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigratePowerBank_v5_FixLastPutTimeAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "PowerBank_v5_FixLastPutTime";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            // Update LastPutTime for powerbanks where it was not set (is min date)
+            // Set it to LastUpdate if available, otherwise to now
+            var sql = @"
+                UPDATE ""PowerBank""
+                SET ""LastPutTime"" = COALESCE(NULLIF(""LastUpdate"", '0001-01-01'::timestamp), NOW())
+                WHERE ""LastPutTime"" IS NULL OR ""LastPutTime"" < '1971-01-01'::timestamp";
+
+            await using var cmd = new NpgsqlCommand(sql, connection);
+            var affected = await cmd.ExecuteNonQueryAsync();
+
+            if (affected > 0)
+                _logger.LogInformation("Fixed LastPutTime for {Count} powerbanks", affected);
 
             await RecordMigrationAsync(connection, migrationName);
         }

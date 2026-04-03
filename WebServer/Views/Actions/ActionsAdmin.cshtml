@@ -216,7 +216,7 @@
                 { name: 'ActionCode', type: 'numeric' },
                 { name: 'UserId', type: 'string' },
                 { name: 'DeviceName', type: 'string' },
-                { name: 'ActionPowerBankId_Str', type: 'string' },
+                { name: 'PowerBankName', type: 'string' },
                 { name: 'ActionPowerBankSlot', type: 'string' },
                 { name: 'ActionText', type: 'string' }
             ]
@@ -224,7 +224,7 @@
         };
 
         // Колонки для скрытия в компактном виде
-        var compactHiddenColumns = ['ActionCode', 'UserId', 'DeviceName', 'ActionPowerBankId_Str', 'ActionPowerBankSlot'];
+        var compactHiddenColumns = ['ActionCode', 'UserId', 'DeviceName', 'PowerBankName', 'ActionPowerBankSlot'];
 
         function toggleView() {
             var isCompact = localStorage.getItem('actionsCompactView') === 'true';
@@ -275,7 +275,7 @@
                         { text: "Action Code", datafield: "ActionCode", width: 100, cellsrenderer: cellsrenderer },
                         { text: "User", datafield: "UserId", width: 100, cellsrenderer: cellsrenderer },
                         { text: "Device", datafield: "DeviceName", width: 140, cellsrenderer: cellsrenderer },
-                        { text: "PowerBank Id", datafield: "ActionPowerBankId_Str", width: 150, cellsrenderer: cellsrenderer },
+                        { text: "PowerBank", datafield: "PowerBankName", width: 150, cellsrenderer: cellsrenderer },
                         { text: "Slot", datafield: "ActionPowerBankSlot", width: 50, cellsrenderer: cellsrenderer },
                         { text: "Action Text", datafield: "ActionText", minwidth: 400, cellsrenderer: cellsrenderer },
                      ]

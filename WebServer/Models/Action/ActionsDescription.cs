@@ -68,6 +68,9 @@ namespace WebServer.Models.Action
         [Description("returned")]
         PowerBankReturn = 0x340,
 
+        [Description("deleted from system")]
+        PowerBankDelete = 0x350,
+
         // Payment
         [Description("payment hold")]
         PaymentHold = 0x4010,

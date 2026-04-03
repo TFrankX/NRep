@@ -138,6 +138,341 @@
                 }
             });
         }
+
+        function toggleServerDetails(index) {
+            var details = $(`#server-details-${index}`);
+            var icon = $(`#expand-icon-${index}`);
+
+            if (details.is(':visible')) {
+                details.slideUp(200);
+                icon.removeClass('expanded');
+            } else {
+                // Close other open details
+                $('.server-details').slideUp(200);
+                $('.expand-icon').removeClass('expanded');
+
+                details.slideDown(200);
+                icon.addClass('expanded');
+            }
+        }
+
+        function saveServerConfig(index) {
+            var server = {
+                Index: index,
+                Address: $(`#server${index}_address`).val(),
+                Port: parseInt($(`#server${index}_port`).val()) || 8884,
+                User: $(`#server${index}_user`).val(),
+                Pass: $(`#server${index}_pass`).val(),
+                ReconnectTime: parseInt($(`#server${index}_reconnect`).val()) || 30,
+                CertCA: $(`#server${index}_certca`).val(),
+                CertCli: $(`#server${index}_certcli`).val(),
+                CertPass: $(`#server${index}_certpass`).val(),
+                Enabled: $(`#server${index}_enabled`).is(':checked')
+            };
+
+            if (!server.Address) {
+                alert('Server address is required');
+                return;
+            }
+
+            var btn = $(`#server-details-${index} .btn-save`);
+            var originalText = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SaveServerConfigAjax", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify(server),
+                success: function(response) {
+                    btn.html('<i class="fas fa-check"></i> Saved!');
+
+                    // Update the row display
+                    var row = $(`.server-row[data-index="${index}"]`);
+                    row.find('td:eq(1) strong').text(server.Address);
+                    row.find('td:eq(2)').text(server.Port);
+
+                    var statusBadge = row.find('.server-status-badge');
+                    statusBadge.removeClass('enabled disabled')
+                        .addClass(server.Enabled ? 'enabled' : 'disabled')
+                        .text(server.Enabled ? 'Enabled' : 'Disabled');
+
+                    setTimeout(function() {
+                        btn.html(originalText).prop('disabled', false);
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    btn.html('<i class="fas fa-times"></i> Error');
+                    setTimeout(function() {
+                        btn.html(originalText).prop('disabled', false);
+                    }, 2000);
+                    alert('Failed to save: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
+
+        function deleteServerConfig(index) {
+            event.stopPropagation();
+
+            if (!confirm('Are you sure you want to delete this server?')) {
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("DeleteServerConfigAjax", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify({ Index: index }),
+                success: function(response) {
+                    // Remove the row and details
+                    $(`.server-row[data-index="${index}"]`).remove();
+                    $(`#server-details-${index}`).remove();
+
+                    // Show add button if hidden
+                    if ($('.server-row').length < 5) {
+                        $('.btn-add-server').show();
+                    }
+
+                    // Show no servers message if empty
+                    if ($('.server-row').length === 0) {
+                        $('.servers-table').hide();
+                        if ($('.no-servers-message').length === 0) {
+                            $('.servers-table-container').append(
+                                '<div class="no-servers-message">' +
+                                '<i class="fas fa-server"></i>' +
+                                '<p>No servers configured yet. Click "Add Server" to get started.</p>' +
+                                '</div>'
+                            );
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    alert('Failed to delete: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
+
+        function showAddServerForm() {
+            $('#addServerForm').slideDown(200);
+            $('.btn-add-server').hide();
+        }
+
+        function hideAddServerForm() {
+            $('#addServerForm').slideUp(200);
+            $('.btn-add-server').show();
+
+            // Clear form
+            $('#new_server_address').val('');
+            $('#new_server_port').val('8884');
+            $('#new_server_user').val('');
+            $('#new_server_pass').val('');
+            $('#new_server_reconnect').val('30');
+            $('#new_server_certca').val('');
+            $('#new_server_certcli').val('');
+            $('#new_server_certpass').val('');
+            $('#new_server_enabled').prop('checked', true);
+        }
+
+        function addNewServer() {
+            var address = $('#new_server_address').val();
+            if (!address) {
+                alert('Server address is required');
+                return;
+            }
+
+            // Find first available index
+            var usedIndexes = [];
+            $('.server-row').each(function() {
+                usedIndexes.push(parseInt($(this).data('index')));
+            });
+
+            var newIndex = 0;
+            for (var i = 0; i < 5; i++) {
+                if (usedIndexes.indexOf(i) === -1) {
+                    newIndex = i;
+                    break;
+                }
+            }
+
+            var server = {
+                Index: newIndex,
+                Address: address,
+                Port: parseInt($('#new_server_port').val()) || 8884,
+                User: $('#new_server_user').val(),
+                Pass: $('#new_server_pass').val(),
+                ReconnectTime: parseInt($('#new_server_reconnect').val()) || 30,
+                CertCA: '',
+                CertCli: '',
+                CertPass: $('#new_server_certpass').val(),
+                Enabled: $('#new_server_enabled').is(':checked')
+            };
+
+            var btn = $('#addServerForm .btn-save');
+            var originalText = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Adding...').prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SaveServerConfigAjax", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify(server),
+                success: function(response) {
+                    // Reload the page to show new server
+                    location.reload();
+                },
+                error: function(xhr) {
+                    btn.html('<i class="fas fa-times"></i> Error');
+                    setTimeout(function() {
+                        btn.html(originalText).prop('disabled', false);
+                    }, 2000);
+                    alert('Failed to add: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
+
+        function testServerConnection(index) {
+            var server = {
+                Index: index,
+                Address: $(`#server${index}_address`).val(),
+                Port: parseInt($(`#server${index}_port`).val()) || 8884,
+                User: $(`#server${index}_user`).val(),
+                Pass: $(`#server${index}_pass`).val(),
+                ReconnectTime: parseInt($(`#server${index}_reconnect`).val()) || 30,
+                CertCA: $(`#server${index}_certca`).val(),
+                CertCli: $(`#server${index}_certcli`).val(),
+                CertPass: $(`#server${index}_certpass`).val(),
+                Enabled: true
+            };
+
+            if (!server.Address) {
+                alert('Server address is required');
+                return;
+            }
+
+            var btn = $(`#btn-test-${index}`);
+            var result = $(`#test-result-${index}`);
+            var originalText = btn.html();
+
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Testing...').addClass('testing').prop('disabled', true);
+            result.hide();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("TestServerConnection", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify(server),
+                success: function(response) {
+                    btn.html(originalText).removeClass('testing').prop('disabled', false);
+
+                    result.find('.test-message').text(response.message);
+
+                    if (response.success) {
+                        result.removeClass('error').addClass('success');
+                        result.find('i').removeClass('fa-times-circle').addClass('fa-check-circle');
+                    } else {
+                        result.removeClass('success').addClass('error');
+                        result.find('i').removeClass('fa-check-circle').addClass('fa-times-circle');
+                    }
+
+                    result.show();
+
+                    // Hide result after 10 seconds
+                    setTimeout(function() {
+                        result.fadeOut();
+                    }, 10000);
+                },
+                error: function(xhr) {
+                    btn.html(originalText).removeClass('testing').prop('disabled', false);
+
+                    result.find('.test-message').text(xhr.responseJSON?.message || 'Connection test failed');
+                    result.removeClass('success').addClass('error');
+                    result.find('i').removeClass('fa-check-circle').addClass('fa-times-circle');
+                    result.show();
+                }
+            });
+        }
+
+        function uploadCertificate(serverIndex, certType, input) {
+            if (!input.files || !input.files[0]) return;
+
+            var file = input.files[0];
+            var formData = new FormData();
+            formData.append('file', file);
+            formData.append('serverIndex', serverIndex);
+            formData.append('certType', certType);
+
+            var inputId = certType === 'ca' ? `server${serverIndex}_certca` : `server${serverIndex}_certcli`;
+            var $input = $(`#${inputId}`);
+            $input.val('Uploading...');
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("UploadCertificate", "Settings")',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    $input.val(response.path);
+
+                    // Add delete button if not exists
+                    var $row = $input.closest('.cert-upload-row');
+                    if ($row.find('.btn-cert-delete').length === 0) {
+                        $row.append(`<button type="button" class="btn-cert-delete" onclick="deleteCertificate(${serverIndex}, '${certType}')"><i class="fas fa-times"></i></button>`);
+                    }
+
+                    // Show success feedback
+                    $input.css('background', '#ECFDF5');
+                    setTimeout(function() {
+                        $input.css('background', '#F9FAFB');
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    $input.val('');
+                    alert('Failed to upload: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+
+            // Clear file input
+            input.value = '';
+        }
+
+        function deleteCertificate(serverIndex, certType) {
+            if (!confirm('Delete this certificate?')) return;
+
+            var inputId = certType === 'ca' ? `server${serverIndex}_certca` : `server${serverIndex}_certcli`;
+            var $input = $(`#${inputId}`);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("DeleteCertificate", "Settings")',
+                data: { serverIndex: serverIndex, certType: certType },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    $input.val('');
+                    $input.closest('.cert-upload-row').find('.btn-cert-delete').remove();
+                },
+                error: function(xhr) {
+                    alert('Failed to delete: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
     </script>
 }
 
@@ -436,6 +771,415 @@
     .reload-result i {
         font-size: 18px;
     }
+
+    /* Server Settings Styles - Table Layout */
+    .servers-table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .servers-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .servers-table thead {
+        background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+        color: white;
+    }
+
+    .servers-table th {
+        padding: 14px 16px;
+        text-align: left;
+        font-weight: 500;
+        font-size: 13px;
+    }
+
+    .servers-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .server-row {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .server-row:hover {
+        background: #F9FAFB;
+    }
+
+    .expand-cell {
+        text-align: center;
+        color: #9CA3AF;
+    }
+
+    .expand-icon {
+        transition: transform 0.2s;
+    }
+
+    .expand-icon.expanded {
+        transform: rotate(90deg);
+    }
+
+    .server-status-badge {
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+
+    .server-status-badge.enabled {
+        background: #ECFDF5;
+        color: #059669;
+    }
+
+    .server-status-badge.disabled {
+        background: #FEF2F2;
+        color: #DC2626;
+    }
+
+    .server-details {
+        background: #F9FAFB;
+    }
+
+    .server-details-content {
+        padding: 20px;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .detail-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .detail-group label {
+        font-size: 12px;
+        color: #6B7280;
+        font-weight: 500;
+    }
+
+    .detail-group input {
+        padding: 8px 12px;
+        border: 1px solid #E5E7EB;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .detail-group input:focus {
+        outline: none;
+        border-color: #7C3AED;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .details-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 16px;
+        border-top: 1px solid #E5E7EB;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .btn-icon.btn-delete {
+        background: #FEE2E2;
+        color: #DC2626;
+    }
+
+    .btn-icon.btn-delete:hover {
+        background: #FECACA;
+    }
+
+    .btn-save {
+        padding: 10px 20px;
+        background: #7C3AED;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-save:hover {
+        background: #5B21B6;
+    }
+
+    .btn-cancel {
+        padding: 10px 20px;
+        background: #F3F4F6;
+        color: #4B5563;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+        background: #E5E7EB;
+    }
+
+    .btn-add-server {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 14px;
+        background: white;
+        border: 2px dashed #D1D5DB;
+        border-radius: 0 0 12px 12px;
+        color: #6B7280;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-add-server:hover {
+        border-color: #7C3AED;
+        color: #7C3AED;
+        background: #F5F3FF;
+    }
+
+    .add-server-form {
+        padding: 24px;
+        background: #F9FAFB;
+        border-top: 1px solid #E5E7EB;
+    }
+
+    .add-server-form h4 {
+        margin: 0 0 20px 0;
+        color: #1F2937;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .add-server-form h4 i {
+        color: #7C3AED;
+    }
+
+    .add-server-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .no-servers-message {
+        padding: 60px 20px;
+        text-align: center;
+        color: #9CA3AF;
+    }
+
+    .no-servers-message i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        display: block;
+    }
+
+    .no-servers-message p {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    /* Certificate Upload Styles */
+    .cert-upload-group {
+        grid-column: span 1;
+    }
+
+    .cert-upload-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .cert-upload-row input[type="text"] {
+        flex: 1;
+        background: #F9FAFB;
+        color: #6B7280;
+        font-size: 12px;
+    }
+
+    .btn-upload {
+        padding: 8px 12px;
+        background: #7C3AED;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-upload:hover {
+        background: #5B21B6;
+    }
+
+    .btn-cert-delete {
+        padding: 8px 10px;
+        background: #FEE2E2;
+        color: #DC2626;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-cert-delete:hover {
+        background: #FECACA;
+    }
+
+    .detail-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .detail-group.full-width label {
+        color: #9CA3AF;
+        font-style: italic;
+    }
+
+    .detail-group.full-width label i {
+        margin-right: 6px;
+    }
+
+    /* Test Connection Styles */
+    .btn-test {
+        padding: 10px 20px;
+        background: #F3F4F6;
+        color: #374151;
+        border: 1px solid #D1D5DB;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-test:hover {
+        background: #E5E7EB;
+        border-color: #9CA3AF;
+    }
+
+    .btn-test.testing {
+        background: #FEF3C7;
+        border-color: #F59E0B;
+        color: #92400E;
+    }
+
+    .btn-test.testing i {
+        animation: spin 1s linear infinite;
+    }
+
+    .test-result {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .test-result.success {
+        background: #ECFDF5;
+        color: #059669;
+    }
+
+    .test-result.success i {
+        color: #10B981;
+    }
+
+    .test-result.error {
+        background: #FEF2F2;
+        color: #DC2626;
+    }
+
+    .test-result.error i::before {
+        content: "\f057";
+    }
+
+    .details-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        padding-top: 16px;
+        border-top: 1px solid #E5E7EB;
+        flex-wrap: wrap;
+    }
+
+    /* Toggle Switch */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.3s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+    }
+
+    input:checked + .slider {
+        background-color: #7C3AED;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(24px);
+    }
+
+    .slider.round {
+        border-radius: 26px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
 </style>
 
 <div class="page-header">
@@ -457,8 +1201,12 @@
                 <i class="fas fa-bell"></i>
                 <span>Notifications</span>
             </a>
-            <a href="#" class="settings-nav-item @(Model.ActiveSection == "system" ? "active" : "")" data-section="system">
+            <a href="#" class="settings-nav-item @(Model.ActiveSection == "servers" ? "active" : "")" data-section="servers">
                 <i class="fas fa-server"></i>
+                <span>Servers</span>
+            </a>
+            <a href="#" class="settings-nav-item @(Model.ActiveSection == "system" ? "active" : "")" data-section="system">
+                <i class="fas fa-cogs"></i>
                 <span>System</span>
             </a>
             <a href="#" class="settings-nav-item @(Model.ActiveSection == "integrations" ? "active" : "")" data-section="integrations">
@@ -595,6 +1343,195 @@
                 <i class="fas fa-bell"></i>
                 <h3>Coming Soon</h3>
                 <p>Notification settings will be available in a future update.</p>
+            </div>
+        </div>
+
+        <!-- Servers Section -->
+        <div id="section-servers" class="settings-section" style="@(Model.ActiveSection == "servers" ? "display: block;" : "")">
+            <div class="section-header">
+                <h2>MQTT Servers</h2>
+                <p>Configure MQTT servers for charging stations. Maximum 5 servers.</p>
+            </div>
+
+            <div class="servers-table-container">
+                <table class="servers-table" id="serversTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th>Address</th>
+                            <th>Port</th>
+                            <th>Status</th>
+                            <th style="width: 100px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var server in Model.Servers)
+                        {
+                            <tr class="server-row" data-index="@server.Index">
+                                <td class="expand-cell" onclick="toggleServerDetails(@server.Index)">
+                                    <i class="fas fa-chevron-right expand-icon" id="expand-icon-@server.Index"></i>
+                                </td>
+                                <td onclick="toggleServerDetails(@server.Index)"><strong>@server.Address</strong></td>
+                                <td onclick="toggleServerDetails(@server.Index)">@server.Port</td>
+                                <td onclick="toggleServerDetails(@server.Index)">
+                                    <span class="server-status-badge @(server.Enabled ? "enabled" : "disabled")">
+                                        @(server.Enabled ? "Enabled" : "Disabled")
+                                    </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn-icon btn-delete" onclick="deleteServerConfig(@server.Index)" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="server-details" id="server-details-@server.Index" style="display: none;">
+                                <td colspan="5">
+                                    <div class="server-details-content">
+                                        <div class="details-grid">
+                                            <div class="detail-group">
+                                                <label>Address</label>
+                                                <input type="text" id="server@(server.Index)_address" value="@server.Address" placeholder="mqtt.example.com">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Port</label>
+                                                <input type="number" id="server@(server.Index)_port" value="@server.Port" placeholder="8884">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Username</label>
+                                                <input type="text" id="server@(server.Index)_user" value="@server.User" placeholder="username">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Password</label>
+                                                <input type="password" id="server@(server.Index)_pass" value="@server.Pass" placeholder="password">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Reconnect (sec)</label>
+                                                <input type="number" id="server@(server.Index)_reconnect" value="@server.ReconnectTime" placeholder="30">
+                                            </div>
+                                            <div class="detail-group cert-upload-group">
+                                                <label>CA Certificate</label>
+                                                <div class="cert-upload-row">
+                                                    <input type="text" id="server@(server.Index)_certca" value="@server.CertCA" placeholder="No certificate" readonly>
+                                                    <input type="file" id="server@(server.Index)_certca_file" accept=".crt,.pem,.cer" style="display:none" onchange="uploadCertificate(@server.Index, 'ca', this)">
+                                                    <button type="button" class="btn-upload" onclick="$('#server@(server.Index)_certca_file').click()">
+                                                        <i class="fas fa-upload"></i>
+                                                    </button>
+                                                    @if (!string.IsNullOrEmpty(server.CertCA))
+                                                    {
+                                                        <button type="button" class="btn-cert-delete" onclick="deleteCertificate(@server.Index, 'ca')">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="detail-group cert-upload-group">
+                                                <label>Client Certificate</label>
+                                                <div class="cert-upload-row">
+                                                    <input type="text" id="server@(server.Index)_certcli" value="@server.CertCli" placeholder="No certificate" readonly>
+                                                    <input type="file" id="server@(server.Index)_certcli_file" accept=".crt,.pem,.p12,.pfx,.key" style="display:none" onchange="uploadCertificate(@server.Index, 'client', this)">
+                                                    <button type="button" class="btn-upload" onclick="$('#server@(server.Index)_certcli_file').click()">
+                                                        <i class="fas fa-upload"></i>
+                                                    </button>
+                                                    @if (!string.IsNullOrEmpty(server.CertCli))
+                                                    {
+                                                        <button type="button" class="btn-cert-delete" onclick="deleteCertificate(@server.Index, 'client')">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Certificate Password</label>
+                                                <input type="password" id="server@(server.Index)_certpass" value="@server.CertPass" placeholder="password (if required)">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Enabled</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="server@(server.Index)_enabled" @(server.Enabled ? "checked" : "")>
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="details-actions">
+                                            <button type="button" class="btn-test" id="btn-test-@server.Index" onclick="testServerConnection(@server.Index)">
+                                                <i class="fas fa-plug"></i> Test Connection
+                                            </button>
+                                            <div class="test-result" id="test-result-@server.Index" style="display: none;">
+                                                <i class="fas fa-check-circle"></i>
+                                                <span class="test-message"></span>
+                                            </div>
+                                            <button type="button" class="btn-save" onclick="saveServerConfig(@server.Index)">
+                                                <i class="fas fa-save"></i> Save Changes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (Model.Servers.Count < 5)
+                {
+                    <button type="button" class="btn-add-server" onclick="showAddServerForm()">
+                        <i class="fas fa-plus"></i> Add Server
+                    </button>
+                }
+
+                <!-- Add Server Form (hidden by default) -->
+                <div id="addServerForm" class="add-server-form" style="display: none;">
+                    <h4><i class="fas fa-server"></i> New Server</h4>
+                    <div class="details-grid">
+                        <div class="detail-group">
+                            <label>Address *</label>
+                            <input type="text" id="new_server_address" placeholder="mqtt.example.com">
+                        </div>
+                        <div class="detail-group">
+                            <label>Port</label>
+                            <input type="number" id="new_server_port" value="8884" placeholder="8884">
+                        </div>
+                        <div class="detail-group">
+                            <label>Username</label>
+                            <input type="text" id="new_server_user" placeholder="username">
+                        </div>
+                        <div class="detail-group">
+                            <label>Password</label>
+                            <input type="password" id="new_server_pass" placeholder="password">
+                        </div>
+                        <div class="detail-group">
+                            <label>Reconnect (sec)</label>
+                            <input type="number" id="new_server_reconnect" value="30" placeholder="30">
+                        </div>
+                        <div class="detail-group">
+                            <label>Certificate Password</label>
+                            <input type="password" id="new_server_certpass" placeholder="password (if required)">
+                        </div>
+                        <div class="detail-group full-width">
+                            <label><i class="fas fa-info-circle"></i> Certificates can be uploaded after adding the server</label>
+                        </div>
+                        <div class="detail-group">
+                            <label>Enabled</label>
+                            <label class="switch">
+                                <input type="checkbox" id="new_server_enabled" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="add-server-actions">
+                        <button type="button" class="btn-cancel" onclick="hideAddServerForm()">Cancel</button>
+                        <button type="button" class="btn-save" onclick="addNewServer()">
+                            <i class="fas fa-plus"></i> Add Server
+                        </button>
+                    </div>
+                </div>
+
+                @if (Model.Servers.Count == 0)
+                {
+                    <div class="no-servers-message">
+                        <i class="fas fa-server"></i>
+                        <p>No servers configured yet. Click "Add Server" to get started.</p>
+                    </div>
+                }
             </div>
         </div>
 

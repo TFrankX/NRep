@@ -165,7 +165,7 @@
 
   <!-- Copy wwwroot to output directory -->
   <ItemGroup>
-    <Content Include="wwwroot\**\*">
+    <Content Update="wwwroot\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

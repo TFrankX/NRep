@@ -139,6 +139,76 @@
              });
         }
 
+        function confirmDeletePowerBank(powerBankIdNum, powerBankName) {
+            // Show confirmation modal with name
+            $('#deletePbId').text(powerBankName || powerBankIdNum);
+            $('#deletePbIdHidden').val(powerBankIdNum);
+            var modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            modal.show();
+        }
+
+        function deletePowerBank() {
+            var powerBankId = $('#deletePbIdHidden').val();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("DeletePowerBank", "PowerBanks")',
+                contentType: 'application/json',
+                data: JSON.stringify({ PowerBankId: powerBankId }),
+                success: function(response) {
+                    // Hide modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+
+                    if (response.success) {
+                        // Show success message and refresh
+                        alert('PowerBank deleted successfully');
+                        refresh();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    alert('Failed to delete powerbank');
+                }
+            });
+        }
+
+        function confirmDeleteDevice(deviceId, deviceName) {
+            // Show confirmation modal for station deletion
+            $('#deleteDeviceId').text(deviceId);
+            $('#deleteDeviceName').text(deviceName);
+            $('#deleteDeviceIdHidden').val(deviceId);
+            var modal = new bootstrap.Modal(document.getElementById('deleteDeviceModal'));
+            modal.show();
+        }
+
+        function deleteDevice() {
+            var deviceId = $('#deleteDeviceIdHidden').val();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("DeleteDevice", "Devices")',
+                contentType: 'application/json',
+                data: JSON.stringify({ DeviceId: deviceId }),
+                success: function(response) {
+                    // Hide modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteDeviceModal')).hide();
+
+                    if (response.success) {
+                        // Show success message and refresh
+                        alert('Station deleted successfully');
+                        refresh();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteDeviceModal')).hide();
+                    alert('Failed to delete station');
+                }
+            });
+        }
 
         function CanReg(DeviceId) {
              $.ajax({
@@ -448,9 +518,10 @@
                 var slotInfo = jsonmod[row].SlotInfo || [];
                 var slots = "<div style='display: flex; gap: 6px;'>";
                 for (var i = 0; i < 4; i++) {
-                    var slot = slotInfo[i] || { HasPowerBank: false, ChargeLevel: 0, Charging: false };
+                    var slot = slotInfo[i] || { HasPowerBank: false, Plugged: false, ChargeLevel: 0, Charging: false };
                     var slotNum = i + 1;
-                    if (slot.HasPowerBank) {
+                    // Show filled battery only if powerbank is physically plugged in
+                    if (slot.Plugged) {
                         var level = slot.ChargeLevel || 0;
                         var color = level > 60 ? '#22C55E' : (level > 30 ? '#F59E0B' : '#EF4444');
                         var fillHeight = Math.max(level, 5);
@@ -466,6 +537,7 @@
                             "<span class='battery-percent' style='color:" + color + ";'>" + level + "%</span>" +
                             "</div>";
                     } else {
+                        // Empty slot or powerbank taken (not physically present)
                         slots += "<div class='battery-slot empty' title='Slot " + slotNum + " - Empty'>" +
                             "<div class='battery-icon empty'>" +
                             "<div class='battery-tip'></div>" +
@@ -498,14 +570,26 @@
                     "</div>";
 
             } else if (column === 'LastOnlineTime') {
+                if (!value) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                var date = new Date(value);
+                if (date.getFullYear() < 2000) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
                 return divstartstyle +
-                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + value + "</span>" +
+                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + formatted + "</span>" +
                     "</div>";
             } else if (column === 'PushPB') {
                 return divstartstyle +
                     "<button class='btn-grid btn-grid-success' " +
                     "onclick=\"PushPB('" + jsonmod[row].DeviceName + "','0')\">" +
                     "Push PB</button>" +
+                    "</div>";
+            } else if (column === 'DeleteDevice') {
+                // Only show delete button for offline stations
+                if (jsonmod[row].Online) return divstartstyle + "</div>";
+                return divstartstyle +
+                    "<button class='btn-grid btn-grid-danger' style='padding: 4px 10px;' " +
+                    "onclick=\"confirmDeleteDevice('" + jsonmod[row].Id_str + "', '" + jsonmod[row].DeviceName + "')\" title='Delete station'>" +
+                    "<i class='fas fa-trash'></i></button>" +
                     "</div>";
             } else if (column === 'TypeOfUse') {
                 return divstartstyle +
@@ -591,10 +675,86 @@
                     //!$("#jqxgrid").jqxGrid('refresh');
                     //$("#jqxgrid").jqxGrid('updatebounddata', 'sort');
                     $("#jqxgrid").jqxGrid('updatebounddata', 'cells');
-                    //$("#jqxgrid").jqxGrid('updatebounddata', 'filter');
-                    //alert('x');
+
+                    // Re-apply offline filter if active (this may collapse rows)
+                    if (hideOffline) {
+                        var filtergroup = new $.jqx.filter();
+                        var filter = filtergroup.createfilter('booleanfilter', true, 'EQUAL');
+                        filtergroup.addfilter(0, filter);
+                        $("#jqxgrid").jqxGrid('addfilter', 'Online', filtergroup);
+                        $("#jqxgrid").jqxGrid('applyfilters');
+                    }
+
+                    // Re-expand rows that were expanded before update (by DeviceName)
+                    // Use setTimeout to ensure filters are applied first
+                    setTimeout(function() {
+                        for (var deviceName in expandedRows) {
+                            if (expandedRows[deviceName]) {
+                                // Find row index by DeviceName in visible rows
+                                var rows = $("#jqxgrid").jqxGrid('getrows');
+                                for (var i = 0; i < rows.length; i++) {
+                                    if (rows[i].DeviceName === deviceName) {
+                                        $("#jqxgrid").jqxGrid('showrowdetails', i);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        // Update expanded slot grids
+                        updateExpandedSlotGrids();
+                    }, 50);
                 }
             });
+        }
+
+        // Track expanded rows by DeviceName (not by index, which can change after filtering)
+        var expandedRows = {};  // { deviceName: rowIndex }
+
+        function updateExpandedSlotGrids() {
+            // Find current data for each expanded device
+            for (var deviceName in expandedRows) {
+                if (!expandedRows[deviceName]) continue;
+
+                // Find device in current data by DeviceName
+                var deviceData = null;
+                for (var i = 0; i < source.localdata.length; i++) {
+                    if (source.localdata[i].DeviceName === deviceName) {
+                        deviceData = source.localdata[i];
+                        break;
+                    }
+                }
+
+                if (!deviceData) continue;
+
+                var slotInfo = deviceData.SlotInfo || [];
+                var gridId = 'slotgrid_' + deviceName;
+                var grid = $('#' + gridId);
+
+                if (grid.length > 0) {
+                    // Prepare updated slot data
+                    var slotData = [];
+                    for (var i = 0; i < 4; i++) {
+                        var slot = slotInfo[i] || { Slot: i + 1, HasPowerBank: false, Status: 'Empty' };
+                        slot.DeviceName = deviceName;
+                        slotData.push(slot);
+                    }
+
+                    // Save reference to parent before destroy
+                    var parentContainer = grid.parent();
+
+                    // Destroy and recreate grid to force full re-render
+                    try {
+                        grid.jqxGrid('destroy');
+                    } catch(e) {}
+
+                    // Recreate the grid container
+                    parentContainer.html('<div id="' + gridId + '"></div>');
+                    grid = $('#' + gridId);
+
+                    // Create fresh grid with new data
+                    createSlotGrid(grid, slotData, deviceName);
+                }
+            }
         }
 
 
@@ -665,6 +825,170 @@
 
         var dataAdapter = new $.jqx.dataAdapter(source);
 
+        // Create slot grid (reusable for init and update)
+        function createSlotGrid(gridElement, slotData, deviceName) {
+            var slotSource = {
+                datatype: "array",
+                datafields: [
+                    { name: 'Slot', type: 'number' },
+                    { name: 'Status', type: 'string' },
+                    { name: 'PowerBankId', type: 'string' },
+                    { name: 'PowerBankIdNum', type: 'string' },
+                    { name: 'UserId', type: 'string' },
+                    { name: 'Plugged', type: 'boolean' },
+                    { name: 'Locked', type: 'boolean' },
+                    { name: 'Charging', type: 'boolean' },
+                    { name: 'IsOk', type: 'boolean' },
+                    { name: 'ChargeLevel', type: 'number' },
+                    { name: 'LastGetTime', type: 'date' },
+                    { name: 'LastPutTime', type: 'date' },
+                    { name: 'Duration', type: 'string' }
+                ],
+                localdata: slotData
+            };
+
+            var slotAdapter = new $.jqx.dataAdapter(slotSource);
+
+            // Cell renderer - uses slotData from closure
+            function slotCellRenderer(row, column, value) {
+                var data = slotData[row];
+                if (!data) return "";
+                var backcolor = "#FFFFFF";
+
+                // Color by status
+                if (data.Status === "On hands") backcolor = "#FEF3C7";
+                else if (data.Status === "Returned") backcolor = "#D1FAE5";
+                else if (data.Status === "Returned (Offline)" || data.Status === "In station (Offline)") backcolor = "#E5E7EB";
+                else if (data.Status === "Offline") backcolor = "#FEE2E2";
+                else if (data.Status === "Empty") backcolor = "#F9FAFB";
+                else backcolor = "#F3F4F6";
+
+                var divStyle = "<div style='height: 100%; min-height: 36px; background: " + backcolor + "; display: flex; align-items: center; padding: 0 8px;'>";
+
+                if (column === 'Slot') {
+                    return divStyle + "<span class='status-circle purple'>" + value + "</span></div>";
+                }
+                if (column === 'Status') {
+                    var badgeClass = 'badge-secondary';
+                    var icon = 'fa-question-circle';
+                    if (value === "On hands") { badgeClass = 'badge-warning'; icon = 'fa-hand-holding'; }
+                    else if (value === "Returned") { badgeClass = 'badge-success'; icon = 'fa-check-circle'; }
+                    else if (value === "Returned (Offline)") { badgeClass = 'badge-secondary'; icon = 'fa-check-circle'; }
+                    else if (value === "In station (Offline)") { badgeClass = 'badge-secondary'; icon = 'fa-charging-station'; }
+                    else if (value === "Offline") { badgeClass = 'badge-danger'; icon = 'fa-wifi'; }
+                    else if (value === "In station") { badgeClass = 'badge-info'; icon = 'fa-charging-station'; }
+                    else if (value === "Empty") { badgeClass = 'badge-secondary'; icon = 'fa-minus'; }
+                    return divStyle + "<span class='slot-badge " + badgeClass + "'><i class='fas " + icon + " me-1'></i>" + value + "</span></div>";
+                }
+                if (column === 'PowerBankId') {
+                    if (!value) return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    return divStyle + "<span style='font-family: monospace; font-size: 0.75rem; color: #6B7280;'>" + value + "</span></div>";
+                }
+                if (column === 'UserId') {
+                    if (!value) return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    return divStyle + "<span style='font-size: 0.8rem;'><i class='fas fa-user me-1' style='color: #7C3AED;'></i>" + value + "</span></div>";
+                }
+                if (column === 'Plugged' || column === 'Locked' || column === 'Charging' || column === 'IsOk') {
+                    if (data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    var circleClass = value ? 'green' : 'gray';
+                    if (column === 'IsOk' && !value) circleClass = 'red';
+                    return divStyle + "<span class='status-circle " + circleClass + "'></span></div>";
+                }
+                if (column === 'ChargeLevel') {
+                    if (data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    var level = value || 0;
+                    var color = level > 60 ? '#22C55E' : (level > 30 ? '#F59E0B' : '#EF4444');
+                    return divStyle +
+                        "<div style='display: flex; align-items: center; gap: 6px;'>" +
+                        "<div style='width: 40px; height: 6px; background: #E5E7EB; border-radius: 3px; overflow: hidden;'>" +
+                        "<div style='width: " + level + "%; height: 100%; background: " + color + ";'></div></div>" +
+                        "<span style='font-size: 0.7rem; color: " + color + ";'>" + level + "%</span></div></div>";
+                }
+                if (column === 'LastGetTime') {
+                    if (!value || data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    var date = new Date(value);
+                    if (date.getFullYear() < 2000) return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                    return divStyle + "<span style='font-size: 0.75rem;'><i class='fas fa-sign-out-alt me-1' style='color: #F59E0B;'></i>" + formatted + "</span></div>";
+                }
+                if (column === 'LastPutTime') {
+                    if (!value || data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    var date = new Date(value);
+                    if (date.getFullYear() < 2000) return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                    return divStyle + "<span style='font-size: 0.75rem;'><i class='fas fa-sign-in-alt me-1' style='color: #10B981;'></i>" + formatted + "</span></div>";
+                }
+                if (column === 'Duration') {
+                    if (!value || value === '-' || data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    return divStyle + "<span style='font-size: 0.8rem;'><i class='fas fa-clock me-1' style='color: #6B7280;'></i>" + value + "</span></div>";
+                }
+                if (column === 'Push') {
+                    // Don't show Push button if not plugged or station is offline
+                    if (!data.Plugged || data.Status.indexOf('Offline') !== -1) return divStyle + "</div>";
+                    return divStyle +
+                        "<button class='btn-grid btn-grid-success' style='padding: 4px 10px; font-size: 0.75rem;' " +
+                        "onclick=\"PushPB('" + data.DeviceName + "','" + data.Slot + "')\">" +
+                        "<i class='fas fa-eject'></i></button></div>";
+                }
+                if (column === 'Delete') {
+                    if (data.Status !== 'Offline' && data.Status !== 'On hands') return divStyle + "</div>";
+                    return divStyle +
+                        "<button class='btn-grid btn-grid-danger' style='padding: 4px 10px; font-size: 0.75rem;' " +
+                        "onclick=\"confirmDeletePowerBank('" + data.PowerBankIdNum + "', '" + data.PowerBankId + "')\" title='Delete powerbank'>" +
+                        "<i class='fas fa-trash'></i></button></div>";
+                }
+                return divStyle + (value || '-') + "</div>";
+            }
+
+            gridElement.jqxGrid({
+                width: '100%',
+                height: 220,
+                source: slotAdapter,
+                theme: 'material-purple',
+                sortable: false,
+                filterable: false,
+                rowsheight: 40,
+                columnsresize: true,
+                enablebrowserselection: true,
+                columns: [
+                    { text: "Slot", datafield: "Slot", width: 45, cellsrenderer: slotCellRenderer },
+                    { text: "Status", datafield: "Status", width: 95, cellsrenderer: slotCellRenderer },
+                    { text: "PowerBank", datafield: "PowerBankId", width: 125, cellsrenderer: slotCellRenderer },
+                    { text: "User", datafield: "UserId", width: 85, cellsrenderer: slotCellRenderer },
+                    { text: "Plugged", datafield: "Plugged", width: 50, cellsrenderer: slotCellRenderer },
+                    { text: "Locked", datafield: "Locked", width: 50, cellsrenderer: slotCellRenderer },
+                    { text: "Charging", datafield: "Charging", width: 55, cellsrenderer: slotCellRenderer },
+                    { text: "IsOk", datafield: "IsOk", width: 40, cellsrenderer: slotCellRenderer },
+                    { text: "Charge", datafield: "ChargeLevel", width: 70, cellsrenderer: slotCellRenderer },
+                    { text: "Duration", datafield: "Duration", width: 65, cellsrenderer: slotCellRenderer },
+                    { text: "Last Get", datafield: "LastGetTime", width: 120, cellsrenderer: slotCellRenderer },
+                    { text: "Last Put", datafield: "LastPutTime", width: 120, cellsrenderer: slotCellRenderer },
+                    { text: "Push", datafield: "Push", width: 50, cellsrenderer: slotCellRenderer },
+                    { text: "Del", datafield: "Delete", width: 45, cellsrenderer: slotCellRenderer }
+                ]
+            });
+        }
+
+        // Initialize row details (slot information)
+        function initSlotDetails(index, parentElement, gridElement, record) {
+            var slotInfo = source.localdata[index].SlotInfo || [];
+            var deviceName = source.localdata[index].DeviceName;
+            var container = $($(parentElement).children()[0]);
+
+            // Create unique grid ID using DeviceName (stable across updates)
+            var gridId = 'slotgrid_' + deviceName;
+            container.html('<div id="' + gridId + '"></div>');
+
+            // Prepare slot data
+            var slotData = [];
+            for (var i = 0; i < 4; i++) {
+                var slot = slotInfo[i] || { Slot: i + 1, HasPowerBank: false, Status: 'Empty' };
+                slot.DeviceName = deviceName;
+                slotData.push(slot);
+            }
+
+            createSlotGrid($('#' + gridId), slotData, deviceName);
+        }
 
         $(document).ready(function() {
 
@@ -687,6 +1011,14 @@
                     height: 720,
                     columnsresize: true,
                     autowidth: true,
+                    // Row details configuration
+                    rowdetails: true,
+                    rowdetailstemplate: {
+                        rowdetails: "<div style='margin: 10px;'></div>",
+                        rowdetailsheight: 250,
+                        rowdetailshidden: true
+                    },
+                    initrowdetails: initSlotDetails,
                     columns: [
                         { text: "ID", datafield: "Id_str", width: 160, cellsrenderer: cellsrenderer },
                         { text: "Device", datafield: "DeviceName", width: 170, cellsrenderer: cellsrenderer },
@@ -702,11 +1034,26 @@
                         { text: "SIM", datafield: "SimId", width: 180, cellsrenderer: cellsrenderer },
                         { text: "Last Online", datafield: "LastOnlineTime", width: 160, cellsrenderer: cellsrenderer },
                         { text: "Push", datafield: "PushPB", width: 80, cellsrenderer: cellsrenderer },
+                        { text: "Del", datafield: "DeleteDevice", width: 50, cellsrenderer: cellsrenderer },
                         { text: "QR", datafield: "QR", width: 60, cellsrenderer: cellsrenderer },
                      ]
                 });
             refresh();
             $("#jqxWidget").css('display', 'block');
+
+            // Track row expand/collapse events by DeviceName
+            $("#jqxgrid").on('rowexpand', function(event) {
+                var rowData = $("#jqxgrid").jqxGrid('getrowdata', event.args.rowindex);
+                if (rowData && rowData.DeviceName) {
+                    expandedRows[rowData.DeviceName] = true;
+                }
+            });
+            $("#jqxgrid").on('rowcollapse', function(event) {
+                var rowData = $("#jqxgrid").jqxGrid('getrowdata', event.args.rowindex);
+                if (rowData && rowData.DeviceName) {
+                    expandedRows[rowData.DeviceName] = false;
+                }
+            });
 
             // Check saved view preference
             var isCompact = localStorage.getItem('devicesCompactView') === 'true';
@@ -715,6 +1062,15 @@
                 $('#viewToggle').addClass('active');
                 $('#viewToggleText').text('Full View');
                 $('#viewToggleIcon').removeClass('fa-compress').addClass('fa-expand');
+            }
+
+            // Check saved offline filter preference
+            if (hideOffline) {
+                // Apply filter after a small delay to ensure grid is ready
+                setTimeout(function() {
+                    applyOfflineFilter();
+                    updateOfflineButton();
+                }, 500);
             }
         });
 
@@ -754,6 +1110,41 @@
                 $('#viewToggle').removeClass('active');
                 $('#viewToggleText').text('Compact');
                 $('#viewToggleIcon').removeClass('fa-expand').addClass('fa-compress');
+            }
+        }
+
+        // Toggle offline stations visibility
+        var hideOffline = localStorage.getItem('devicesHideOffline') === 'true';
+
+        function toggleOffline() {
+            hideOffline = !hideOffline;
+            localStorage.setItem('devicesHideOffline', hideOffline);
+            applyOfflineFilter();
+            updateOfflineButton();
+        }
+
+        function applyOfflineFilter() {
+            if (hideOffline) {
+                var filtergroup = new $.jqx.filter();
+                var filter = filtergroup.createfilter('booleanfilter', true, 'EQUAL');
+                filtergroup.addfilter(0, filter);
+                $("#jqxgrid").jqxGrid('addfilter', 'Online', filtergroup);
+                $("#jqxgrid").jqxGrid('applyfilters');
+            } else {
+                $("#jqxgrid").jqxGrid('removefilter', 'Online');
+                $("#jqxgrid").jqxGrid('applyfilters');
+            }
+        }
+
+        function updateOfflineButton() {
+            if (hideOffline) {
+                $('#offlineToggle').addClass('active');
+                $('#offlineToggleText').text('Show Offline');
+                $('#offlineToggleIcon').removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                $('#offlineToggle').removeClass('active');
+                $('#offlineToggleText').text('Hide Offline');
+                $('#offlineToggleIcon').removeClass('fa-eye-slash').addClass('fa-eye');
             }
         }
 
@@ -811,10 +1202,16 @@
         <h1><i class="fas fa-charging-station"></i> Charging Stations</h1>
         <p class="page-subtitle">Manage your charging station devices</p>
     </div>
-    <button id="viewToggle" class="btn-acharger btn-secondary-acharger" onclick="toggleView()" style="white-space: nowrap;">
-        <i id="viewToggleIcon" class="fas fa-compress"></i>
-        <span id="viewToggleText">Compact</span>
-    </button>
+    <div style="display: flex; gap: 8px;">
+        <button id="offlineToggle" class="btn-acharger btn-secondary-acharger" onclick="toggleOffline()" style="white-space: nowrap;">
+            <i id="offlineToggleIcon" class="fas fa-eye"></i>
+            <span id="offlineToggleText">Hide Offline</span>
+        </button>
+        <button id="viewToggle" class="btn-acharger btn-secondary-acharger" onclick="toggleView()" style="white-space: nowrap;">
+            <i id="viewToggleIcon" class="fas fa-compress"></i>
+            <span id="viewToggleText">Compact</span>
+        </button>
+    </div>
 </div>
 
 <div class="grid-container">
@@ -853,6 +1250,83 @@
                 </button>
                 <button type="button" class="btn" onclick="downloadQR()" style="background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: white;">
                     <i class="fas fa-download me-1"></i>Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); color: white; border-radius: 16px 16px 0 0; border: none;">
+                <h5 class="modal-title" id="deleteConfirmLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete PowerBank
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="width: 80px; height: 80px; background: #FEE2E2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fas fa-trash" style="font-size: 32px; color: #DC2626;"></i>
+                </div>
+                <h5 class="mb-3">Are you sure?</h5>
+                <p class="text-muted mb-2">You are about to delete PowerBank:</p>
+                <p class="fw-bold" style="font-family: monospace; color: #7C3AED;" id="deletePbId"></p>
+                <input type="hidden" id="deletePbIdHidden" />
+                <div class="alert alert-warning mt-3" style="text-align: left; font-size: 0.875rem;">
+                    <i class="fas fa-info-circle me-1"></i>
+                    This will permanently remove the powerbank from the database and statistics.
+                    Action history in the logs will be preserved.
+                </div>
+            </div>
+            <div class="modal-footer" style="border: none; justify-content: center; padding-bottom: 24px; gap: 12px;">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="min-width: 100px;">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" onclick="deletePowerBank()" style="min-width: 100px;">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Station Confirmation Modal -->
+<div class="modal fade" id="deleteDeviceModal" tabindex="-1" aria-labelledby="deleteDeviceLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); color: white; border-radius: 16px 16px 0 0; border: none;">
+                <h5 class="modal-title" id="deleteDeviceLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Station
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="width: 80px; height: 80px; background: #FEE2E2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fas fa-charging-station" style="font-size: 2rem; color: #DC2626;"></i>
+                </div>
+                <h5 style="color: #1F2937; margin-bottom: 12px;">Are you sure?</h5>
+                <p style="color: #6B7280; margin-bottom: 8px;">
+                    You are about to delete station:
+                </p>
+                <p style="font-family: monospace; font-size: 0.9rem; color: #7C3AED; background: #F3F4F6; padding: 8px 16px; border-radius: 8px; display: inline-block;">
+                    <span id="deleteDeviceName"></span>
+                </p>
+                <p style="color: #9CA3AF; font-size: 0.85rem; margin-top: 8px;">
+                    ID: <span id="deleteDeviceId"></span>
+                </p>
+                <p style="color: #6B7280; font-size: 0.85rem; margin-top: 12px;">
+                    <i class="fas fa-info-circle me-1"></i>PowerBanks will NOT be deleted.
+                </p>
+                <input type="hidden" id="deleteDeviceIdHidden" />
+            </div>
+            <div class="modal-footer" style="border: none; justify-content: center; padding-bottom: 24px; gap: 12px;">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="min-width: 100px;">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" onclick="deleteDevice()" style="min-width: 100px;">
+                    <i class="fas fa-trash me-1"></i>Delete
                 </button>
             </div>
         </div>
@@ -934,5 +1408,55 @@
         line-height: 1;
         min-width: 28px;
         text-align: center;
+    }
+
+    /* Slot details badges */
+    .slot-badge {
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .slot-badge.badge-warning {
+        background: #FEF3C7;
+        color: #D97706;
+    }
+
+    .slot-badge.badge-success {
+        background: #D1FAE5;
+        color: #059669;
+    }
+
+    .slot-badge.badge-danger {
+        background: #FEE2E2;
+        color: #DC2626;
+    }
+
+    .slot-badge.badge-info {
+        background: #DBEAFE;
+        color: #2563EB;
+    }
+
+    .slot-badge.badge-secondary {
+        background: #F3F4F6;
+        color: #6B7280;
+    }
+
+    /* Delete button style for nested grid */
+    .btn-grid-danger {
+        background: #FEE2E2;
+        color: #DC2626;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-grid-danger:hover {
+        background: #DC2626;
+        color: white;
     }
 </style>

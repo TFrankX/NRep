@@ -221,9 +221,9 @@
                         <tbody id="pbTableBody">
                             @foreach (var pb in Model.PowerBanks)
                             {
-                                var shortId = pb.PowerBankId.Length > 6 ? "..." + pb.PowerBankId.Substring(pb.PowerBankId.Length - 6) : pb.PowerBankId;
+                                var displayName = !string.IsNullOrEmpty(pb.PowerBankName) ? pb.PowerBankName : pb.PowerBankId;
                                 <tr data-pb-id="@pb.PowerBankId">
-                                    <td class="pb-id" title="@pb.PowerBankId">@shortId</td>
+                                    <td class="pb-id" title="@pb.PowerBankId">@displayName</td>
                                     <td class="start-time">@pb.StartTime</td>
                                     <td class="duration">@pb.Time</td>
                                     <td class="cost-value">@pb.Cost.ToString("F2")€</td>
@@ -298,8 +298,11 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script>
-        // Track known powerbank IDs
+        // Track known powerbank IDs and names
         var knownPowerBanks = [@Html.Raw(string.Join(",", Model.PowerBanks?.Select(p => $"\"{p.PowerBankId}\"") ?? new string[0]))];
+        var powerBankNames = {
+            @Html.Raw(string.Join(",\n            ", Model.PowerBanks?.Select(p => $"\"{p.PowerBankId}\": \"{(!string.IsNullOrEmpty(p.PowerBankName) ? p.PowerBankName : p.PowerBankId)}\"") ?? new string[0]))
+        };
         var returnedPowerBanks = [];
         var pollingInterval = null;
         var initialCount = @(Model.PowerBanks?.Count ?? 0);
@@ -396,12 +399,12 @@
                 row.classList.add('pb-returned');
             }
 
-            // Show returned banner with shortened ID
-            var shortId = pbId.length > 4 ? '...' + pbId.slice(-4) : pbId;
+            // Show returned banner with powerbank name
+            var displayName = powerBankNames[pbId] || pbId;
             var banner = document.getElementById('returnedBanner');
             var list = document.getElementById('returnedList');
             banner.style.display = 'block';
-            list.innerHTML += '<span class="returned-pb">' + shortId + '</span>';
+            list.innerHTML += '<span class="returned-pb">' + displayName + '</span>';
         }
 
         function showAllReturned() {

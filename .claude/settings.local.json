@@ -34,7 +34,11 @@
       "Bash(find . -name *.log -mmin -10)",
       "Bash(grep -r \"ASPNETCORE_ENVIRONMENT\" ./bin/Debug/net7.0/*.json)",
       "Bash(echo $ASPNETCORE_ENVIRONMENT)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(grep -r DbDevice appsettings*.json)",
+      "Bash(find /Users/tomfrank/repository/ShareCharging -type f \\\\\\(-name *jqxgrid* -o -name *details* \\\\\\))",
+      "Bash(grep -l \"nested\\\\|detail\\\\|expand\" /Users/tomfrank/repository/ShareCharging/WebServer/Views/**/*.cshtml)",
+      "Bash(python3:*)"
     ]
   }
 }

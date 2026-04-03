@@ -230,11 +230,16 @@
                     "</div>";
             }
 
-            // Device counts
-            if (column === 'DeviceCount' || column === 'DeviceAuthCount') {
+            // Device counts - show online / total
+            if (column === 'DevicesCount') {
+                var online = jsonmod[row].OnlineDevicesCount || 0;
+                var total = value || 0;
+                var color = online > 0 ? '#10B981' : '#6B7280';
                 return divstartstyle +
-                    "<span style='font-weight: 600; font-size: 1rem;'>" + value + "</span>" +
-                    "</div>";
+                    "<span style='font-weight: 600; font-size: 1rem;'>" +
+                    "<span style='color: " + color + ";'>" + online + "</span>" +
+                    "<span style='color: #9CA3AF;'> / " + total + "</span>" +
+                    "</span></div>";
             }
 
             // Error column
@@ -249,8 +254,12 @@
 
             // Date columns
             if (column === 'ConnectTime' || column === 'DisconnectTime') {
+                if (!value) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                var date = new Date(value);
+                if (date.getFullYear() < 2000) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
                 return divstartstyle +
-                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + value + "</span>" +
+                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + formatted + "</span>" +
                     "</div>";
             }
 
@@ -321,11 +330,10 @@
             datafields: [
                 { name: 'Host', type: 'string' },
                 { name: 'Port', type: 'number' },
-                { name: 'Login', type: 'string' },
-                { name: 'Password', type: 'string' },
                 { name: 'Error', type: 'string' },
                 { name: 'Connected', type: 'boolean' },
                 { name: 'DevicesCount', type: 'number' },
+                { name: 'OnlineDevicesCount', type: 'number' },
                 { name: 'NotAuthDevicesCount', type: 'number' },
                 { name: 'ReconnectTime', type: 'number' },
                 { name: 'ConnectTime', type: 'date' },
@@ -357,16 +365,13 @@
                     height: 720,
                     columnsresize: true,
                     columns: [
-                        { text: "Host name", datafield: "Host", width: "15%", cellsrenderer: cellsrenderer },
+                        { text: "Host name", datafield: "Host", width: "22%", cellsrenderer: cellsrenderer },
                         { text: "Connected", datafield: "Connected", width: "8%", cellsrenderer: cellsrenderer },
-                        { text: "Login", datafield: "Login", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Password", datafield: "Password", width: "5%", cellsrenderer: cellsrenderer },
-                        { text: "Error", datafield: "Error", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Devices", datafield: "DevicesCount", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Not auth", datafield: "NotAuthDevicesCount", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Reconnect time,s", datafield: "ReconnectTime", width: "4%", cellsrenderer: cellsrenderer },
-                        { text: "Last connected time", datafield: "ConnectTime", width: "8%", cellsrenderer: cellsrenderer },
-                        { text: "Last disconnected time", datafield: "DisconnectTime", width: "8%", cellsrenderer: cellsrenderer },
+                        { text: "Error", datafield: "Error", width: "12%", cellsrenderer: cellsrenderer },
+                        { text: "Stations (online/total)", datafield: "DevicesCount", width: "12%", cellsrenderer: cellsrenderer },
+                        { text: "Reconnect, s", datafield: "ReconnectTime", width: "10%", cellsrenderer: cellsrenderer },
+                        { text: "Last connected", datafield: "ConnectTime", width: "16%", cellsrenderer: cellsrenderer },
+                        { text: "Last disconnected", datafield: "DisconnectTime", width: "16%", cellsrenderer: cellsrenderer },
                      ]
                 });
             refresh();

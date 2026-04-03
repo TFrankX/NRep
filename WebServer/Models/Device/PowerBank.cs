@@ -35,9 +35,51 @@ namespace WebServer.Models.Device
         [Key]
         public ulong Id { get; set; }
         [NotMapped]
-        public string Id_str 
+        public string Id_str
         {
             get { return Id.ToString(); }
+        }
+        [NotMapped]
+        public string Name
+        {
+            get { return DecodePowerBankId(Id); }
+        }
+
+        /// <summary>
+        /// Decodes PowerBank ID to human-readable name.
+        /// ID format: first 4 bytes = ASCII prefix (e.g. "GDVF"), last 4 bytes = serial (hex digits as decimal)
+        /// Example: 5135324334914536226 (0x4744564645000322) -> "GDVF45000322"
+        /// </summary>
+        private static string DecodePowerBankId(ulong id)
+        {
+            try
+            {
+                // Convert to bytes (big-endian)
+                byte[] bytes = BitConverter.GetBytes(id);
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(bytes);
+
+                // First 4 bytes: ASCII prefix
+                var prefix = new StringBuilder();
+                for (int i = 0; i < 4 && i < bytes.Length; i++)
+                {
+                    if (bytes[i] >= 65 && bytes[i] <= 90) // A-Z
+                        prefix.Append((char)bytes[i]);
+                }
+
+                // Last 4 bytes: each byte's hex representation becomes 2 decimal digits
+                var serial = new StringBuilder();
+                for (int i = 4; i < bytes.Length; i++)
+                {
+                    serial.Append(bytes[i].ToString("X2"));
+                }
+
+                return $"{prefix}{serial}";
+            }
+            catch
+            {
+                return id.ToString();
+            }
         }
 
         //public ulong HostDeviceId { get; set; }

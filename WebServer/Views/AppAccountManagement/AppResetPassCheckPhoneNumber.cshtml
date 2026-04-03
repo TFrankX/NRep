@@ -1,69 +1,443 @@
 @model AppAccountSelfPassReset
 @{
-    ViewData["Title"] = "Verify SMS Code";
+    ViewData["Title"] = "Reset Password";
+    Layout = null;
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reset Password - A-Charger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/acharger-theme.css" />
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <style>
+        .sms-input {
+            font-size: 1.8rem;
+            letter-spacing: 0.4rem;
+            text-align: center;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+        }
+        .sms-input::placeholder {
+            font-size: 1rem;
+            letter-spacing: 0.1rem;
+            font-weight: 400;
+            color: #9CA3AF;
+        }
+        .error-message {
+            display: none;
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            min-height: 1.5rem;
+        }
+        .error-message.show {
+            display: block;
+        }
+        .sms-input.error, .password-input.error {
+            border-color: #EF4444 !important;
+            animation: shake 0.5s;
+        }
+        .sms-input.success {
+            border-color: #10B981 !important;
+        }
+        .sms-input:disabled, .password-input:disabled {
+            background-color: #F3F4F6;
+            cursor: not-allowed;
+        }
+        @@keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .attempts-info {
+            font-size: 0.8rem;
+            color: #6B7280;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .step {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .step.active {
+            background: var(--primary);
+            color: white;
+        }
+        .step.completed {
+            background: #10B981;
+            color: white;
+        }
+        .step.inactive {
+            background: #E5E7EB;
+            color: #9CA3AF;
+        }
+        .step-line {
+            width: 2rem;
+            height: 2px;
+            background: #E5E7EB;
+            align-self: center;
+        }
+        .step-line.completed {
+            background: #10B981;
+        }
+        #step2 {
+            display: none;
+        }
+        #step2.show {
+            display: block;
+        }
+        #step1.hide {
+            display: none;
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-card fade-in" style="max-width: 420px;">
+        <div class="login-logo">
+            <h1>
+                <span class="logo-icon">
+                    <i class="fas fa-bolt"></i>
+                </span>
+                A-Charger
+            </h1>
+        </div>
 
-<div class="page-header">
-    <h2><i class="fas fa-sms"></i> Reset Password</h2>
-</div>
+        <div class="login-title">
+            <h2>Reset Password</h2>
+            <p id="stepDescription">Step 1: Verify your phone number</p>
+        </div>
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card">
-            <div class="card-header" style="background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: white;">
-                <h5 class="mb-0"><i class="fas fa-key me-2"></i>Verify SMS Code</h5>
+        <div class="step-indicator">
+            <div class="step active" id="stepIcon1">1</div>
+            <div class="step-line" id="stepLine"></div>
+            <div class="step inactive" id="stepIcon2">2</div>
+        </div>
+
+        <form id="resetForm" class="login-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="userId" value="@Model.Id" />
+            <input type="hidden" id="phoneNumber" value="@Model.PhoneNumber" />
+            <input type="hidden" id="userName" value="@Model.UserName" />
+
+            <div class="text-center mb-4">
+                <div class="p-3" style="background: var(--accent-light); border-radius: var(--border-radius-sm);">
+                    <i class="fas fa-mobile-alt me-2 text-primary"></i>
+                    <span class="fw-semibold">@Model.PhoneNumber</span>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="text-center mb-4">
-                    <div class="p-3" style="background: #F3E8FF; border-radius: 8px;">
-                        <i class="fas fa-mobile-alt me-2" style="color: #7C3AED;"></i>
-                        <span class="fw-semibold">@Model.PhoneNumber</span>
-                    </div>
-                    <p class="text-muted mt-2 mb-0">
-                        <small>Enter the code sent to your phone</small>
-                    </p>
+
+            <!-- Step 1: SMS Code -->
+            <div id="step1">
+                <div class="form-group-acharger">
+                    <label>
+                        <i class="fas fa-key me-1"></i>SMS Code
+                    </label>
+                    <input type="text"
+                           id="smsCode"
+                           class="form-control-acharger sms-input"
+                           placeholder="_ _ _ _ _"
+                           maxlength="5"
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           autocomplete="one-time-code"
+                           autofocus />
+                    <div id="errorMessage" class="error-message"></div>
+                    <div id="attemptsInfo" class="attempts-info"></div>
+                </div>
+            </div>
+
+            <!-- Step 2: New Password -->
+            <div id="step2">
+                <div class="form-group-acharger">
+                    <label>
+                        <i class="fas fa-lock me-1"></i>New Password
+                    </label>
+                    <input type="password"
+                           id="newPassword"
+                           class="form-control-acharger password-input"
+                           placeholder="Enter new password"
+                           minlength="6" />
+                    <div id="passwordError" class="error-message"></div>
                 </div>
 
-                <form asp-action="CheckCodePassReset" asp-controller="AppAccountManagement">
-                    @Html.HiddenFor(model => model.Id)
-                    @Html.HiddenFor(model => model.PhoneNumber)
-                    @Html.HiddenFor(model => model.UserName)
-                    @Html.HiddenFor(model => model.Message)
-
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
-
-                    <div class="mb-3">
-                        <label asp-for="SMSCode" class="form-label fw-semibold">
-                            <i class="fas fa-key me-1 text-muted"></i> SMS Code
-                        </label>
-                        <input asp-for="SMSCode" class="form-control form-control-lg text-center"
-                               placeholder="Enter 5-digit code"
-                               style="font-size: 1.5rem; letter-spacing: 0.5rem;"
-                               maxlength="5" />
-                        <span asp-validation-for="SMSCode" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-4">
-                        <label asp-for="NewPassword" class="form-label fw-semibold">
-                            <i class="fas fa-lock me-1 text-muted"></i> New Password
-                        </label>
-                        <input type="password" asp-for="NewPassword" class="form-control form-control-lg"
-                               placeholder="Enter new password" />
-                        <span asp-validation-for="NewPassword" class="text-danger small"></span>
-                    </div>
-
-                    <hr class="my-4">
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-check me-2"></i>Reset Password
-                        </button>
-                        <a asp-action="AppEditSelfAccountData" asp-controller="AppAccountManagement" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Cancel
-                        </a>
-                    </div>
-                </form>
+                <button type="button" id="submitBtn" class="btn-acharger btn-primary-acharger btn-login" onclick="resetPassword()">
+                    <i class="fas fa-check"></i>
+                    Reset Password
+                </button>
             </div>
+
+            <div class="d-grid gap-2 mt-3">
+                <a href="@Url.Action("AppEditSelfAccountData", "AppAccountManagement")"
+                   class="btn-acharger btn-secondary-acharger">
+                    <i class="fas fa-arrow-left"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+        <div class="login-footer">
+            <p>
+                Didn't receive the code?
+                <a id="resendLink" href="@Url.Action("AppResetSelfAccountPass", "AppAccountManagement")">
+                    Resend
+                </a>
+                <span id="resendTimer" style="display: none; color: #6B7280;"></span>
+            </p>
         </div>
     </div>
-</div>
+
+    <script>
+        // Resend cooldown timer
+        (function() {
+            const resendLink = document.getElementById('resendLink');
+            const resendTimer = document.getElementById('resendTimer');
+            const COOLDOWN_KEY = 'sms_resend_cooldown_reset';
+
+            let serverCooldown = @(ViewBag.ResendCooldown ?? 0);
+            let savedExpiry = localStorage.getItem(COOLDOWN_KEY);
+            let remaining = 0;
+
+            if (serverCooldown > 0) {
+                const expiryTime = Date.now() + (serverCooldown * 1000);
+                localStorage.setItem(COOLDOWN_KEY, expiryTime.toString());
+                remaining = serverCooldown;
+            } else if (savedExpiry) {
+                const expiryTime = parseInt(savedExpiry);
+                remaining = Math.max(0, Math.ceil((expiryTime - Date.now()) / 1000));
+            }
+
+            if (remaining > 0) {
+                startCooldown(remaining);
+            }
+
+            function startCooldown(seconds) {
+                resendLink.style.display = 'none';
+                resendTimer.style.display = 'inline';
+
+                function updateTimer() {
+                    if (seconds > 0) {
+                        const mins = Math.floor(seconds / 60);
+                        const secs = seconds % 60;
+                        resendTimer.textContent = `Resend in ${mins}:${secs.toString().padStart(2, '0')}`;
+                        seconds--;
+                        setTimeout(updateTimer, 1000);
+                    } else {
+                        resendLink.style.display = 'inline';
+                        resendTimer.style.display = 'none';
+                        localStorage.removeItem(COOLDOWN_KEY);
+                    }
+                }
+                updateTimer();
+            }
+
+            resendLink.addEventListener('click', function() {
+                const expiryTime = Date.now() + (180 * 1000);
+                localStorage.setItem(COOLDOWN_KEY, expiryTime.toString());
+            });
+        })();
+    </script>
+
+    <script>
+        (function() {
+            const smsInput = document.getElementById('smsCode');
+            const errorMessage = document.getElementById('errorMessage');
+            const attemptsInfo = document.getElementById('attemptsInfo');
+            const userId = document.getElementById('userId').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const userName = document.getElementById('userName').value;
+            const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            let attempts = 0;
+            const maxAttempts = 3;
+            let isLocked = false;
+            let countdownTimer = null;
+            let verifiedCode = null;
+
+            // Only allow digits
+            smsInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+
+                this.classList.remove('error');
+                errorMessage.classList.remove('show');
+
+                if (this.value.length === 5 && !isLocked) {
+                    verifyCode(this.value);
+                }
+            });
+
+            smsInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const digits = pastedText.replace(/[^0-9]/g, '').substring(0, 5);
+                this.value = digits;
+
+                if (digits.length === 5 && !isLocked) {
+                    verifyCode(digits);
+                }
+            });
+
+            window.verifyCode = function(code) {
+                if (isLocked) return;
+
+                smsInput.disabled = true;
+
+                const formData = new FormData();
+                formData.append('SMSCode', code);
+                formData.append('Id', userId);
+                formData.append('PhoneNumber', phoneNumber);
+                formData.append('UserName', userName);
+                formData.append('__RequestVerificationToken', antiForgeryToken);
+
+                fetch('/AppAccountManagement/VerifyResetCodeAjax', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        smsInput.classList.add('success');
+                        verifiedCode = code;
+                        showStep2();
+                    } else if (data.expired) {
+                        errorMessage.textContent = data.message;
+                        errorMessage.classList.add('show');
+                        setTimeout(() => {
+                            window.location.href = '/AppAccountManagement/AppResetSelfAccountPass';
+                        }, 2000);
+                    } else {
+                        handleError(data.message || 'Incorrect SMS code');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    handleError('Connection error. Please try again.');
+                    smsInput.disabled = false;
+                });
+            }
+
+            function showStep2() {
+                document.getElementById('step1').classList.add('hide');
+                document.getElementById('step2').classList.add('show');
+                document.getElementById('stepIcon1').classList.remove('active');
+                document.getElementById('stepIcon1').classList.add('completed');
+                document.getElementById('stepIcon1').innerHTML = '<i class="fas fa-check"></i>';
+                document.getElementById('stepLine').classList.add('completed');
+                document.getElementById('stepIcon2').classList.remove('inactive');
+                document.getElementById('stepIcon2').classList.add('active');
+                document.getElementById('stepDescription').textContent = 'Step 2: Set new password';
+                document.getElementById('newPassword').focus();
+
+                // Hide resend section
+                document.querySelector('.login-footer').style.display = 'none';
+            }
+
+            window.resetPassword = function() {
+                const newPassword = document.getElementById('newPassword').value;
+                const passwordError = document.getElementById('passwordError');
+                const submitBtn = document.getElementById('submitBtn');
+
+                if (newPassword.length < 6) {
+                    passwordError.textContent = 'Password must be at least 6 characters';
+                    passwordError.classList.add('show');
+                    document.getElementById('newPassword').classList.add('error');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
+
+                const formData = new FormData();
+                formData.append('SMSCode', verifiedCode);
+                formData.append('Id', userId);
+                formData.append('PhoneNumber', phoneNumber);
+                formData.append('UserName', userName);
+                formData.append('NewPassword', newPassword);
+                formData.append('__RequestVerificationToken', antiForgeryToken);
+
+                fetch('/AppAccountManagement/ResetPasswordAjax', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirectUrl || '/AppAccountManagement/AppEditSelfAccountData';
+                    } else {
+                        passwordError.textContent = data.message || 'Failed to reset password';
+                        passwordError.classList.add('show');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-check"></i> Reset Password';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    passwordError.textContent = 'Connection error. Please try again.';
+                    passwordError.classList.add('show');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Reset Password';
+                });
+            }
+
+            function handleError(message) {
+                attempts++;
+                smsInput.classList.add('error');
+                smsInput.value = '';
+
+                if (attempts >= maxAttempts) {
+                    errorMessage.textContent = 'Too many attempts. Redirecting...';
+                    errorMessage.classList.add('show');
+                    attemptsInfo.textContent = '';
+
+                    setTimeout(() => {
+                        window.location.href = '/AppAccountManagement/AppResetSelfAccountPass';
+                    }, 2000);
+                    return;
+                }
+
+                isLocked = true;
+                let countdown = 10;
+
+                errorMessage.textContent = message + '. Next attempt in ' + countdown + 's';
+                errorMessage.classList.add('show');
+                attemptsInfo.textContent = 'Attempts: ' + attempts + '/' + maxAttempts;
+
+                countdownTimer = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        errorMessage.textContent = message + '. Next attempt in ' + countdown + 's';
+                    } else {
+                        clearInterval(countdownTimer);
+                        isLocked = false;
+                        smsInput.disabled = false;
+                        smsInput.focus();
+                        errorMessage.classList.remove('show');
+                        smsInput.classList.remove('error');
+                    }
+                }, 1000);
+            }
+
+            smsInput.focus();
+        })();
+    </script>
+</body>
+</html>
