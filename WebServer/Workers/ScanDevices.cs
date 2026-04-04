@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
 using SimnetLib;
 using System;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Numerics;
 using System.Reflection;
@@ -31,6 +32,7 @@ using WebServer.Utils.Requests;
 using Stripe;
 using WebServer.Services;
 using WebServer.Services.Pricing;
+using WebServer.Services.Settings;
 using WebServer.Models.Settings;
 
 namespace WebServer.Workers
@@ -51,7 +53,15 @@ namespace WebServer.Workers
         private IConfiguration config;
         private ActionProcess actionProcess;
         private readonly UserManager<AppUser> userManager;
-        public long scanDevicePeriod = 300;//300 sec
+        private long _scanDevicePeriod = 300; // Default 300 sec, loaded from settings
+        private int _offlineRetryCount = 3; // Number of retry attempts before marking offline
+        private int _retryDelaySeconds = 5; // Delay between retry attempts
+        private int _responseTimeoutSeconds = 10; // Timeout waiting for station response
+        private DateTime _lastSettingsLoad = DateTime.MinValue;
+        private readonly TimeSpan _settingsReloadInterval = TimeSpan.FromMinutes(1); // Reload settings every minute
+
+        // Track pending inventory requests for timeout detection
+        private readonly ConcurrentDictionary<string, DateTime> _pendingInventoryRequests = new();
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IPricingService _pricingService;
 
@@ -481,10 +491,16 @@ namespace WebServer.Workers
 
             InitDevices();
 
+            // Load initial scan settings
+            await ReloadScanSettingsAsync();
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
+                    // Periodically reload scan settings from database
+                    await ReloadScanSettingsAsync();
+
                     ReconnectServers();
                     UpdateDb();
                 }
@@ -539,6 +555,7 @@ namespace WebServer.Workers
                                 {
                                     SessionId = powbank.SessionId,
                                     StationId = powbank.HostDeviceId,
+                                    StationName = pbDevice?.DeviceName ?? "",
                                     PowerBankId = powbank.Id,
                                     Amount = pricingPlan.HoldAmount,
                                 };
@@ -643,7 +660,12 @@ namespace WebServer.Workers
 
                     foreach (var dev in dbDevice.Device)
                     {
-                        dev.Online = false;
+                        // Trust Online state from DB to distinguish:
+                        // - Station was online before server restart → don't log reconnect (just restoring)
+                        // - Station was offline before server restart → log connect when it comes online
+                        Logger.LogInformation("Loading device {DeviceName} from DB: Online={Online}", dev.DeviceName, dev.Online);
+                        dev.PreviousOnlineState = dev.Online;
+                        dev.Online = false;  // Start as offline until we hear from the station
 
                         DevicesData.Devices.Add(dev);
                         //- actionProcess.ActionSave((int)ActionsDescription.ServiceInitDevice, "System", dev.HostDeviceId, dev.Id, 0, 0, "");
@@ -732,7 +754,9 @@ namespace WebServer.Workers
                 // Загружаем устройства
                 foreach (var dev in dbDevice.Device)
                 {
-                    dev.Online = false;
+                    // Trust Online state from DB to distinguish reconnects from new connects
+                    dev.PreviousOnlineState = dev.Online;
+                    dev.Online = false;  // Start as offline until we hear from the station
                     dev.Stored = true; // Уже в БД
                     DevicesData.Devices.Add(dev);
                     devicesCount++;
@@ -775,6 +799,63 @@ namespace WebServer.Workers
             return (devicesCount, powerBanksCount);
         }
 
+        /// <summary>
+        /// Loads scan settings from database periodically
+        /// </summary>
+        private async Task ReloadScanSettingsAsync()
+        {
+            if (DateTime.Now - _lastSettingsLoad < _settingsReloadInterval)
+                return;
+
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var settingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
+                var scanSettings = await settingsService.GetScanSettingsAsync();
+
+                var oldPeriod = _scanDevicePeriod;
+                _scanDevicePeriod = scanSettings.InventoryPeriodSeconds;
+                _offlineRetryCount = scanSettings.OfflineRetryCount;
+                _retryDelaySeconds = scanSettings.RetryDelaySeconds;
+                _responseTimeoutSeconds = scanSettings.ResponseTimeoutSeconds;
+                _lastSettingsLoad = DateTime.Now;
+
+                // If period changed significantly, redistribute device scan times
+                if (oldPeriod != _scanDevicePeriod)
+                {
+                    Logger.LogInformation("Scan period changed from {Old}s to {New}s, redistributing scan times",
+                        oldPeriod, _scanDevicePeriod);
+                    RedistributeInventoryTimes();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Failed to reload scan settings, using current values");
+            }
+        }
+
+        /// <summary>
+        /// Redistributes LastInventoryTime for all devices to spread load evenly
+        /// </summary>
+        private void RedistributeInventoryTimes()
+        {
+            var now = DateTime.Now.Ticks;
+            var devicesByServer = DevicesData.Devices.GroupBy(d => d.HostDeviceId).ToList();
+
+            foreach (var serverGroup in devicesByServer)
+            {
+                var devices = serverGroup.ToList();
+                var deviceCount = devices.Count;
+                if (deviceCount == 0) continue;
+
+                for (int i = 0; i < deviceCount; i++)
+                {
+                    // Spread devices evenly across the scan period
+                    var staggerOffset = (_scanDevicePeriod * i / deviceCount) * TimeSpan.TicksPerSecond;
+                    devices[i].LastInventoryTime = now + staggerOffset;
+                }
+            }
+        }
 
         private void ReconnectServers()
         {
@@ -821,13 +902,18 @@ namespace WebServer.Workers
                         //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
                         //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
 
-                        foreach (var dev in DevicesData.Devices.ToList())
+                        var devIndex = 0;
+                        var devicesForServer = DevicesData.Devices.Where(d => d.HostDeviceId == srv.Id).ToList();
+                        foreach (var dev in devicesForServer)
                         {
-                            if (dev.HostDeviceId == srv.Id)
-                            {
-                                srv.SubScript(dev.DeviceName);
-                                srv.CmdQueryTheInventory(dev.DeviceName);
-                            }
+                            srv.SubScript(dev.DeviceName);
+                            srv.CmdQueryTheInventory(dev.DeviceName);
+
+                            // Stagger future periodic inventory requests by assigning different offsets
+                            // Each device gets a different slice of the _scanDevicePeriod
+                            var staggerOffset = (_scanDevicePeriod * devIndex / Math.Max(devicesForServer.Count, 1)) * TimeSpan.TicksPerSecond;
+                            dev.LastInventoryTime = DateTime.Now.Ticks + staggerOffset;
+                            devIndex++;
                         }
 
                         srv.RecentlyConnect = false;
@@ -843,46 +929,72 @@ namespace WebServer.Workers
                         {
                             if (dev.HostDeviceId == srv.Id)
                             {
-                                if ((now - dev.LastOnlineTime).TotalSeconds > srv.OnlineTimeOut)
-                                {
-                                    if (dev.Online == true)
-                                    {
-                                        actionProcess.ActionSave(
-                                            (int)ActionsDescription.StationDisconnect,
-                                            "System",
-                                            dev.HostDeviceId,
-                                            dev.Id,
-                                            0,
-                                            0,
-                                            "");
-                                    }
-
-                                    dev.Online = false;
-
-                                    //dev.Slots = 0;
-                                    //foreach (var powerbank in DevicesData.PowerBanks)
-                                    //{
-                                    //   if (powerbank.HostDeviceName == dev.DeviceName)
-                                    //   {
-                                    //       powerbank.Plugged = false;
-                                    //   }
-                                    //}
-
-                                    srv.EvQueryTheInventory -= Srv_EvQueryTheInventory;
-                                    srv.EvQueryTheInventory += Srv_EvQueryTheInventory;
-
-                                    srv.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
-                                    srv.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
-
-                                    //srv.EvReportCabinetLogin -= Srv_EvReportCabinetLogin;
-                                    //srv.EvReportCabinetLogin += Srv_EvReportCabinetLogin;
-                                }
+                                // Re-subscribe to events
+                                srv.EvQueryTheInventory -= Srv_EvQueryTheInventory;
+                                srv.EvQueryTheInventory += Srv_EvQueryTheInventory;
+                                srv.EvReturnThePowerBank -= Srv_EvReturnThePowerBank;
+                                srv.EvReturnThePowerBank += Srv_EvReturnThePowerBank;
 
                                 srv.SubScript(dev.DeviceName);
 
-                                if (dev.LastInventoryTime + (scanDevicePeriod * TimeSpan.TicksPerSecond) < now.Ticks)
+                                // Check for pending request timeout
+                                if (_pendingInventoryRequests.TryGetValue(dev.DeviceName, out var requestTime))
+                                {
+                                    var elapsed = (now - requestTime).TotalSeconds;
+                                    if (elapsed > _responseTimeoutSeconds)
+                                    {
+                                        // Request timed out - handle retry logic
+                                        _pendingInventoryRequests.TryRemove(dev.DeviceName, out _);
+
+                                        if (dev.Online)
+                                        {
+                                            dev.OfflineRetryCount++;
+                                            if (dev.OfflineRetryCount >= _offlineRetryCount)
+                                            {
+                                                // All retries exhausted - mark as offline
+                                                Logger.LogWarning("Station {DeviceName} - {Max} attempts failed, marking OFFLINE",
+                                                    dev.DeviceName, _offlineRetryCount);
+
+                                                actionProcess.ActionSave(
+                                                    (int)ActionsDescription.StationDisconnect,
+                                                    "System",
+                                                    dev.HostDeviceId,
+                                                    dev.Id,
+                                                    0,
+                                                    0,
+                                                    "");
+
+                                                dev.Online = false;
+                                                dev.OfflineRetryCount = 0;
+                                                dev.PreviousOnlineState = null;  // Reset so connect event fires when back online
+
+                                                // Save offline state to DB
+                                                _ = SaveDeviceOnlineStateAsync(dev.DeviceName, false);
+                                            }
+                                            else
+                                            {
+                                                // Schedule retry
+                                                Logger.LogWarning("Station {DeviceName} timeout, retry {Count}/{Max}",
+                                                    dev.DeviceName, dev.OfflineRetryCount, _offlineRetryCount);
+                                                dev.RetryScheduledTime = now.AddSeconds(_retryDelaySeconds);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Check if retry is scheduled
+                                if (dev.RetryScheduledTime.HasValue && now >= dev.RetryScheduledTime.Value)
+                                {
+                                    dev.RetryScheduledTime = null;
+                                    _pendingInventoryRequests[dev.DeviceName] = now;
+                                    srv.CmdQueryTheInventory(dev.DeviceName);
+                                    Logger.LogDebug("Retry poll sent to {DeviceName}", dev.DeviceName);
+                                }
+                                // Regular cyclic poll
+                                else if (dev.LastInventoryTime + (_scanDevicePeriod * TimeSpan.TicksPerSecond) < now.Ticks)
                                 {
                                     dev.LastInventoryTime = now.Ticks;
+                                    _pendingInventoryRequests[dev.DeviceName] = now;
                                     srv.CmdQueryTheInventory(dev.DeviceName);
                                 }
                             }
@@ -947,10 +1059,24 @@ namespace WebServer.Workers
                 else
                 {
                     existingDevice.LastOnlineTime = DateTime.Now;
-                    // Log connect only if device was offline (to match disconnect logic)
+                    // Log connect only if state changed from previous known state
                     if (existingDevice.Online == false)
                     {
-                        actionProcess.ActionSave((int)ActionsDescription.StationConnect, existingDevice.Owners, existingDevice.HostDeviceId, existingDevice.Id, 0, 0, "");
+                        // If PreviousOnlineState is null (new session) or was false, log connect
+                        // If PreviousOnlineState was true (server restart), don't log - state didn't change
+                        if (existingDevice.PreviousOnlineState != true)
+                        {
+                            Logger.LogInformation($"Station connect event: {dev} (state changed to online)");
+                            actionProcess.ActionSave((int)ActionsDescription.StationConnect, existingDevice.Owners ?? "System", existingDevice.HostDeviceId, existingDevice.Id, 0, 0, "");
+                            // Save online state to DB
+                            _ = SaveDeviceOnlineStateAsync(existingDevice.DeviceName, true);
+                        }
+                        else
+                        {
+                            Logger.LogInformation($"Station {dev} restored connection (was online before server restart)");
+                        }
+                        // Clear previous state after first check
+                        existingDevice.PreviousOnlineState = null;
                     }
                     existingDevice.Online = true;
                     existingDevice.Stored = false;
@@ -1067,6 +1193,13 @@ namespace WebServer.Workers
             Logger.LogInformation($"Powerbank {data.RlPbid} returned in device: {dev} , slot: {data.RlSlot}\n");
 
             device.Slots = device.Slots | ((uint)Math.Pow(2, data.RlSlot - 1));
+            // Log connect only if state actually changed
+            if (device.Online == false && device.PreviousOnlineState != true)
+            {
+                Logger.LogInformation($"Station connect (via ReturnPowerBank): {device.DeviceName}");
+                actionProcess.ActionSave((int)ActionsDescription.StationConnect, device.Owners ?? "System", device.HostDeviceId, device.Id, 0, 0, "");
+            }
+            if (device.Online == false) device.PreviousOnlineState = null;
             device.Online = true;
             device.LastOnlineTime = DateTime.Now;
 
@@ -1120,6 +1253,8 @@ namespace WebServer.Workers
 
                     pb.Taken = false;
                     pb.Stored = false;
+                    pb.Reserved = false;
+                    pb.ReserveTime = null;
                     //}
                     if (pb.SessionId != "")
                     {
@@ -1146,6 +1281,7 @@ namespace WebServer.Workers
                                 {
                                     SessionId = pb.SessionId,
                                     StationId = device.Id,
+                                    StationName = device.DeviceName,
                                     PowerBankId = pb.Id,
                                     Amount = pb.Cost,
                                 };
@@ -1163,6 +1299,7 @@ namespace WebServer.Workers
                                 {
                                     SessionId = pb.SessionId,
                                     StationId = device.Id,
+                                    StationName = device.DeviceName,
                                     PowerBankId = pb.Id,
                                     Amount = 0,
                                 };
@@ -1209,9 +1346,16 @@ namespace WebServer.Workers
             } // end lock
 
             ((Server)(sender)).SrvReturnThePowerBank(data.RlSlot, 1, dev);
-             device.Online = true;
-             device.LastOnlineTime = DateTime.Now;
-             device.Stored = false;
+            // Log connect if device was offline and wasn't online before server restart
+            if (device.Online == false && device.PreviousOnlineState != true)
+            {
+                Logger.LogInformation($"Station connect (via SrvReturnThePowerBank): {device.DeviceName}");
+                actionProcess.ActionSave((int)ActionsDescription.StationConnect, device.Owners ?? "System", device.HostDeviceId, device.Id, 0, 0, "");
+            }
+            device.Online = true;
+            device.PreviousOnlineState = null;
+            device.LastOnlineTime = DateTime.Now;
+            device.Stored = false;
         }
         
 
@@ -1236,6 +1380,13 @@ namespace WebServer.Workers
             }
 
             Logger.LogInformation($"Get inventory info from device: {dev} \n");
+
+            // Remove from pending requests - station responded
+            _pendingInventoryRequests.TryRemove(dev, out _);
+
+            // Reset retry counters - station is responsive
+            device.OfflineRetryCount = 0;
+            device.RetryScheduledTime = null;
 
             // Создаём set ID powerbank'ов из текущего inventory для быстрой проверки
             var inventoryPbIds = new HashSet<ulong>(data.RlBank1s.Where(p => p.RlPbid != 0).Select(p => p.RlPbid));
@@ -1306,6 +1457,7 @@ namespace WebServer.Workers
                                             {
                                                 SessionId = pb.SessionId,
                                                 StationId = device.Id,
+                                                StationName = device.DeviceName,
                                                 PowerBankId = pb.Id,
                                                 Amount = pb.Cost,
                                             };
@@ -1324,6 +1476,7 @@ namespace WebServer.Workers
                                             {
                                                 SessionId = pb.SessionId,
                                                 StationId = device.Id,
+                                                StationName = device.DeviceName,
                                                 PowerBankId = pb.Id,
                                                 Amount = 0,
                                             };
@@ -1361,6 +1514,8 @@ namespace WebServer.Workers
                             pb.Locked = pbank.RlLock > 0;
                             pb.Plugged = true;
                             pb.Taken = false;
+                            pb.Reserved = false;
+                            pb.ReserveTime = null;
                             pb.Charging = pbank.RlCharge > 0;
                             pb.ChargeLevel = (PowerBankChargeLevel)pbank.RlQoe;
                             pb.Stored = false;
@@ -1370,9 +1525,19 @@ namespace WebServer.Workers
             }
 
             device.Slots = slots;
+            // Log connect if device was offline and wasn't online before server restart
+            Logger.LogDebug("QueryTheInventory: {DeviceName} Online={Online}, PreviousOnlineState={PreviousOnlineState}",
+                device.DeviceName, device.Online, device.PreviousOnlineState);
+            if (device.Online == false && device.PreviousOnlineState != true)
+            {
+                Logger.LogInformation($"Station connect (via QueryTheInventory): {device.DeviceName}");
+                actionProcess.ActionSave((int)ActionsDescription.StationConnect, device.Owners ?? "System", device.HostDeviceId, device.Id, 0, 0, "");
+                // Save online state to DB
+                _ = SaveDeviceOnlineStateAsync(device.DeviceName, true);
+            }
             device.Online = true;
+            device.PreviousOnlineState = null;
             device.LastOnlineTime = DateTime.Now;
-            device.Slots = slots;
             device.Stored = false;
         }
 
@@ -1688,14 +1853,16 @@ namespace WebServer.Workers
 
         private void Srv_EvDisconnected(object sender)
         {
+            var server = (Server)sender;
+            server.DisconnectTime = DateTime.Now;
+            server.ConnectTime = DateTime.Now;
+            server.Connected = false;
+            Logger.LogInformation($"Disconnected from Server:{server.Host}:{server.Port}\n");
+            server.Stored = false;
+            actionProcess.ActionSave((int)ActionsDescription.ServerDisconnect, "System", server.Id, 0, 0, 0, "");
 
-            ((Server)sender).DisconnectTime = DateTime.Now;
-
-            ((Server)sender).ConnectTime = DateTime.Now;
-            ((Server)sender).Connected = false;
-             Logger.LogInformation($"Disconnected from Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
-            ((Server)sender).Stored = false;
-            actionProcess.ActionSave((int)ActionsDescription.ServerDisconnect, "System", ((Server)sender).Id, 0, 0, 0, "");
+            // Don't mark stations as offline here - we'll detect the change when server reconnects
+            // and compare with saved state from database
         }
         private void Srv_EvConnectError(object sender, string error)
         {
@@ -1714,6 +1881,157 @@ namespace WebServer.Workers
             return result;
         }
 
+        /// <summary>
+        /// Force poll all stations: sends requests to all stations quickly and returns immediately.
+        /// Responses and offline detection are handled by the normal Tick() cycle.
+        /// </summary>
+        /// <param name="delayMs">Delay between sending requests (milliseconds)</param>
+        /// <returns>Number of requests sent</returns>
+        public int ForceInventoryPoll(int delayMs = 10)
+        {
+            var devices = DevicesData.Devices.ToList();
+            var total = devices.Count;
+            int sent = 0;
+
+            Logger.LogInformation("Force poll: sending requests to {Count} stations", total);
+
+            foreach (var device in devices)
+            {
+                var server = DevicesData.Servers.GetById(device.HostDeviceId);
+                if (server != null && server.Connected)
+                {
+                    _pendingInventoryRequests[device.DeviceName] = DateTime.Now;
+                    server.CmdQueryTheInventory(device.DeviceName);
+                    device.LastInventoryTime = DateTime.Now.Ticks;
+                    sent++;
+
+                    if (delayMs > 0 && sent < total)
+                    {
+                        Thread.Sleep(delayMs);
+                    }
+                }
+            }
+
+            Logger.LogInformation("Force poll: sent {Sent}/{Total} requests. Responses will be handled in background.", sent, total);
+            return sent;
+        }
+
+        /// <summary>
+        /// Poll a single station and wait for response with retry logic.
+        /// If station was online and doesn't respond after all retries, marks it offline.
+        /// If station was offline and responds, marks it online.
+        /// </summary>
+        /// <param name="device">Device to poll</param>
+        /// <param name="server">Server connection</param>
+        /// <returns>True if station responded</returns>
+        public async Task<bool> PollStationWithRetryAsync(Device device, Server server)
+        {
+            if (server == null || !server.Connected)
+            {
+                Logger.LogDebug("Cannot poll {DeviceName} - server not connected", device.DeviceName);
+                return false;
+            }
+
+            var wasOnline = device.Online;
+            var maxRetries = _offlineRetryCount;
+            var retryDelay = _retryDelaySeconds * 1000;
+            var responseTimeout = _responseTimeoutSeconds * 1000;
+
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                // Mark request as pending
+                _pendingInventoryRequests[device.DeviceName] = DateTime.Now;
+
+                // Send inventory request
+                server.CmdQueryTheInventory(device.DeviceName);
+                device.LastInventoryTime = DateTime.Now.Ticks;
+
+                Logger.LogDebug("Poll attempt {Attempt}/{Max} for {DeviceName}", attempt, maxRetries, device.DeviceName);
+
+                // Wait for response with timeout
+                var startTime = DateTime.Now;
+                while ((DateTime.Now - startTime).TotalMilliseconds < responseTimeout)
+                {
+                    // Check if station responded (removed from pending)
+                    if (!_pendingInventoryRequests.ContainsKey(device.DeviceName))
+                    {
+                        // Station responded!
+                        if (!wasOnline)
+                        {
+                            // Was offline, now online - this is handled in Srv_EvQueryTheInventory
+                            Logger.LogInformation("Station {DeviceName} came online", device.DeviceName);
+                        }
+                        return true;
+                    }
+                    await Task.Delay(100); // Check every 100ms
+                }
+
+                // Timeout - no response
+                _pendingInventoryRequests.TryRemove(device.DeviceName, out _);
+
+                if (attempt < maxRetries)
+                {
+                    Logger.LogWarning("Station {DeviceName} timeout (attempt {Attempt}/{Max}), retrying in {Delay}s",
+                        device.DeviceName, attempt, maxRetries, _retryDelaySeconds);
+                    await Task.Delay(retryDelay);
+                }
+            }
+
+            // All retries exhausted
+            Logger.LogWarning("Station {DeviceName} - all {Max} attempts failed, no response", device.DeviceName, maxRetries);
+
+            // Only mark offline if was online before
+            if (wasOnline)
+            {
+                Logger.LogWarning("Marking station {DeviceName} as OFFLINE", device.DeviceName);
+                device.Online = false;
+                device.OfflineRetryCount = 0;
+                device.RetryScheduledTime = null;
+                device.PreviousOnlineState = null;  // Reset so connect event fires when back online
+
+                // Save offline state to DB so after server restart we know it was offline
+                await SaveDeviceOnlineStateAsync(device.DeviceName, false);
+
+                actionProcess.ActionSave(
+                    (int)ActionsDescription.StationDisconnect,
+                    "System",
+                    device.HostDeviceId,
+                    device.Id,
+                    0,
+                    0,
+                    "");
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Save device Online state to database
+        /// </summary>
+        private async Task SaveDeviceOnlineStateAsync(string deviceName, bool online)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+
+                var device = await db.Device.FirstOrDefaultAsync(d => d.DeviceName == deviceName);
+                if (device != null)
+                {
+                    device.Online = online;
+                    await db.SaveChangesAsync();
+                    Logger.LogInformation("Saved device {DeviceName} Online={Online} to DB", deviceName, online);
+                }
+                else
+                {
+                    Logger.LogWarning("Device {DeviceName} not found in DB for saving online state", deviceName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to save device {DeviceName} online state to DB", deviceName);
+            }
+        }
 
     }
 }

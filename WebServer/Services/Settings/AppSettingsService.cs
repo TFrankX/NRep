@@ -19,6 +19,12 @@ namespace WebServer.Services.Settings
         Task<List<ServerConfigSettings>> GetServerConfigsAsync();
         Task SaveServerConfigAsync(ServerConfigSettings server, string modifiedBy);
         Task DeleteServerConfigAsync(int index, string modifiedBy);
+        Task<ScanSettings> GetScanSettingsAsync();
+        Task SaveScanSettingsAsync(ScanSettings settings, string modifiedBy);
+        Task<List<ZoneSettings>> GetZonesAsync();
+        Task SaveZoneAsync(ZoneSettings zone, string modifiedBy);
+        Task DeleteZoneAsync(int zoneId, string modifiedBy);
+        Task<int> GetNextZoneIdAsync();
     }
 
     public class AppSettingsService : IAppSettingsService
@@ -270,6 +276,94 @@ namespace WebServer.Services.Settings
 
             await db.SaveChangesAsync();
             _logger.LogInformation("Server config {Index} deleted by {User}", index, modifiedBy);
+        }
+
+        public async Task<ScanSettings> GetScanSettingsAsync()
+        {
+            var settings = await GetByCategoryAsync("Scan");
+
+            return new ScanSettings
+            {
+                InventoryPeriodSeconds = GetSettingValue(settings, "InventoryPeriodSeconds", 300),
+                OfflineRetryCount = GetSettingValue(settings, "OfflineRetryCount", 3),
+                RetryDelaySeconds = GetSettingValue(settings, "RetryDelaySeconds", 5),
+                ResponseTimeoutSeconds = GetSettingValue(settings, "ResponseTimeoutSeconds", 10)
+            };
+        }
+
+        public async Task SaveScanSettingsAsync(ScanSettings scanSettings, string modifiedBy)
+        {
+            await SetAsync("Scan", "InventoryPeriodSeconds", scanSettings.InventoryPeriodSeconds.ToString(), modifiedBy);
+            await SetAsync("Scan", "OfflineRetryCount", scanSettings.OfflineRetryCount.ToString(), modifiedBy);
+            await SetAsync("Scan", "RetryDelaySeconds", scanSettings.RetryDelaySeconds.ToString(), modifiedBy);
+            await SetAsync("Scan", "ResponseTimeoutSeconds", scanSettings.ResponseTimeoutSeconds.ToString(), modifiedBy);
+
+            _logger.LogInformation("Scan settings saved: InventoryPeriod={Period}s, Retries={Retries}, RetryDelay={Delay}s, ResponseTimeout={Timeout}s by {User}",
+                scanSettings.InventoryPeriodSeconds, scanSettings.OfflineRetryCount,
+                scanSettings.RetryDelaySeconds, scanSettings.ResponseTimeoutSeconds, modifiedBy);
+        }
+
+        public async Task<List<ZoneSettings>> GetZonesAsync()
+        {
+            var settings = await GetByCategoryAsync("Zones");
+            var zones = new List<ZoneSettings>();
+
+            // Get all unique zone IDs from settings
+            var zoneIds = new HashSet<int>();
+            foreach (var setting in settings)
+            {
+                if (setting.Key.Contains(".") && int.TryParse(setting.Key.Split('.')[0], out var id))
+                    zoneIds.Add(id);
+            }
+
+            foreach (var zoneId in zoneIds.OrderBy(z => z))
+            {
+                zones.Add(new ZoneSettings
+                {
+                    Id = zoneId,
+                    Name = GetSettingValue(settings, $"{zoneId}.Name", ""),
+                    Color = GetSettingValue(settings, $"{zoneId}.Color", "#7C3AED"),
+                    Language = GetSettingValue(settings, $"{zoneId}.Language", "en")
+                });
+            }
+
+            return zones;
+        }
+
+        public async Task SaveZoneAsync(ZoneSettings zone, string modifiedBy)
+        {
+            await SetAsync("Zones", $"{zone.Id}.Name", zone.Name, modifiedBy);
+            await SetAsync("Zones", $"{zone.Id}.Color", zone.Color, modifiedBy);
+            await SetAsync("Zones", $"{zone.Id}.Language", zone.Language, modifiedBy);
+
+            _logger.LogInformation("Zone {ZoneId} ({Name}) saved by {User}", zone.Id, zone.Name, modifiedBy);
+        }
+
+        public async Task DeleteZoneAsync(int zoneId, string modifiedBy)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+
+            var keysToDelete = new[] { "Name", "Color", "Language" };
+
+            foreach (var key in keysToDelete)
+            {
+                var setting = await db.AppSettings
+                    .FirstOrDefaultAsync(s => s.Category == "Zones" && s.Key == $"{zoneId}.{key}");
+                if (setting != null)
+                    db.AppSettings.Remove(setting);
+            }
+
+            await db.SaveChangesAsync();
+            _logger.LogInformation("Zone {ZoneId} deleted by {User}", zoneId, modifiedBy);
+        }
+
+        public async Task<int> GetNextZoneIdAsync()
+        {
+            var zones = await GetZonesAsync();
+            if (zones.Count == 0)
+                return 1;
+            return zones.Max(z => z.Id) + 1;
         }
     }
 }

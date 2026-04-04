@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maintenance - A-Charger</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #1D4ED8;
+            --accent: #FBBF24;
+            --bg-gradient-start: #1E3A5F;
+            --bg-gradient-end: #0F172A;
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-animation .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.1);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .bg-animation .circle:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .bg-animation .circle:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -5s;
+        }
+
+        .bg-animation .circle:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            top: 50%;
+            left: 10%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.1; }
+            50% { transform: translateY(-30px) scale(1.05); opacity: 0.15; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 500px;
+            padding: 50px 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); }
+            50% { transform: scale(1.02); box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4); }
+        }
+
+        .logo-icon svg {
+            width: 45px;
+            height: 45px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .maintenance-icon {
+            margin: 30px 0;
+        }
+
+        .maintenance-icon svg {
+            width: 100px;
+            height: 100px;
+            animation: gear-rotate 8s linear infinite;
+        }
+
+        @keyframes gear-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 30px;
+            padding: 12px 24px;
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .contact {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .contact p {
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .contact a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .contact a:hover {
+            color: var(--accent);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .social-links svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-primary);
+        }
+
+        /* Tablet */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 40px 30px;
+                border-radius: 20px;
+            }
+
+            .bg-animation .circle:nth-child(1) {
+                width: 250px;
+                height: 250px;
+            }
+
+            .bg-animation .circle:nth-child(2) {
+                width: 200px;
+                height: 200px;
+            }
+
+            .bg-animation .circle:nth-child(3) {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 40px;
+            }
+
+            .container {
+                padding: 30px 20px;
+                border-radius: 16px;
+                width: 100%;
+                max-width: none;
+            }
+
+            .logo {
+                margin-bottom: 20px;
+            }
+
+            .logo-icon {
+                width: 60px;
+                height: 60px;
+                border-radius: 16px;
+                margin-bottom: 15px;
+            }
+
+            .logo-icon svg {
+                width: 32px;
+                height: 32px;
+            }
+
+            .logo h1 {
+                font-size: 22px;
+            }
+
+            .maintenance-icon {
+                margin: 20px 0;
+            }
+
+            .maintenance-icon svg {
+                width: 70px;
+                height: 70px;
+            }
+
+            h2 {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+
+            p {
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 8px;
+            }
+
+            .status {
+                margin-top: 20px;
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+
+            .contact {
+                margin-top: 25px;
+                padding-top: 20px;
+            }
+
+            .contact p {
+                font-size: 13px;
+                margin-bottom: 10px;
+            }
+
+            .contact a {
+                font-size: 14px;
+                word-break: break-all;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 360px) {
+            body {
+                padding: 8px;
+                padding-top: 20px;
+            }
+
+            .container {
+                padding: 25px 15px;
+            }
+
+            .logo-icon {
+                width: 50px;
+                height: 50px;
+            }
+
+            .logo-icon svg {
+                width: 28px;
+                height: 28px;
+            }
+
+            .logo h1 {
+                font-size: 20px;
+            }
+
+            .maintenance-icon svg {
+                width: 60px;
+                height: 60px;
+            }
+
+            h2 {
+                font-size: 16px;
+            }
+
+            p {
+                font-size: 13px;
+            }
+
+            .status {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+                align-items: center;
+            }
+
+            .container {
+                padding: 20px 30px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .logo {
+                margin-bottom: 0;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .logo-icon {
+                margin-bottom: 0;
+                width: 50px;
+                height: 50px;
+            }
+
+            .logo-icon svg {
+                width: 28px;
+                height: 28px;
+            }
+
+            .maintenance-icon {
+                display: none;
+            }
+
+            .content {
+                flex: 1;
+                min-width: 200px;
+            }
+
+            h2 {
+                font-size: 18px;
+                margin-bottom: 8px;
+            }
+
+            p {
+                font-size: 13px;
+                margin-bottom: 5px;
+            }
+
+            .status {
+                margin-top: 15px;
+            }
+
+            .contact {
+                margin-top: 15px;
+                padding-top: 15px;
+                width: 100%;
+            }
+        }
+
+        /* Reduce animations for users who prefer reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .logo-icon,
+            .maintenance-icon svg,
+            .bg-animation .circle,
+            .status-dot {
+                animation: none;
+            }
+        }
+
+        /* Dark mode support (already dark, but ensure consistency) */
+        @media (prefers-color-scheme: light) {
+            /* Keep dark theme for maintenance page regardless of system preference */
+        }
+
+        /* Safe area for notched phones */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 2L4 14h7l-2 8 11-12h-7l2-8z" fill="#FBBF24" stroke="#F59E0B" stroke-width="0.5"/>
+                </svg>
+            </div>
+            <h1>A-Charger</h1>
+        </div>
+
+        <div class="maintenance-icon">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 15c-19.33 0-35 15.67-35 35s15.67 35 35 35 35-15.67 35-35-15.67-35-35-35zm0 60c-13.81 0-25-11.19-25-25s11.19-25 25-25 25 11.19 25 25-11.19 25-25 25z" fill="rgba(255,255,255,0.2)"/>
+                <path d="M50 25c-13.81 0-25 11.19-25 25s11.19 25 25 25 25-11.19 25-25-11.19-25-25-25zm0 40c-8.28 0-15-6.72-15-15s6.72-15 15-15 15 6.72 15 15-6.72 15-15 15z" fill="rgba(59,130,246,0.5)"/>
+                <circle cx="50" cy="50" r="8" fill="#3B82F6"/>
+                <!-- Gear teeth -->
+                <rect x="47" y="5" width="6" height="12" rx="2" fill="rgba(255,255,255,0.3)"/>
+                <rect x="47" y="83" width="6" height="12" rx="2" fill="rgba(255,255,255,0.3)"/>
+                <rect x="5" y="47" width="12" height="6" rx="2" fill="rgba(255,255,255,0.3)"/>
+                <rect x="83" y="47" width="12" height="6" rx="2" fill="rgba(255,255,255,0.3)"/>
+                <rect x="17" y="17" width="6" height="12" rx="2" fill="rgba(255,255,255,0.3)" transform="rotate(45 20 23)"/>
+                <rect x="77" y="17" width="6" height="12" rx="2" fill="rgba(255,255,255,0.3)" transform="rotate(-45 80 23)"/>
+                <rect x="17" y="71" width="6" height="12" rx="2" fill="rgba(255,255,255,0.3)" transform="rotate(-45 20 77)"/>
+                <rect x="77" y="71" width="6" height="12" rx="2" fill="rgba(255,255,255,0.3)" transform="rotate(45 80 77)"/>
+            </svg>
+        </div>
+
+        <div class="content">
+            <h2>Under Maintenance</h2>
+            <p>We're currently performing scheduled maintenance to improve our service.</p>
+            <p>We'll be back shortly. Thank you for your patience!</p>
+
+            <div class="status">
+                <span class="status-dot"></span>
+                Maintenance in progress
+            </div>
+        </div>
+
+        <div class="contact">
+            <p>Need urgent assistance?</p>
+            <p>
+                <a href="mailto:support@a-charger.com">support@a-charger.com</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -262,7 +262,16 @@ namespace WebServer.Controllers.Device
                             TotalEarnings = pb.TotalEarnings,
                             PaymentInfo = pb.PaymentInfo ?? "",
                             SessionId = !string.IsNullOrEmpty(pb.SessionId) && pb.SessionId != "\"\"" ? "Active" : "",
-                            ChargeLevel = pb.ChargeLevel
+                            ChargeLevel = pb.ChargeLevel,
+                            // Technical fields
+                            Plugged = pb.Plugged,
+                            Locked = pb.Locked,
+                            Charging = pb.Charging,
+                            IsOk = pb.IsOk,
+                            LastGetTime = pb.LastGetTime,
+                            LastPutTime = pb.LastPutTime,
+                            LastUpdate = pb.LastUpdate,
+                            CanDelete = status.Contains("Offline") || status == "On hands"
                         };
                     })
                     .OrderByDescending(x => x.TakeTime)

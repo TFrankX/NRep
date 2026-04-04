@@ -14,7 +14,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/acharger-theme.css" />
-    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="~/favicon.png" />
+    <style>
+        .sms-input {
+            font-size: 1.8rem;
+            letter-spacing: 0.4rem;
+            text-align: center;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+        }
+        .sms-input::placeholder {
+            font-size: 1rem;
+            letter-spacing: 0.1rem;
+            font-weight: 400;
+            color: #9CA3AF;
+        }
+        .error-message {
+            display: none;
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            min-height: 1.5rem;
+        }
+        .error-message.show {
+            display: block;
+        }
+        .sms-input.error {
+            border-color: #EF4444 !important;
+            animation: shake 0.5s;
+        }
+        .sms-input.success {
+            border-color: #10B981 !important;
+        }
+        .sms-input:disabled {
+            background-color: #F3F4F6;
+            cursor: not-allowed;
+        }
+        @@keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .attempts-info {
+            font-size: 0.8rem;
+            color: #6B7280;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+    </style>
 </head>
 <body class="login-page">
     <div class="login-card fade-in">
@@ -32,12 +81,11 @@
             <p>Enter the code sent to your phone</p>
         </div>
 
-        <form asp-action="AppCreateSelfAccount" asp-controller="AppAccountManagement" class="login-form">
-            @Html.HiddenFor(model => model.PhoneNumber)
-            @Html.HiddenFor(model => model.Message)
-            @Html.HiddenFor(model => model.NewStationId)
-
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+        <form id="smsForm" class="login-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="phoneNumber" value="@Model.PhoneNumber" />
+            <input type="hidden" id="message" value="@Model.Message" />
+            <input type="hidden" id="newStationId" value="@Model.NewStationId" />
 
             <div class="text-center mb-4">
                 <div class="p-3" style="background: var(--accent-light); border-radius: var(--border-radius-sm);">
@@ -47,17 +95,23 @@
             </div>
 
             <div class="form-group-acharger">
-                <label asp-for="SMSCode">
+                <label>
                     <i class="fas fa-key me-1"></i>SMS Code
                 </label>
-                <input asp-for="SMSCode" class="form-control-acharger text-center"
-                       placeholder="Enter 5-digit code"
-                       style="font-size: 1.5rem; letter-spacing: 0.5rem;"
-                       maxlength="5" />
-                <span asp-validation-for="SMSCode" class="text-danger-acharger" style="font-size: 0.875rem;"></span>
+                <input type="text"
+                       id="smsCode"
+                       class="form-control-acharger sms-input"
+                       placeholder="_ _ _ _ _"
+                       maxlength="5"
+                       inputmode="numeric"
+                       pattern="[0-9]*"
+                       autocomplete="one-time-code"
+                       autofocus />
+                <div id="errorMessage" class="error-message"></div>
+                <div id="attemptsInfo" class="attempts-info"></div>
             </div>
 
-            <button type="submit" class="btn-acharger btn-primary-acharger btn-login">
+            <button type="submit" id="submitBtn" class="btn-acharger btn-primary-acharger btn-login" style="display: none;">
                 <i class="fas fa-user-plus"></i>
                 Create Account
             </button>
@@ -74,9 +128,10 @@
         <div class="login-footer">
             <p>
                 Didn't receive the code?
-                <a href="@Url.Action("AppCreateSelfAccount", "AppAccountManagement", new { NewStationId = Model.NewStationId })">
+                <a id="resendLink" href="@Url.Action("AppCreateSelfAccount", "AppAccountManagement", new { NewStationId = Model.NewStationId })">
                     Resend
                 </a>
+                <span id="resendTimer" style="display: none; color: #6B7280;"></span>
             </p>
         </div>
 
@@ -91,8 +146,192 @@
         }
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        // Resend cooldown timer
+        (function() {
+            const resendLink = document.getElementById('resendLink');
+            const resendTimer = document.getElementById('resendTimer');
+            const COOLDOWN_KEY = 'sms_resend_cooldown_register';
+
+            let serverCooldown = @(ViewBag.ResendCooldown ?? 0);
+            let savedExpiry = localStorage.getItem(COOLDOWN_KEY);
+            let remaining = 0;
+
+            if (serverCooldown > 0) {
+                const expiryTime = Date.now() + (serverCooldown * 1000);
+                localStorage.setItem(COOLDOWN_KEY, expiryTime.toString());
+                remaining = serverCooldown;
+            } else if (savedExpiry) {
+                const expiryTime = parseInt(savedExpiry);
+                remaining = Math.max(0, Math.ceil((expiryTime - Date.now()) / 1000));
+            }
+
+            if (remaining > 0) {
+                startCooldown(remaining);
+            }
+
+            function startCooldown(seconds) {
+                resendLink.style.display = 'none';
+                resendTimer.style.display = 'inline';
+
+                function updateTimer() {
+                    if (seconds > 0) {
+                        const mins = Math.floor(seconds / 60);
+                        const secs = seconds % 60;
+                        resendTimer.textContent = `Resend in ${mins}:${secs.toString().padStart(2, '0')}`;
+                        seconds--;
+                        setTimeout(updateTimer, 1000);
+                    } else {
+                        resendLink.style.display = 'inline';
+                        resendTimer.style.display = 'none';
+                        localStorage.removeItem(COOLDOWN_KEY);
+                    }
+                }
+                updateTimer();
+            }
+
+            resendLink.addEventListener('click', function() {
+                const expiryTime = Date.now() + (180 * 1000);
+                localStorage.setItem(COOLDOWN_KEY, expiryTime.toString());
+            });
+        })();
+    </script>
+
+    <script>
+        (function() {
+            const smsInput = document.getElementById('smsCode');
+            const errorMessage = document.getElementById('errorMessage');
+            const attemptsInfo = document.getElementById('attemptsInfo');
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const message = document.getElementById('message').value;
+            const newStationId = document.getElementById('newStationId').value;
+            const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            let attempts = 0;
+            const maxAttempts = 3;
+            let isLocked = false;
+            let countdownTimer = null;
+
+            // Only allow digits
+            smsInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+
+                // Clear error styling when typing
+                this.classList.remove('error');
+                errorMessage.classList.remove('show');
+
+                // Auto-submit when 5 digits entered
+                if (this.value.length === 5 && !isLocked) {
+                    verifyCode(this.value);
+                }
+            });
+
+            // Prevent non-numeric paste
+            smsInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const digits = pastedText.replace(/[^0-9]/g, '').substring(0, 5);
+                this.value = digits;
+
+                if (digits.length === 5 && !isLocked) {
+                    verifyCode(digits);
+                }
+            });
+
+            function verifyCode(code) {
+                if (isLocked) return;
+
+                smsInput.disabled = true;
+
+                const formData = new FormData();
+                formData.append('SMSCode', code);
+                formData.append('PhoneNumber', phoneNumber);
+                formData.append('Message', message);
+                formData.append('NewStationId', newStationId);
+                formData.append('__RequestVerificationToken', antiForgeryToken);
+
+                fetch('/AppAccountManagement/CreateAccountAjax', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    }
+                    if (response.ok || response.redirected) {
+                        return { success: true, redirectUrl: '/' };
+                    }
+                    throw new Error('Server error');
+                })
+                .then(data => {
+                    if (data.success) {
+                        smsInput.classList.add('success');
+                        errorMessage.textContent = '';
+                        errorMessage.classList.remove('show');
+                        smsInput.value = code;
+                        setTimeout(() => {
+                            window.location.href = data.redirectUrl || '/';
+                        }, 300);
+                    } else if (data.expired) {
+                        errorMessage.textContent = data.message;
+                        errorMessage.classList.add('show');
+                        setTimeout(() => {
+                            window.location.href = '/AppAccountManagement/AppCreateSelfAccount' + (newStationId ? '?NewStationId=' + newStationId : '');
+                        }, 2000);
+                    } else {
+                        handleError(data.message || 'The SMS code is incorrect');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    handleError('Connection error. Please try again.');
+                    smsInput.disabled = false;
+                });
+            }
+
+            function handleError(message) {
+                attempts++;
+                smsInput.classList.add('error');
+                smsInput.value = '';
+
+                if (attempts >= maxAttempts) {
+                    errorMessage.textContent = 'Too many attempts. Redirecting...';
+                    errorMessage.classList.add('show');
+                    attemptsInfo.textContent = '';
+
+                    setTimeout(() => {
+                        window.location.href = '/AppAccountManagement/AppCreateSelfAccount' + (newStationId ? '?NewStationId=' + newStationId : '');
+                    }, 2000);
+                    return;
+                }
+
+                // Start cooldown timer
+                isLocked = true;
+                let countdown = 10;
+
+                errorMessage.textContent = message + '. Next attempt in ' + countdown + 's';
+                errorMessage.classList.add('show');
+                attemptsInfo.textContent = 'Attempts: ' + attempts + '/' + maxAttempts;
+
+                countdownTimer = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        errorMessage.textContent = message + '. Next attempt in ' + countdown + 's';
+                    } else {
+                        clearInterval(countdownTimer);
+                        isLocked = false;
+                        smsInput.disabled = false;
+                        smsInput.focus();
+                        errorMessage.classList.remove('show');
+                        smsInput.classList.remove('error');
+                    }
+                }, 1000);
+            }
+
+            // Focus on input when page loads
+            smsInput.focus();
+        })();
+    </script>
 </body>
 </html>

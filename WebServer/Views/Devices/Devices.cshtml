@@ -38,6 +38,85 @@
     <script type="text/javascript">
         var serverAddress = '@serverAddress';
         var qrModalInstance = null;
+        var forcePollInProgress = false;
+
+        // Load zones data for dropdown
+        window.zonesData = [];
+        $.ajax({
+            url: '/Settings/GetZones',
+            type: 'GET',
+            async: false,
+            success: function(data) {
+                window.zonesData = data || [];
+            }
+        });
+
+        function forceInventoryPoll() {
+            if (forcePollInProgress) {
+                console.log('Force poll already in progress');
+                return;
+            }
+
+            var btn = document.getElementById('forcePollBtn');
+            var icon = document.getElementById('forcePollIcon');
+            var text = document.getElementById('forcePollText');
+
+            forcePollInProgress = true;
+            btn.disabled = true;
+            icon.className = 'fas fa-sync-alt fa-spin';
+            text.textContent = 'Sending...';
+
+            // Fire and forget - send requests and release button immediately
+            $.ajax({
+                url: '/Devices/ForceInventoryPoll',
+                type: 'POST',
+                success: function(result) {
+                    if (result.success) {
+                        showToast('success', 'Poll Started', 'Sent ' + result.count + ' requests. Responses will arrive in background.');
+                    } else {
+                        showToast('error', 'Poll Failed', result.message);
+                    }
+                    resetPollButton();
+                },
+                error: function(xhr) {
+                    console.error('Force poll error:', xhr);
+                    showToast('error', 'Poll Failed', 'Connection error');
+                    resetPollButton();
+                }
+            });
+
+            function resetPollButton() {
+                forcePollInProgress = false;
+                btn.disabled = false;
+                icon.className = 'fas fa-sync-alt';
+                text.textContent = 'Poll All';
+            }
+        }
+
+        function showToast(type, title, message) {
+            // Create toast element if not exists
+            var toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toastContainer';
+                toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+                document.body.appendChild(toastContainer);
+            }
+
+            var bgColor = type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#F59E0B';
+            var iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-exclamation-circle';
+
+            var toast = document.createElement('div');
+            toast.style.cssText = 'background: ' + bgColor + '; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; min-width: 250px; animation: slideIn 0.3s ease;';
+            toast.innerHTML = '<i class="fas ' + iconClass + '"></i><div><strong>' + title + '</strong><br><small>' + message + '</small></div>';
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 4000);
+        }
 
         function closeQRModal() {
             if (qrModalInstance) {
@@ -124,22 +203,70 @@
             printWindow.document.close();
         }
 
-        function PushPB(DeviceName,PBNumber) {
-             $.ajax({
-                 type: "POST",
-                 url: '@Url.Action("PushPB", "Devices")',
-                 contentType: 'application/json',
-                 data: JSON.stringify({
-                     DeviceName: DeviceName,
-                     PowerBankNum: PBNumber
-                 }),
-                 success: function () {
-                  // location.href = document.location.origin + '@Url.Action("Devices", "Devices")';
-                 }
-             });
+        var pushInProgress = {};  // Track ongoing push requests
+
+        function PushPB(DeviceName, PBNumber, event) {
+            // Prevent double-clicks and clicks during refresh
+            var key = DeviceName + '_' + PBNumber;
+            if (pushInProgress[key]) {
+                console.log('Push already in progress for ' + key);
+                return;
+            }
+
+            // Stop event propagation to prevent grid refresh interference
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            pushInProgress[key] = true;
+
+            // Find and disable the button
+            var btn = event ? event.target.closest('button') : null;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("PushPB", "Devices")',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    DeviceName: DeviceName,
+                    PowerBankNum: PBNumber
+                }),
+                success: function (response) {
+                    console.log('Push success:', response);
+                    // Visual feedback - button stays disabled until refresh updates it
+                },
+                error: function (xhr, status, error) {
+                    console.error('Push error:', error);
+                    alert('Push failed: ' + error);
+                    // Re-enable button on error
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-eject"></i>';
+                    }
+                },
+                complete: function () {
+                    // Clear lock after a short delay to allow for grid refresh
+                    setTimeout(function() {
+                        delete pushInProgress[key];
+                    }, 2000);
+                }
+            });
         }
 
-        function confirmDeletePowerBank(powerBankIdNum, powerBankName) {
+        var deleteInProgress = false;  // Track delete operation
+
+        function confirmDeletePowerBank(powerBankIdNum, powerBankName, event) {
+            // Stop event propagation to prevent grid refresh interference
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
             // Show confirmation modal with name
             $('#deletePbId').text(powerBankName || powerBankIdNum);
             $('#deletePbIdHidden').val(powerBankIdNum);
@@ -148,7 +275,20 @@
         }
 
         function deletePowerBank() {
+            if (deleteInProgress) {
+                console.log('Delete already in progress');
+                return;
+            }
+
+            deleteInProgress = true;
             var powerBankId = $('#deletePbIdHidden').val();
+
+            // Disable the delete button in modal
+            var btn = document.querySelector('#deleteConfirmModal .btn-danger');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Deleting...';
+            }
 
             $.ajax({
                 type: "POST",
@@ -170,6 +310,14 @@
                 error: function() {
                     bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
                     alert('Failed to delete powerbank');
+                },
+                complete: function() {
+                    deleteInProgress = false;
+                    // Reset button state
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = 'Delete';
+                    }
                 }
             });
         }
@@ -277,6 +425,23 @@
                 }),
                 success: function () {
                     console.log('Description saved');
+                }
+            });
+        }
+
+        function SetUserLocation(DeviceId, UserLocation) {
+            $("#jqxgrid").jqxGrid('clearselection');
+            isUserEditing = false;
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SetUserLocation", "Devices")',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    DeviceId: DeviceId,
+                    UserLocation: UserLocation,
+                }),
+                success: function () {
+                    console.log('Zone saved');
                 }
             });
         }
@@ -526,7 +691,7 @@
                         var color = level > 60 ? '#22C55E' : (level > 30 ? '#F59E0B' : '#EF4444');
                         var fillHeight = Math.max(level, 5);
                         var chargingIcon = slot.Charging ? "<span style='position:absolute;top:-2px;right:-2px;font-size:8px;color:#F59E0B;'>&#9889;</span>" : "";
-                        slots += "<div class='battery-slot' onclick=\"PushPB('" + jsonmod[row].DeviceName + "','" + slotNum + "')\" title='Slot " + slotNum + " - " + level + "% - Click to push'>" +
+                        slots += "<div class='battery-slot' onclick=\"PushPB('" + jsonmod[row].DeviceName + "','" + slotNum + "', event)\" title='Slot " + slotNum + " - " + level + "% - Click to push'>" +
                             "<div class='battery-icon'>" +
                             "<div class='battery-tip'></div>" +
                             "<div class='battery-body'>" +
@@ -580,7 +745,7 @@
             } else if (column === 'PushPB') {
                 return divstartstyle +
                     "<button class='btn-grid btn-grid-success' " +
-                    "onclick=\"PushPB('" + jsonmod[row].DeviceName + "','0')\">" +
+                    "onclick=\"PushPB('" + jsonmod[row].DeviceName + "','0', event)\">" +
                     "Push PB</button>" +
                     "</div>";
             } else if (column === 'DeleteDevice') {
@@ -620,6 +785,26 @@
                 return divstartstyle +
                     "<input type='text' class='grid-input' style='width: 60px;' value='" + (value || '1000') + "' id='Owner" + row + "' " +
                     "onfocus='isUserEditing=true' onblur='isUserEditing=false; SetOwner(\"" + jsonmod[row].Id_str + "\", this.value)'>" +
+                    "</div>";
+            } else if (column === 'UserLocation') {
+                var options = '<option value="">-</option>';
+                if (window.zonesData) {
+                    for (var i = 0; i < window.zonesData.length; i++) {
+                        var zone = window.zonesData[i];
+                        var selected = (value == zone.Id.toString()) ? ' selected' : '';
+                        options += '<option value="' + zone.Id + '"' + selected + ' style="background: ' + zone.Color + '20;">' + zone.Name + '</option>';
+                    }
+                }
+                var selectedZone = window.zonesData ? window.zonesData.find(z => z.Id.toString() == value) : null;
+                var badgeColor = selectedZone ? selectedZone.Color : '#9CA3AF';
+                return divstartstyle +
+                    "<span class='zone-badge' style='background: " + badgeColor + ";'></span>" +
+                    "<select class='grid-select zone-select' id='Zone" + row + "' " +
+                    "onfocus='isUserEditing=true' onblur='isUserEditing=false' " +
+                    "onmousedown='isUserEditing=true' " +
+                    "onchange=\"SetUserLocation('" + jsonmod[row].Id_str + "', this.value)\">" +
+                    options +
+                    "</select>" +
                     "</div>";
             } else if (column === 'QR') {
                 return divstartstyle +
@@ -818,6 +1003,7 @@
                 { name: 'Owners', type: 'string' },
                 { name: 'SimId', type: 'string' },
                 { name: 'LastOnlineTime', type: 'date' },
+                { name: 'UserLocation', type: 'string' },
             ]
 
         };
@@ -927,14 +1113,14 @@
                     if (!data.Plugged || data.Status.indexOf('Offline') !== -1) return divStyle + "</div>";
                     return divStyle +
                         "<button class='btn-grid btn-grid-success' style='padding: 4px 10px; font-size: 0.75rem;' " +
-                        "onclick=\"PushPB('" + data.DeviceName + "','" + data.Slot + "')\">" +
+                        "onclick=\"PushPB('" + data.DeviceName + "','" + data.Slot + "', event)\">" +
                         "<i class='fas fa-eject'></i></button></div>";
                 }
                 if (column === 'Delete') {
                     if (data.Status !== 'Offline' && data.Status !== 'On hands') return divStyle + "</div>";
                     return divStyle +
                         "<button class='btn-grid btn-grid-danger' style='padding: 4px 10px; font-size: 0.75rem;' " +
-                        "onclick=\"confirmDeletePowerBank('" + data.PowerBankIdNum + "', '" + data.PowerBankId + "')\" title='Delete powerbank'>" +
+                        "onclick=\"confirmDeletePowerBank('" + data.PowerBankIdNum + "', '" + data.PowerBankId + "', event)\" title='Delete powerbank'>" +
                         "<i class='fas fa-trash'></i></button></div>";
                 }
                 return divStyle + (value || '-') + "</div>";
@@ -948,7 +1134,7 @@
                 sortable: false,
                 filterable: false,
                 rowsheight: 40,
-                columnsresize: true,
+                columnsresize: false,  // Disable resize to prevent freezing in nested grid
                 enablebrowserselection: true,
                 columns: [
                     { text: "Slot", datafield: "Slot", width: 45, cellsrenderer: slotCellRenderer },
@@ -1030,6 +1216,7 @@
                         { text: "Reg", datafield: "Registered", width: 50, cellsrenderer: cellsrenderer },
                         { text: "Type", datafield: "TypeOfUse", width: 120, cellsrenderer: cellsrenderer },
                         { text: "Description", datafield: "Description", width: 220, cellsrenderer: cellsrenderer },
+                        { text: "Zone", datafield: "UserLocation", width: 120, cellsrenderer: cellsrenderer },
                         { text: "Owner", datafield: "Owners", width: 70, cellsrenderer: cellsrenderer, columntype: 'textbox' },
                         { text: "SIM", datafield: "SimId", width: 180, cellsrenderer: cellsrenderer },
                         { text: "Last Online", datafield: "LastOnlineTime", width: 160, cellsrenderer: cellsrenderer },
@@ -1075,7 +1262,7 @@
         });
 
         // Columns to hide in compact view
-        var compactHiddenColumns = ['Id_str', 'HostDeviceId_str', 'Online', 'CanRegister', 'Registered', 'Owners', 'PushPB'];
+        var compactHiddenColumns = ['Id_str', 'HostDeviceId_str', 'Online', 'CanRegister', 'Registered', 'Owners', 'UserLocation', 'PushPB'];
 
         function setCompactView(compact) {
             compactHiddenColumns.forEach(function(col) {
@@ -1202,7 +1389,11 @@
         <h1><i class="fas fa-charging-station"></i> Charging Stations</h1>
         <p class="page-subtitle">Manage your charging station devices</p>
     </div>
-    <div style="display: flex; gap: 8px;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button id="forcePollBtn" class="btn-acharger btn-secondary-acharger" onclick="forceInventoryPoll()" style="white-space: nowrap;" title="Force poll all stations sequentially">
+            <i id="forcePollIcon" class="fas fa-sync-alt"></i>
+            <span id="forcePollText">Poll All</span>
+        </button>
         <button id="offlineToggle" class="btn-acharger btn-secondary-acharger" onclick="toggleOffline()" style="white-space: nowrap;">
             <i id="offlineToggleIcon" class="fas fa-eye"></i>
             <span id="offlineToggleText">Hide Offline</span>
@@ -1334,6 +1525,30 @@
 </div>
 
 <style>
+    /* Toast animations */
+    @@keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @@keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+
+    /* Zone badge and select */
+    .zone-badge {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 6px;
+        vertical-align: middle;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .zone-select {
+        min-width: 80px;
+    }
+
     /* Battery slot styles */
     .battery-slot {
         display: flex;

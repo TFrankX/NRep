@@ -30,7 +30,9 @@ namespace WebServer.Controllers.Settings
                 ActiveSection = section,
                 PricingPlans = await _settingsService.GetPricingPlansAsync(),
                 Support = await _settingsService.GetSupportSettingsAsync(),
-                Servers = await _settingsService.GetServerConfigsAsync()
+                Servers = await _settingsService.GetServerConfigsAsync(),
+                Scan = await _settingsService.GetScanSettingsAsync(),
+                Zones = await _settingsService.GetZonesAsync()
             };
 
             return View(model);
@@ -326,5 +328,120 @@ namespace WebServer.Controllers.Settings
                 return StatusCode(500, new { success = false, message = "Failed to delete certificate" });
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveScanSettingsAjax([FromBody] ScanSettings scanSettings)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { success = false, message = "Invalid data" });
+            }
+
+            try
+            {
+                // Validate reasonable limits
+                if (scanSettings.InventoryPeriodSeconds < 30)
+                {
+                    return BadRequest(new { success = false, message = "Inventory period must be at least 30 seconds" });
+                }
+                if (scanSettings.OfflineRetryCount < 1 || scanSettings.OfflineRetryCount > 10)
+                {
+                    return BadRequest(new { success = false, message = "Offline retry count must be between 1 and 10" });
+                }
+                if (scanSettings.RetryDelaySeconds < 1 || scanSettings.RetryDelaySeconds > 60)
+                {
+                    return BadRequest(new { success = false, message = "Retry delay must be between 1 and 60 seconds" });
+                }
+                if (scanSettings.ResponseTimeoutSeconds < 5 || scanSettings.ResponseTimeoutSeconds > 120)
+                {
+                    return BadRequest(new { success = false, message = "Response timeout must be between 5 and 120 seconds" });
+                }
+
+                var userName = User.Identity?.Name ?? "unknown";
+                await _settingsService.SaveScanSettingsAsync(scanSettings, userName);
+
+                return Ok(new { success = true, message = "Scan settings saved. Changes will apply within 1 minute." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save scan settings");
+                return StatusCode(500, new { success = false, message = "Failed to save settings" });
+            }
+        }
+
+        #region Zone Management
+
+        [HttpGet]
+        public async Task<IActionResult> GetZones()
+        {
+            var zones = await _settingsService.GetZonesAsync();
+            return Json(zones);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveZoneAjax([FromBody] ZoneSettings zone)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { success = false, message = "Invalid data" });
+            }
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(zone.Name))
+                {
+                    return BadRequest(new { success = false, message = "Zone name is required" });
+                }
+
+                // Validate language
+                if (!SupportedLanguages.All.ContainsKey(zone.Language))
+                {
+                    zone.Language = "en";
+                }
+
+                // If Id is 0, assign next available ID
+                if (zone.Id <= 0)
+                {
+                    zone.Id = await _settingsService.GetNextZoneIdAsync();
+                }
+
+                var userName = User.Identity?.Name ?? "unknown";
+                await _settingsService.SaveZoneAsync(zone, userName);
+
+                return Ok(new { success = true, message = $"Zone '{zone.Name}' saved", zoneId = zone.Id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save zone {ZoneId}", zone.Id);
+                return StatusCode(500, new { success = false, message = "Failed to save zone" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteZoneAjax([FromBody] DeleteZoneRequest request)
+        {
+            try
+            {
+                var userName = User.Identity?.Name ?? "unknown";
+                await _settingsService.DeleteZoneAsync(request.Id, userName);
+
+                return Ok(new { success = true, message = "Zone deleted" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete zone {ZoneId}", request.Id);
+                return StatusCode(500, new { success = false, message = "Failed to delete zone" });
+            }
+        }
+
+        public class DeleteZoneRequest
+        {
+            public int Id { get; set; }
+        }
+
+        #endregion
     }
 }

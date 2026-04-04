@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Stripe;
 using Stripe.Checkout;
 using WebServer.Models.Stripe;
 using WebServer.Models.Action;
+using WebServer.Models.Device;
+using WebServer.Models.Finance;
 
 namespace WebServer.Services.Stripe
 {
@@ -25,8 +28,10 @@ namespace WebServer.Services.Stripe
         private readonly SessionService _sessionService;
         private readonly RefundService _refundService;
         private readonly ActionProcess _actionProcess;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<StripeRoutines> _logger;
 
-        public StripeRoutines(IConfiguration configuration, IServiceScopeFactory scopeFactory)
+        public StripeRoutines(IConfiguration configuration, IServiceScopeFactory scopeFactory, ILogger<StripeRoutines> logger)
         {
             StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
 
@@ -34,6 +39,8 @@ namespace WebServer.Services.Stripe
             _sessionService = new SessionService();
             _refundService = new RefundService();
             _actionProcess = new ActionProcess(scopeFactory);
+            _scopeFactory = scopeFactory;
+            _logger = logger;
         }
 
         public static float CostCalculate(bool pbTaken, DateTime pbLastGetTime, float pbPrice)
@@ -148,6 +155,23 @@ namespace WebServer.Services.Stripe
                 paymentInfo
             );
 
+            // Save to FinancialTransactions table
+            SaveFinancialTransaction(
+                TransactionType.Refund,
+                (decimal)model.Amount,
+                model.StationId ?? 0,
+                model.StationName ?? "",
+                model.PowerBankId ?? 0,
+                session.CustomerDetails?.Email ?? "",
+                session.CustomerDetails?.Name ?? "",
+                session.PaymentIntentId ?? "",
+                model.SessionId ?? "",
+                "",
+                "",
+                "",
+                $"Refund: {paymentInfo}"
+            );
+
             return refund;
         }
 
@@ -191,6 +215,23 @@ namespace WebServer.Services.Stripe
                     model.StationId,
                     model.PowerBankId,
                     model.Amount,
+                    paymentInfo
+                );
+
+                // Save to FinancialTransactions table
+                SaveFinancialTransaction(
+                    TransactionType.Capture,
+                    (decimal)model.Amount,
+                    model.StationId ?? 0,
+                    model.StationName ?? "",
+                    model.PowerBankId ?? 0,
+                    session.CustomerDetails?.Email ?? "",
+                    session.CustomerDetails?.Name ?? "",
+                    paymentIntentId ?? "",
+                    model.SessionId ?? "",
+                    BuildCardInfo(charge),
+                    BuildCardExpiry(charge),
+                    BuildCardCountry(charge),
                     paymentInfo
                 );
 
@@ -251,6 +292,23 @@ namespace WebServer.Services.Stripe
                     paymentInfo
                 );
 
+                // Save to FinancialTransactions table
+                SaveFinancialTransaction(
+                    TransactionType.Release,
+                    (decimal)model.Amount,
+                    model.StationId ?? 0,
+                    model.StationName ?? "",
+                    model.PowerBankId ?? 0,
+                    session.CustomerDetails?.Email ?? "",
+                    session.CustomerDetails?.Name ?? "",
+                    paymentIntentId ?? "",
+                    model.SessionId ?? "",
+                    "",
+                    "",
+                    "",
+                    "Hold released"
+                );
+
                 return canceledIntent;
             }
             catch (StripeException ex)
@@ -272,8 +330,7 @@ namespace WebServer.Services.Stripe
         {
             var parts = new List<string>();
 
-            parts.Add($"SessionId: {session.Id}");
-
+            // Сначала данные о плательщике
             if (session.CustomerDetails != null)
             {
                 if (!string.IsNullOrEmpty(session.CustomerDetails.Name))
@@ -282,6 +339,7 @@ namespace WebServer.Services.Stripe
                     parts.Add($"Email: {session.CustomerDetails.Email}");
             }
 
+            // Затем данные о карте
             if (charge?.PaymentMethodDetails?.Card != null)
             {
                 var card = charge.PaymentMethodDetails.Card;
@@ -291,7 +349,83 @@ namespace WebServer.Services.Stripe
                     parts.Add($"Country: {card.Country}");
             }
 
+            // SessionId в конце
+            parts.Add($"SessionId: {session.Id}");
+
             return string.Join(", ", parts);
+        }
+
+        private string BuildCardInfo(Charge? charge)
+        {
+            if (charge?.PaymentMethodDetails?.Card == null)
+                return "";
+
+            var card = charge.PaymentMethodDetails.Card;
+            return $"{card.Brand} *{card.Last4}";
+        }
+
+        private string BuildCardExpiry(Charge? charge)
+        {
+            if (charge?.PaymentMethodDetails?.Card == null)
+                return "";
+
+            var card = charge.PaymentMethodDetails.Card;
+            return $"{card.ExpMonth:D2}/{card.ExpYear}";
+        }
+
+        private string BuildCardCountry(Charge? charge)
+        {
+            return charge?.PaymentMethodDetails?.Card?.Country ?? "";
+        }
+
+        private void SaveFinancialTransaction(
+            TransactionType type,
+            decimal amount,
+            ulong stationId,
+            string stationName,
+            ulong powerBankId,
+            string userId,
+            string customerName,
+            string paymentReference,
+            string sessionId,
+            string cardInfo,
+            string cardExpiry,
+            string cardCountry,
+            string description)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+
+                var transaction = new FinancialTransaction
+                {
+                    TransactionTime = DateTime.Now,
+                    Type = type,
+                    Amount = amount,
+                    StationId = stationId,
+                    StationName = stationName,
+                    PowerBankId = powerBankId,
+                    UserId = userId,
+                    CustomerName = customerName,
+                    PaymentReference = paymentReference,
+                    SessionId = sessionId,
+                    CardInfo = cardInfo,
+                    CardExpiry = cardExpiry,
+                    CardCountry = cardCountry,
+                    Description = description
+                };
+
+                db.FinancialTransactions.Add(transaction);
+                db.SaveChanges();
+
+                _logger.LogInformation("Saved financial transaction: Type={Type}, Amount={Amount}, Station={Station}",
+                    type, amount, stationName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save financial transaction");
+            }
         }
     }
 }

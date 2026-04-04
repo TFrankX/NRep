@@ -18,7 +18,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/acharger-theme.css" />
     <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="~/favicon.png" />
 </head>
 <body>
     <header>
@@ -62,15 +63,9 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="PowerBanks" asp-action="PowerBanks">
+                                <a class="nav-link" asp-area="" asp-controller="PowerBanks" asp-action="Statistics">
                                     <i class="fas fa-battery-three-quarters"></i>
                                     PowerBanks
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="PowerBanks" asp-action="Statistics">
-                                    <i class="fas fa-chart-bar"></i>
-                                    Statistics
                                 </a>
                             </li>
                             @if (User.IsInRole("admin") || User.IsInRole("manager"))

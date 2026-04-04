@@ -16,6 +16,7 @@ namespace WebServer.Models.Action
         public void ActionSave(int actionCode, string userID, ulong actionServerId, ulong actionStationId, ulong actionPowerBankId,uint actionPowerBankSlot, string actionText)
         {
             using var scope = _scopeFactory.CreateScope();
+            var logger = scope.ServiceProvider.GetService<ILogger<ActionProcess>>();
             using (var dbActions = scope.ServiceProvider.GetRequiredService<ActionContext>())
             {
                 try
@@ -24,10 +25,11 @@ namespace WebServer.Models.Action
 
                     dbActions.Actions.Add(action);
                     dbActions.SaveChanges();
+                    logger?.LogDebug("ActionSave: code={ActionCode}, station={StationId}", actionCode, actionStationId);
                 }
                 catch (Exception ex)
                 {
-                    var z = ex.Message;
+                    logger?.LogError(ex, "ActionSave failed: code={ActionCode}, station={StationId}", actionCode, actionStationId);
                 }
             }
         }

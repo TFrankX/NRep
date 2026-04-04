@@ -104,6 +104,42 @@
             });
         }
 
+        function saveScanSettings() {
+            var scanSettings = {
+                InventoryPeriodSeconds: parseInt($('#scan_inventory_period').val()) || 300,
+                OfflineRetryCount: parseInt($('#scan_offline_retry_count').val()) || 3,
+                RetryDelaySeconds: parseInt($('#scan_retry_delay').val()) || 5,
+                ResponseTimeoutSeconds: parseInt($('#scan_response_timeout').val()) || 10
+            };
+
+            var btn = $('#save_scan');
+            var originalText = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SaveScanSettingsAjax", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify(scanSettings),
+                success: function(response) {
+                    btn.html('<i class="fas fa-check"></i> Saved!').removeClass('btn-primary').addClass('btn-success');
+                    setTimeout(function() {
+                        btn.html(originalText).removeClass('btn-success').addClass('btn-primary').prop('disabled', false);
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    btn.html('<i class="fas fa-times"></i> Error').removeClass('btn-primary').addClass('btn-danger');
+                    setTimeout(function() {
+                        btn.html(originalText).removeClass('btn-danger').addClass('btn-primary').prop('disabled', false);
+                    }, 2000);
+                    alert('Failed to save: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
+
         function reloadDatabase() {
             var btn = $('#btnReloadDb');
             var resultDiv = $('#reloadResult');
@@ -147,9 +183,26 @@
                 details.slideUp(200);
                 icon.removeClass('expanded');
             } else {
-                // Close other open details
-                $('.server-details').slideUp(200);
-                $('.expand-icon').removeClass('expanded');
+                // Close other open server details (not pricing)
+                $('.server-details:not(.pricing-details)').slideUp(200);
+                $('.server-row:not(.pricing-row) .expand-icon').removeClass('expanded');
+
+                details.slideDown(200);
+                icon.addClass('expanded');
+            }
+        }
+
+        function togglePlanDetails(planName) {
+            var details = $(`#plan-details-${planName}`);
+            var icon = $(`#expand-icon-${planName}`);
+
+            if (details.is(':visible')) {
+                details.slideUp(200);
+                icon.removeClass('expanded');
+            } else {
+                // Close other open pricing details
+                $('.pricing-details').slideUp(200);
+                $('.pricing-row .expand-icon').removeClass('expanded');
 
                 details.slideDown(200);
                 icon.addClass('expanded');
@@ -473,6 +526,167 @@
                 }
             });
         }
+
+        // Zone Management Functions
+        function toggleZoneDetails(zoneId) {
+            var details = $(`#zone-details-${zoneId}`);
+            var icon = $(`#zone-expand-icon-${zoneId}`);
+
+            if (details.is(':visible')) {
+                details.slideUp(200);
+                icon.removeClass('expanded');
+            } else {
+                // Close other open zone details
+                $('.zone-details').slideUp(200);
+                $('.zone-row .expand-icon').removeClass('expanded');
+
+                details.slideDown(200);
+                icon.addClass('expanded');
+            }
+        }
+
+        function saveZone(zoneId) {
+            var zone = {
+                Id: zoneId,
+                Name: $(`#zone${zoneId}_name`).val(),
+                Color: $(`#zone${zoneId}_color`).val(),
+                Language: $(`#zone${zoneId}_language`).val()
+            };
+
+            if (!zone.Name) {
+                alert('Zone name is required');
+                return;
+            }
+
+            var btn = $(`#zone-details-${zoneId} .btn-save`);
+            var originalText = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SaveZoneAjax", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify(zone),
+                success: function(response) {
+                    btn.html('<i class="fas fa-check"></i> Saved!');
+
+                    // Update the row display
+                    var row = $(`.zone-row[data-zone-id="${zoneId}"]`);
+                    row.find('td:eq(1) strong').text(zone.Name);
+                    row.find('.zone-color-badge').css('background', zone.Color);
+                    row.find('td:eq(3)').text($(`#zone${zoneId}_language option:selected`).text());
+
+                    setTimeout(function() {
+                        btn.html(originalText).prop('disabled', false);
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    btn.html('<i class="fas fa-times"></i> Error');
+                    setTimeout(function() {
+                        btn.html(originalText).prop('disabled', false);
+                    }, 2000);
+                    alert('Failed to save: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
+
+        function deleteZone(zoneId) {
+            event.stopPropagation();
+
+            if (!confirm('Are you sure you want to delete this zone?')) {
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("DeleteZoneAjax", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify({ Id: zoneId }),
+                success: function(response) {
+                    // Remove the row and details
+                    $(`.zone-row[data-zone-id="${zoneId}"]`).remove();
+                    $(`#zone-details-${zoneId}`).remove();
+
+                    // Show no zones message if empty
+                    if ($('.zone-row').length === 0) {
+                        $('#zonesTable').hide();
+                        if ($('#section-zones .no-servers-message').length === 0) {
+                            $('#section-zones .servers-table-container').append(
+                                '<div class="no-servers-message"><i class="fas fa-globe"></i><p>No zones configured yet. Click "Add Zone" to get started.</p></div>'
+                            );
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    alert('Failed to delete: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
+
+        function showAddZoneForm() {
+            $('#addZoneForm').slideDown(200);
+            $('#new_zone_name').focus();
+        }
+
+        function hideAddZoneForm() {
+            $('#addZoneForm').slideUp(200);
+            $('#new_zone_name').val('');
+            $('#new_zone_color').val('#7C3AED');
+            $('#new_zone_color_hex').text('#7C3AED');
+            $('#new_zone_language').val('en');
+        }
+
+        function addNewZone() {
+            var zone = {
+                Id: 0,  // Server will assign ID
+                Name: $('#new_zone_name').val(),
+                Color: $('#new_zone_color').val(),
+                Language: $('#new_zone_language').val()
+            };
+
+            if (!zone.Name) {
+                alert('Zone name is required');
+                return;
+            }
+
+            var btn = $('#addZoneForm .btn-save');
+            var originalText = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Adding...').prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SaveZoneAjax", "Settings")',
+                contentType: 'application/json',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify(zone),
+                success: function(response) {
+                    // Reload page to show new zone
+                    location.reload();
+                },
+                error: function(xhr) {
+                    btn.html(originalText).prop('disabled', false);
+                    alert('Failed to add zone: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
+
+        // Update color hex display when color changes
+        $(document).ready(function() {
+            $('input[type="color"]').on('input change', function() {
+                var hexSpan = $(this).siblings('span[id$="_color_hex"]');
+                if (hexSpan.length) {
+                    hexSpan.text($(this).val());
+                }
+            });
+        });
     </script>
 }
 
@@ -841,6 +1055,16 @@
         color: #DC2626;
     }
 
+    .plan-id-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: #E5E7EB;
+        color: #6B7280;
+        margin-left: 8px;
+        font-weight: 500;
+    }
+
     .server-details {
         background: #F9FAFB;
     }
@@ -1180,6 +1404,16 @@
     .slider.round:before {
         border-radius: 50%;
     }
+
+    /* Zone color badge */
+    .zone-color-badge {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        vertical-align: middle;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
 </style>
 
 <div class="page-header">
@@ -1213,6 +1447,10 @@
                 <i class="fas fa-plug"></i>
                 <span>Integrations</span>
             </a>
+            <a href="#" class="settings-nav-item @(Model.ActiveSection == "zones" ? "active" : "")" data-section="zones">
+                <i class="fas fa-globe"></i>
+                <span>Zones</span>
+            </a>
         </nav>
     </div>
 
@@ -1232,67 +1470,98 @@
                 <p>Configure rental rates and fees for each pricing plan. Changes take effect immediately.</p>
             </div>
 
-            <div class="pricing-grid">
-                @foreach (var plan in Model.PricingPlans)
-                {
-                    <div class="pricing-card">
-                        <div class="pricing-card-header">
-                            <h4>@plan.DisplayName</h4>
-                            <span class="plan-id">@plan.PlanName</span>
-                        </div>
-                        <div class="pricing-card-body">
-                            <div class="setting-row">
-                                <span class="setting-label">Display Name</span>
-                                <input type="text" class="setting-input wide" id="@(plan.PlanName)_DisplayName" value="@plan.DisplayName">
-                            </div>
-                            <div class="setting-row">
-                                <span class="setting-label">Hold Amount</span>
-                                <input type="number" step="0.01" class="setting-input" id="@(plan.PlanName)_HoldAmount" value="@plan.HoldAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
-                            </div>
-                            <div class="setting-row">
-                                <span class="setting-label">Base Fee</span>
-                                <input type="number" step="0.01" class="setting-input" id="@(plan.PlanName)_BaseFee" value="@plan.BaseFee.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
-                            </div>
-                            <div class="setting-row">
-                                <span class="setting-label">Hourly Rate</span>
-                                <input type="number" step="0.01" class="setting-input" id="@(plan.PlanName)_HourlyRate" value="@plan.HourlyRate.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
-                            </div>
-                            <div class="setting-row">
-                                <span class="setting-label">Daily Rate</span>
-                                <input type="number" step="0.01" class="setting-input" id="@(plan.PlanName)_DailyRate" value="@plan.DailyRate.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
-                            </div>
-                            <div class="setting-row">
-                                <span class="setting-label">Max Days</span>
-                                <input type="number" class="setting-input" id="@(plan.PlanName)_MaxDaysBeforeCapture" value="@plan.MaxDaysBeforeCapture">
-                            </div>
-                            <div class="setting-row">
-                                <span class="setting-label">Currency</span>
-                                <select class="setting-input" id="@(plan.PlanName)_Currency">
-                                    @if (plan.Currency == "eur") {
-                                        <option value="eur" selected>EUR</option>
-                                    } else {
-                                        <option value="eur">EUR</option>
-                                    }
-                                    @if (plan.Currency == "usd") {
-                                        <option value="usd" selected>USD</option>
-                                    } else {
-                                        <option value="usd">USD</option>
-                                    }
-                                    @if (plan.Currency == "gbp") {
-                                        <option value="gbp" selected>GBP</option>
-                                    } else {
-                                        <option value="gbp">GBP</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                        <div class="pricing-card-footer">
-                            <button type="button" class="btn-save-plan" id="save_@plan.PlanName" onclick="savePricingPlan('@plan.PlanName')">
-                                <i class="fas fa-save"></i> Save Changes
-                            </button>
-                        </div>
-                    </div>
-                }
+            <div class="servers-table-container">
+                <table class="servers-table" id="pricingTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th>Plan Name</th>
+                            <th>Hold</th>
+                            <th>Base Fee</th>
+                            <th>Hourly</th>
+                            <th>Daily</th>
+                            <th>Currency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ var planIndex = 0; }
+                        @foreach (var plan in Model.PricingPlans)
+                        {
+                            <tr class="server-row pricing-row" data-plan="@plan.PlanName">
+                                <td class="expand-cell" onclick="togglePlanDetails('@plan.PlanName')">
+                                    <i class="fas fa-chevron-right expand-icon" id="expand-icon-@plan.PlanName"></i>
+                                </td>
+                                <td onclick="togglePlanDetails('@plan.PlanName')">
+                                    <strong>@plan.DisplayName</strong>
+                                    <span class="plan-id-badge">@plan.PlanName</span>
+                                </td>
+                                <td onclick="togglePlanDetails('@plan.PlanName')">@plan.HoldAmount.ToString("F2") @plan.Currency.ToUpper()</td>
+                                <td onclick="togglePlanDetails('@plan.PlanName')">@plan.BaseFee.ToString("F2")</td>
+                                <td onclick="togglePlanDetails('@plan.PlanName')">@plan.HourlyRate.ToString("F2")</td>
+                                <td onclick="togglePlanDetails('@plan.PlanName')">@plan.DailyRate.ToString("F2")</td>
+                                <td onclick="togglePlanDetails('@plan.PlanName')">@plan.Currency.ToUpper()</td>
+                            </tr>
+                            <tr class="server-details pricing-details" id="plan-details-@plan.PlanName" style="display: none;">
+                                <td colspan="7">
+                                    <div class="server-details-content">
+                                        <div class="details-grid">
+                                            <div class="detail-group">
+                                                <label>Display Name</label>
+                                                <input type="text" id="@(plan.PlanName)_DisplayName" value="@plan.DisplayName" placeholder="Plan display name">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Hold Amount</label>
+                                                <input type="number" step="0.01" id="@(plan.PlanName)_HoldAmount" value="@plan.HoldAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" placeholder="25.00">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Base Fee</label>
+                                                <input type="number" step="0.01" id="@(plan.PlanName)_BaseFee" value="@plan.BaseFee.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" placeholder="2.00">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Hourly Rate</label>
+                                                <input type="number" step="0.01" id="@(plan.PlanName)_HourlyRate" value="@plan.HourlyRate.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" placeholder="2.00">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Daily Rate</label>
+                                                <input type="number" step="0.01" id="@(plan.PlanName)_DailyRate" value="@plan.DailyRate.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" placeholder="12.00">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Max Days Before Capture</label>
+                                                <input type="number" id="@(plan.PlanName)_MaxDaysBeforeCapture" value="@plan.MaxDaysBeforeCapture" placeholder="3">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Currency</label>
+                                                <select id="@(plan.PlanName)_Currency">
+                                                    @if (plan.Currency == "eur") {
+                                                        <option value="eur" selected>EUR</option>
+                                                    } else {
+                                                        <option value="eur">EUR</option>
+                                                    }
+                                                    @if (plan.Currency == "usd") {
+                                                        <option value="usd" selected>USD</option>
+                                                    } else {
+                                                        <option value="usd">USD</option>
+                                                    }
+                                                    @if (plan.Currency == "gbp") {
+                                                        <option value="gbp" selected>GBP</option>
+                                                    } else {
+                                                        <option value="gbp">GBP</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="details-actions">
+                                            <button type="button" class="btn-save" id="save_@plan.PlanName" onclick="savePricingPlan('@plan.PlanName')">
+                                                <i class="fas fa-save"></i> Save Changes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            planIndex++;
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -1542,6 +1811,69 @@
                 <p>Configure system-wide parameters and defaults.</p>
             </div>
 
+            <!-- Station Polling Settings -->
+            <div class="system-card">
+                <div class="system-card-header">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <h4>Station Polling</h4>
+                        <p>Configure how often stations are polled for status updates</p>
+                    </div>
+                </div>
+                <div class="system-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="scan_inventory_period" class="form-label">
+                                    <i class="fas fa-sync-alt me-1"></i>Inventory Poll Period (seconds)
+                                </label>
+                                <input type="number" class="form-control" id="scan_inventory_period"
+                                       value="@Model.Scan.InventoryPeriodSeconds" min="30" max="3600" />
+                                <small class="text-muted">How often to request inventory from each station (30-3600 sec). Stations are polled with staggered timing.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="scan_offline_retry_count" class="form-label">
+                                    <i class="fas fa-redo me-1"></i>Offline Retry Count
+                                </label>
+                                <input type="number" class="form-control" id="scan_offline_retry_count"
+                                       value="@Model.Scan.OfflineRetryCount" min="1" max="10" />
+                                <small class="text-muted">Number of retry attempts before marking station offline (1-10).</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="scan_retry_delay" class="form-label">
+                                    <i class="fas fa-clock me-1"></i>Retry Delay (seconds)
+                                </label>
+                                <input type="number" class="form-control" id="scan_retry_delay"
+                                       value="@Model.Scan.RetryDelaySeconds" min="1" max="60" />
+                                <small class="text-muted">Delay between retry attempts (1-60 sec).</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="scan_response_timeout" class="form-label">
+                                    <i class="fas fa-hourglass-half me-1"></i>Response Timeout (seconds)
+                                </label>
+                                <input type="number" class="form-control" id="scan_response_timeout"
+                                       value="@Model.Scan.ResponseTimeoutSeconds" min="5" max="120" />
+                                <small class="text-muted">Timeout waiting for station response (5-120 sec).</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="system-card-footer">
+                    <button type="button" class="btn btn-primary" id="save_scan" onclick="saveScanSettings()">
+                        <i class="fas fa-save me-1"></i> Save Polling Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Database Reload -->
             <div class="system-card">
                 <div class="system-card-header">
                     <i class="fas fa-database"></i>
@@ -1578,6 +1910,137 @@
                 <i class="fas fa-plug"></i>
                 <h3>Coming Soon</h3>
                 <p>Integration settings will be available in a future update.</p>
+            </div>
+        </div>
+
+        <!-- Zones Section -->
+        <div id="section-zones" class="settings-section" style="@(Model.ActiveSection == "zones" ? "display: block;" : "")">
+            <div class="section-header">
+                <h2>Zones</h2>
+                <p>Configure geographic zones for stations. Each zone defines language and color for user pages.</p>
+            </div>
+
+            <div class="servers-table-container">
+                <button class="btn-add-server" onclick="showAddZoneForm()">
+                    <i class="fas fa-plus"></i> Add Zone
+                </button>
+
+                <table class="servers-table" id="zonesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th>Zone Name</th>
+                            <th>Color</th>
+                            <th>Language</th>
+                            <th style="width: 100px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var zone in Model.Zones)
+                        {
+                            <tr class="server-row zone-row" data-zone-id="@zone.Id">
+                                <td class="expand-cell" onclick="toggleZoneDetails(@zone.Id)">
+                                    <i class="fas fa-chevron-right expand-icon" id="zone-expand-icon-@zone.Id"></i>
+                                </td>
+                                <td onclick="toggleZoneDetails(@zone.Id)"><strong>@zone.Name</strong></td>
+                                <td onclick="toggleZoneDetails(@zone.Id)">
+                                    <span class="zone-color-badge" style="background: @zone.Color;"></span>
+                                </td>
+                                <td onclick="toggleZoneDetails(@zone.Id)">
+                                    @(WebServer.Models.Settings.SupportedLanguages.All.TryGetValue(zone.Language, out var langName) ? langName : zone.Language)
+                                </td>
+                                <td>
+                                    <button class="btn-icon btn-delete" onclick="deleteZone(@zone.Id)" title="Delete zone">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="server-details zone-details" id="zone-details-@zone.Id" style="display: none;">
+                                <td colspan="5">
+                                    <div class="server-details-content">
+                                        <div class="details-grid">
+                                            <div class="detail-group">
+                                                <label>Zone Name</label>
+                                                <input type="text" id="zone@(zone.Id)_name" value="@zone.Name" placeholder="e.g. Cyprus">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Color</label>
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <input type="color" id="zone@(zone.Id)_color" value="@zone.Color" style="width: 60px; height: 36px; border: none; cursor: pointer;">
+                                                    <span id="zone@(zone.Id)_color_hex" style="color: #6B7280; font-family: monospace;">@zone.Color</span>
+                                                </div>
+                                            </div>
+                                            <div class="detail-group">
+                                                <label>Language</label>
+                                                <select id="zone@(zone.Id)_language" class="setting-input">
+                                                    @foreach (var lang in WebServer.Models.Settings.SupportedLanguages.All)
+                                                    {
+                                                        if (zone.Language == lang.Key)
+                                                        {
+                                                            <option value="@lang.Key" selected>@lang.Value</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@lang.Key">@lang.Value</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="details-actions">
+                                            <button type="button" class="btn-save" onclick="saveZone(@zone.Id)">
+                                                <i class="fas fa-save"></i> Save Changes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (Model.Zones.Count == 0)
+                {
+                    <div class="no-servers-message">
+                        <i class="fas fa-globe"></i>
+                        <p>No zones configured yet. Click "Add Zone" to get started.</p>
+                    </div>
+                }
+
+                <!-- Add Zone Form (hidden by default) -->
+                <div id="addZoneForm" style="display: none; margin-top: 20px;">
+                    <div class="add-server-form" style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px;">
+                        <h4 style="margin: 0 0 15px 0;"><i class="fas fa-plus-circle me-2"></i>Add New Zone</h4>
+                        <div class="details-grid">
+                            <div class="detail-group">
+                                <label>Zone Name</label>
+                                <input type="text" id="new_zone_name" placeholder="e.g. Cyprus">
+                            </div>
+                            <div class="detail-group">
+                                <label>Color</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="color" id="new_zone_color" value="#7C3AED" style="width: 60px; height: 36px; border: none; cursor: pointer;">
+                                    <span id="new_zone_color_hex" style="color: #6B7280; font-family: monospace;">#7C3AED</span>
+                                </div>
+                            </div>
+                            <div class="detail-group">
+                                <label>Language</label>
+                                <select id="new_zone_language" class="setting-input">
+                                    @foreach (var lang in WebServer.Models.Settings.SupportedLanguages.All)
+                                    {
+                                        <option value="@lang.Key">@lang.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="add-server-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button type="button" class="btn-cancel" onclick="hideAddZoneForm()">Cancel</button>
+                            <button type="button" class="btn-save" onclick="addNewZone()">
+                                <i class="fas fa-plus"></i> Add Zone
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

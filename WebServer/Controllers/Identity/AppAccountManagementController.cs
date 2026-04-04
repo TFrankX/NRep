@@ -271,6 +271,7 @@ namespace WebServer.Controllers.Identity
                     ModelState.AddModelError("", "Problem with sms-gate");
                     return View("AppCreateSelfAccount", model);
                 }
+                ViewBag.ResendCooldown = 180; // 3 minutes cooldown
                 return View("AppCheckPhoneNumber", model);
             }
             catch
@@ -697,6 +698,57 @@ namespace WebServer.Controllers.Identity
 
             return View(model);
         }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAccountAjax(AppAccountsSelfRegister model)
+        {
+            try
+            {
+                // Check if code exists
+                if (TempData["cd"] == null)
+                {
+                    return Json(new { success = false, expired = true, message = "SMS code expired. Please request a new code." });
+                }
+
+                var savedCode = TempData["cd"].ToString().Trim();
+
+                if (model.SMSCode?.Trim() != savedCode)
+                {
+                    TempData.Keep("cd");
+                    return Json(new { success = false, message = "Incorrect SMS code" });
+                }
+
+                // Create user
+                var user = new AppUser { UserName = model.PhoneNumber, PhoneNumber = model.PhoneNumber };
+                var result = await userManag.CreateAsync(user, "Reset777!");
+
+                if (result.Succeeded)
+                {
+                    // Handle station registration if needed
+                    if (model.NewStationId > 0)
+                    {
+                        var matches = scanDevices.DevicesData.Devices.FirstOrDefault(p => p.Id == model.NewStationId);
+                        if (matches != null && string.IsNullOrEmpty(matches.Owners))
+                        {
+                            matches.Owners = user.UserName;
+                        }
+                    }
+
+                    await signInManag.SignInAsync(user, true);
+                    return Json(new { success = true, redirectUrl = "/Devices/Devices" });
+                }
+
+                var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+                return Json(new { success = false, message = errorMessage });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Registration failed: " + ex.Message });
+            }
+        }
+
         //private string tunePhoneNumber(string phoneNumber)
         //{
         //    string num = phoneNumber.Trim();

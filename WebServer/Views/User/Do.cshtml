@@ -1,10 +1,25 @@
 @model WebServer.Controllers.User.PayInfo
+@using WebServer.Models.Settings
 @{
     ViewData["Title"] = "Your Powerbank";
     Layout = null;
+    var lang = Model.Language ?? "en";
+    var zoneColor = Model.ZoneColor ?? "#7C3AED";
+    Func<string, string> T = (key) => Translations.Get(lang, key);
+
+    // Calculate darker shade for gradient
+    string DarkenColor(string hex, double factor = 0.7)
+    {
+        hex = hex.TrimStart('#');
+        int r = (int)(Convert.ToInt32(hex.Substring(0, 2), 16) * factor);
+        int g = (int)(Convert.ToInt32(hex.Substring(2, 2), 16) * factor);
+        int b = (int)(Convert.ToInt32(hex.Substring(4, 2), 16) * factor);
+        return $"#{r:X2}{g:X2}{b:X2}";
+    }
+    var zoneColorDark = DarkenColor(zoneColor);
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@lang">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,10 +30,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/acharger-theme.css" />
-    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="~/favicon.png" />
     <style>
+        :root {
+            --zone-color: @zoneColor;
+            --zone-color-dark: @zoneColorDark;
+        }
         .status-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(135deg, var(--zone-color) 0%, var(--zone-color-dark) 100%);
             color: white;
             border-radius: var(--border-radius);
             padding: 2rem;
@@ -51,7 +71,7 @@
         }
         .pb-table th {
             background: var(--accent-light);
-            color: var(--primary-dark);
+            color: var(--zone-color-dark);
             padding: 0.5rem 0.4rem;
             font-weight: 600;
             font-size: 0.7rem;
@@ -86,7 +106,7 @@
         }
         .cost-value {
             font-weight: 600;
-            color: var(--primary);
+            color: var(--zone-color);
         }
         .total-row {
             background: var(--accent-light);
@@ -105,10 +125,10 @@
         .support-phone {
             font-size: 1.25rem;
             font-weight: 600;
-            color: var(--primary);
+            color: var(--zone-color);
         }
         .support-phone a {
-            color: var(--primary);
+            color: var(--zone-color);
             text-decoration: none;
         }
         .support-phone a:hover {
@@ -167,6 +187,10 @@
         .duration {
             font-weight: 500;
         }
+        /* Zone color for logo */
+        .logo-icon {
+            background: linear-gradient(135deg, var(--zone-color) 0%, var(--zone-color-dark) 100%) !important;
+        }
     </style>
 </head>
 <body class="login-page">
@@ -183,8 +207,8 @@
         <!-- Returned powerbanks banner (hidden by default) -->
         <div id="returnedBanner" class="returned-banner" style="display: none;">
             <i class="fas fa-check-circle"></i>
-            <h3 style="margin: 0;">Powerbank Returned!</h3>
-            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Thank you for using A-Charger</p>
+            <h3 style="margin: 0;" id="returnedTitle">@T("PowerbankReturned")</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;" id="returnedSubtitle">@T("ThankYou")</p>
             <div id="returnedList" style="margin-top: 0.5rem;"></div>
         </div>
 
@@ -195,8 +219,8 @@
                 <div class="status-icon taken">
                     <i class="fas fa-battery-full"></i>
                 </div>
-                <h2 style="margin: 0; font-size: 1.5rem;">Powerbank Active</h2>
-                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Enjoy your charge!</p>
+                <h2 style="margin: 0; font-size: 1.5rem;">@T("PowerbankActive")</h2>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">@T("EnjoyYourCharge")</p>
                 @if (!string.IsNullOrEmpty(Model.UserId))
                 {
                     <div class="user-id-badge">
@@ -212,10 +236,10 @@
                     <table class="pb-table" id="pbTable">
                         <thead>
                             <tr>
-                                <th>P-Bank</th>
-                                <th>Taken</th>
-                                <th>Time</th>
-                                <th>Cost</th>
+                                <th>@T("PBank")</th>
+                                <th>@T("Taken")</th>
+                                <th>@T("Time")</th>
+                                <th>@T("Cost")</th>
                             </tr>
                         </thead>
                         <tbody id="pbTableBody">
@@ -232,7 +256,7 @@
                             @if (Model.PowerBanks.Count > 1)
                             {
                                 <tr class="total-row" id="totalRow">
-                                    <td colspan="3" style="text-align: right;">Total:</td>
+                                    <td colspan="3" style="text-align: right;">@T("Total")</td>
                                     <td class="cost-value" id="totalCost">@Model.PowerBanks.Sum(p => p.Cost).ToString("F2") &euro;</td>
                                 </tr>
                             }
@@ -245,11 +269,11 @@
                 <!-- Single powerbank (legacy) -->
                 <div style="background: white; border-radius: var(--border-radius-sm); padding: 1.5rem; box-shadow: var(--shadow-sm);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
-                        <span style="color: var(--text-secondary);">Time</span>
+                        <span style="color: var(--text-secondary);">@T("Time")</span>
                         <span style="font-weight: 600;">@Model.Time</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: var(--text-secondary);">Cost</span>
+                        <span style="color: var(--text-secondary);">@T("Cost")</span>
                         <span class="cost-value">@Model.Cost.ToString("F2") &euro;</span>
                     </div>
                 </div>
@@ -259,7 +283,7 @@
             {
                 <button type="button" id="takeMoreBtn" class="btn-acharger btn-primary-acharger btn-take-more" onclick="takeMorePowerbank()">
                     <i class="fas fa-plus me-2"></i>
-                    Take Another Powerbank
+                    @T("TakeAnother")
                 </button>
             }
         }
@@ -268,9 +292,9 @@
             <!-- No powerbank available -->
             <div class="no-powerbanks">
                 <i class="fas fa-battery-empty"></i>
-                <h3 style="margin: 0 0 0.5rem 0;">No Powerbanks Available</h3>
+                <h3 style="margin: 0 0 0.5rem 0;">@T("NoPowerbanks")</h3>
                 <p style="margin: 0; color: var(--text-secondary);">
-                    Please try again later or visit another station.
+                    @T("TryAgainLater")
                 </p>
             </div>
         }
@@ -278,7 +302,7 @@
         <!-- Support section -->
         <div class="support-section">
             <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">
-                <i class="fas fa-headset me-1"></i> Need help?
+                <i class="fas fa-headset me-1"></i> @T("NeedHelp")
             </p>
             <div class="support-phone">
                 <a href="tel:@Model.SupportPhone.Replace(" ", "")">
@@ -309,10 +333,18 @@
         var confirmedActive = false; // Wait for first successful poll before tracking returns
         var pollCount = 0;
 
+        // Translations for JS
+        var i18n = {
+            takeAnother: '@T("TakeAnother")',
+            dispensing: '@T("Dispensing")',
+            allReturned: '@T("AllReturned")',
+            thankYou: '@T("ThankYou")'
+        };
+
         function takeMorePowerbank() {
             const btn = document.getElementById('takeMoreBtn');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Dispensing...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>' + i18n.dispensing;
 
             fetch('/User/TakeMorePowerbank', {
                 method: 'POST',
@@ -330,14 +362,14 @@
                 } else {
                     alert(data.message || 'Failed to dispense powerbank');
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-plus me-2"></i>Take Another Powerbank';
+                    btn.innerHTML = '<i class="fas fa-plus me-2"></i>' + i18n.takeAnother;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('Connection error. Please try again.');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-plus me-2"></i>Take Another Powerbank';
+                btn.innerHTML = '<i class="fas fa-plus me-2"></i>' + i18n.takeAnother;
             });
         }
 
@@ -420,8 +452,8 @@
             // Update banner
             var banner = document.getElementById('returnedBanner');
             banner.innerHTML = '<i class="fas fa-check-circle"></i>' +
-                '<h3 style="margin: 0;">All Powerbanks Returned!</h3>' +
-                '<p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Thank you for using A-Charger</p>';
+                '<h3 style="margin: 0;">' + i18n.allReturned + '</h3>' +
+                '<p style="margin: 0.5rem 0 0 0; opacity: 0.9;">' + i18n.thankYou + '</p>';
 
             // Stop polling
             if (pollingInterval) {

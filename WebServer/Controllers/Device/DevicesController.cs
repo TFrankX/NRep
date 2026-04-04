@@ -50,6 +50,13 @@ namespace WebServer.Controllers.Device
         public string DeviceId { get; set; }
         public string Description { get; set; }
     }
+
+    public class DeviceToUserLocation
+    {
+        public string DeviceId { get; set; }
+        public string UserLocation { get; set; }
+    }
+
     public class DeleteDeviceRequest
     {
         public string DeviceId { get; set; }
@@ -236,6 +243,40 @@ namespace WebServer.Controllers.Device
 
         [Authorize(Roles = "admin,manager")]
         [HttpPost]
+        public async Task<IActionResult> SetUserLocation([FromBody] DeviceToUserLocation deviceToUserLocation)
+        {
+            if (deviceToUserLocation == null || string.IsNullOrEmpty(deviceToUserLocation.DeviceId))
+            {
+                return BadRequest(new { success = false, message = "Invalid request" });
+            }
+
+            var userName = userManager.GetUserName(User);
+
+            // Update in memory
+            var device = scanDevices.DevicesData.Devices.FirstOrDefault(d => d.Id_str == deviceToUserLocation.DeviceId);
+            if (device != null)
+            {
+                device.UserLocation = deviceToUserLocation.UserLocation ?? "";
+            }
+
+            // Update in database
+            if (ulong.TryParse(deviceToUserLocation.DeviceId, out var deviceId))
+            {
+                var dbDevice = await _deviceContext.Device.FirstOrDefaultAsync(d => d.Id == deviceId);
+                if (dbDevice != null)
+                {
+                    dbDevice.UserLocation = deviceToUserLocation.UserLocation ?? "";
+                    await _deviceContext.SaveChangesAsync();
+                    Logger.LogInformation("SetUserLocation for device {DeviceId} to '{UserLocation}' by {User}",
+                        deviceId, deviceToUserLocation.UserLocation, userName);
+                }
+            }
+
+            return Ok(new { success = true, message = "Zone updated" });
+        }
+
+        [Authorize(Roles = "admin,manager")]
+        [HttpPost]
         public async Task<IActionResult> Activate([FromBody] DeviceToAct DeviceToAct)
         {
 
@@ -333,6 +374,29 @@ namespace WebServer.Controllers.Device
             return RedirectToAction("Devices", "Devices");
         }
 
+
+        /// <summary>
+        /// Force poll all stations - sends requests and returns immediately.
+        /// Responses are handled in background by normal scan cycle.
+        /// </summary>
+        [Authorize(Roles = "admin,manager")]
+        [HttpPost]
+        public IActionResult ForceInventoryPoll()
+        {
+            var userName = User.Identity?.Name ?? "unknown";
+            Logger.LogInformation("Force inventory poll requested by {User}", userName);
+
+            try
+            {
+                var sent = scanDevices.ForceInventoryPoll(10);
+                return Ok(new { success = true, message = $"Sent {sent} requests", count = sent });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Force inventory poll failed");
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
 
         [Authorize]
         [HttpPost]
@@ -440,6 +504,7 @@ namespace WebServer.Controllers.Device
                     d.Owners,
                     d.SimId,
                     d.LastOnlineTime,
+                    d.UserLocation,
                     // Add slot charge levels from fresh data
                     SlotInfo = GetSlotInfo(d.DeviceName, allPowerBanks, d.Online)
                 }).ToList();

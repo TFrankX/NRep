@@ -21,12 +21,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1" />
 
 @{
-    ViewData["Title"] = "PowerBank Statistics";
+    ViewData["Title"] = "PowerBanks";
 }
 
 @section scripts
 {
     <script type="text/javascript">
+        var currentView = 'business'; // 'business' or 'technical'
+
+        var businessColumns = [
+            { text: "Status", datafield: "Status", width: "8%", cellsrenderer: cellsrenderer },
+            { text: "User", datafield: "UserId", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Station", datafield: "StationName", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Slot", datafield: "Slot", width: "4%", cellsrenderer: cellsrenderer },
+            { text: "PowerBank ID", datafield: "PowerBankId", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Take Time", datafield: "TakeTime", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Return Time", datafield: "ReturnTime", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Duration", datafield: "Duration", width: "6%", cellsrenderer: cellsrenderer },
+            { text: "Cost", datafield: "Cost", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Total", datafield: "TotalEarnings", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Payment", datafield: "SessionId", width: "8%", cellsrenderer: cellsrenderer }
+        ];
+
+        var technicalColumns = [
+            { text: "Status", datafield: "Status", width: "9%", cellsrenderer: cellsrenderer },
+            { text: "Station", datafield: "StationName", width: "9%", cellsrenderer: cellsrenderer },
+            { text: "Slot", datafield: "Slot", width: "4%", cellsrenderer: cellsrenderer },
+            { text: "PowerBank ID", datafield: "PowerBankId", width: "9%", cellsrenderer: cellsrenderer },
+            { text: "Plugged", datafield: "Plugged", width: "6%", cellsrenderer: cellsrenderer },
+            { text: "Locked", datafield: "Locked", width: "6%", cellsrenderer: cellsrenderer },
+            { text: "Charging", datafield: "Charging", width: "6%", cellsrenderer: cellsrenderer },
+            { text: "IsOk", datafield: "IsOk", width: "5%", cellsrenderer: cellsrenderer },
+            { text: "Charge", datafield: "ChargeLevel", width: "6%", cellsrenderer: cellsrenderer },
+            { text: "Last Get", datafield: "LastGetTime", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Last Put", datafield: "LastPutTime", width: "10%", cellsrenderer: cellsrenderer },
+            { text: "Actions", datafield: "Actions", width: "14%", cellsrenderer: cellsrenderer }
+        ];
+
+        function toggleView() {
+            currentView = currentView === 'business' ? 'technical' : 'business';
+            var btn = document.getElementById('viewToggleBtn');
+            var icon = document.getElementById('viewToggleIcon');
+            var text = document.getElementById('viewToggleText');
+
+            if (currentView === 'technical') {
+                icon.className = 'fas fa-chart-line';
+                text.textContent = 'Business View';
+            } else {
+                icon.className = 'fas fa-cogs';
+                text.textContent = 'Technical View';
+            }
+
+            // Rebuild grid with new columns
+            var columns = currentView === 'business' ? businessColumns : technicalColumns;
+            $("#jqxgrid").jqxGrid({ columns: columns });
+            $("#jqxgrid").jqxGrid('updatebounddata', 'sort');
+        }
+
         function cellsrenderer(row, column, value) {
             var jsonmod = source.localdata;
             if (!jsonmod || !jsonmod[row]) return "<div></div>";
@@ -136,6 +187,20 @@
                     "</div>";
             }
 
+            // Last Get/Put times for technical view
+            if (column === 'LastGetTime' || column === 'LastPutTime') {
+                if (!value || value === "0001-01-01T00:00:00") {
+                    return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                }
+                var date = new Date(value);
+                var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                var iconClass = column === 'LastGetTime' ? 'fa-sign-out-alt' : 'fa-sign-in-alt';
+                var iconColor = column === 'LastGetTime' ? '#F59E0B' : '#10B981';
+                return divstartstyle +
+                    "<span style='font-size: 0.8rem;'><i class='fas " + iconClass + " me-1' style='color: " + iconColor + ";'></i>" + formatted + "</span>" +
+                    "</div>";
+            }
+
             // Duration
             if (column === 'Duration') {
                 return divstartstyle +
@@ -147,7 +212,7 @@
             if (column === 'Cost') {
                 var costValue = value ? parseFloat(value).toFixed(2) : '0.00';
                 var color = parseFloat(costValue) > 0 ? '#059669' : '#9CA3AF';
-                var pbId = jsonmod[row].PowerBankId;
+                var pbId = jsonmod[row].PowerBankIdNum;
                 var hasValue = parseFloat(costValue) > 0;
                 return divstartstyle +
                     "<div style='display: flex; align-items: center; gap: 8px;'>" +
@@ -160,7 +225,7 @@
             if (column === 'TotalEarnings') {
                 var totalValue = value ? parseFloat(value).toFixed(2) : '0.00';
                 var color = parseFloat(totalValue) > 0 ? '#7C3AED' : '#9CA3AF';
-                var pbId = jsonmod[row].PowerBankId;
+                var pbId = jsonmod[row].PowerBankIdNum;
                 var hasValue = parseFloat(totalValue) > 0;
                 return divstartstyle +
                     "<div style='display: flex; align-items: center; gap: 8px;'>" +
@@ -191,10 +256,124 @@
                     "</div></div>";
             }
 
+            // Boolean fields (Plugged, Locked, Charging, IsOk)
+            if (column === 'Plugged' || column === 'Locked' || column === 'Charging' || column === 'IsOk') {
+                var isTrue = value === true || value === 'true';
+                var circleColor = isTrue ? 'green' : 'gray';
+                return divstartstyle +
+                    "<span class='status-circle " + circleColor + "'></span>" +
+                    "</div>";
+            }
+
+            // Actions column (Push + Delete)
+            if (column === 'Actions') {
+                var stationName = jsonmod[row].StationName;
+                var slot = jsonmod[row].Slot;
+                var pbIdNum = jsonmod[row].PowerBankIdNum;
+                var canDelete = jsonmod[row].CanDelete;
+                var isPlugged = jsonmod[row].Plugged;
+
+                var html = "<div style='display: flex; gap: 6px; align-items: center;'>";
+
+                // Push button - only if plugged
+                if (isPlugged) {
+                    html += "<button onclick=\"pushPowerBank('" + stationName + "', " + slot + ", event)\" class='action-btn push-btn' title='Push PowerBank'>" +
+                            "<i class='fas fa-eject'></i></button>";
+                }
+
+                // Delete button - only if offline
+                if (canDelete) {
+                    html += "<button onclick=\"deletePowerBank('" + pbIdNum + "', '" + jsonmod[row].PowerBankId + "', event)\" class='action-btn delete-btn' title='Delete PowerBank'>" +
+                            "<i class='fas fa-trash'></i></button>";
+                }
+
+                if (!isPlugged && !canDelete) {
+                    html += "<span style='color: #9CA3AF;'>-</span>";
+                }
+
+                html += "</div>";
+                return divstartstyle + html + "</div>";
+            }
+
             // Default
             return divstartstyle +
                 "<span style='font-size: 0.85rem;'>" + (value || '-') + "</span>" +
                 "</div>";
+        }
+
+        function pushPowerBank(stationName, slot, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            if (!confirm('Push PowerBank from ' + stationName + ' slot ' + slot + '?')) {
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("PushPB", "PowerBanks")',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    DeviceName: stationName,
+                    PowerBankNum: slot
+                }),
+                success: function(response) {
+                    showToast('success', 'Push Sent', 'PowerBank push command sent');
+                    refresh();
+                },
+                error: function() {
+                    showToast('error', 'Push Failed', 'Failed to push powerbank');
+                }
+            });
+        }
+
+        function deletePowerBank(pbIdNum, pbName, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            if (!confirm('Delete PowerBank ' + pbName + '?\n\nThis action cannot be undone.')) {
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("DeletePowerBank", "PowerBanks")',
+                contentType: 'application/json',
+                data: JSON.stringify({ PowerBankId: pbIdNum }),
+                success: function(response) {
+                    if (response.success) {
+                        showToast('success', 'Deleted', response.message);
+                        refresh();
+                    } else {
+                        showToast('error', 'Error', response.message);
+                    }
+                },
+                error: function() {
+                    showToast('error', 'Error', 'Failed to delete powerbank');
+                }
+            });
+        }
+
+        function showToast(type, title, message) {
+            var toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toastContainer';
+                toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+                document.body.appendChild(toastContainer);
+            }
+
+            var bgColor = type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#F59E0B';
+            var iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-exclamation-circle';
+
+            var toast = document.createElement('div');
+            toast.style.cssText = 'background: ' + bgColor + '; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; min-width: 250px; animation: slideIn 0.3s ease;';
+            toast.innerHTML = '<i class="fas ' + iconClass + '"></i><div><strong>' + title + '</strong><br><small>' + message + '</small></div>';
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 4000);
         }
 
         function refresh() {
@@ -229,10 +408,11 @@
             var onHands = data.filter(x => x.Status === "On hands").length;
             var offline = data.filter(x => x.Status === "Offline").length;
             var returned = data.filter(x => x.Status === "Returned").length;
+            var inStation = data.filter(x => x.Status === "In station" || x.Status === "In station (Offline)" || x.Status === "Returned (Offline)").length;
 
             $('#summaryOnHands').text(onHands);
             $('#summaryOffline').text(offline);
-            $('#summaryReturned').text(returned);
+            $('#summaryInStation').text(inStation + returned);
             $('#summaryTotal').text(data.length);
             $('#summaryCurrentRevenue').text((currentRevenue || 0).toFixed(2) + ' EUR');
             $('#summaryTotalRevenue').text((totalRevenue || 0).toFixed(2) + ' EUR');
@@ -246,7 +426,9 @@
             datatype: "json",
             datafields: [
                 { name: 'PowerBankId', type: 'string' },
+                { name: 'PowerBankIdNum', type: 'string' },
                 { name: 'StationName', type: 'string' },
+                { name: 'StationId', type: 'string' },
                 { name: 'Slot', type: 'number' },
                 { name: 'UserId', type: 'string' },
                 { name: 'Status', type: 'string' },
@@ -256,7 +438,16 @@
                 { name: 'Cost', type: 'float' },
                 { name: 'TotalEarnings', type: 'float' },
                 { name: 'SessionId', type: 'string' },
-                { name: 'ChargeLevel', type: 'number' }
+                { name: 'ChargeLevel', type: 'number' },
+                // Technical fields
+                { name: 'Plugged', type: 'boolean' },
+                { name: 'Locked', type: 'boolean' },
+                { name: 'Charging', type: 'boolean' },
+                { name: 'IsOk', type: 'boolean' },
+                { name: 'LastGetTime', type: 'date' },
+                { name: 'LastPutTime', type: 'date' },
+                { name: 'LastUpdate', type: 'date' },
+                { name: 'CanDelete', type: 'boolean' }
             ]
         };
 
@@ -318,19 +509,7 @@
                 selectionmode: 'multiplecellsadvanced',
                 height: 720,
                 columnsresize: true,
-                columns: [
-                    { text: "Status", datafield: "Status", width: "8%", cellsrenderer: cellsrenderer },
-                    { text: "User", datafield: "UserId", width: "10%", cellsrenderer: cellsrenderer },
-                    { text: "Station", datafield: "StationName", width: "10%", cellsrenderer: cellsrenderer },
-                    { text: "Slot", datafield: "Slot", width: "4%", cellsrenderer: cellsrenderer },
-                    { text: "PowerBank ID", datafield: "PowerBankId", width: "10%", cellsrenderer: cellsrenderer },
-                    { text: "Take Time", datafield: "TakeTime", width: "10%", cellsrenderer: cellsrenderer },
-                    { text: "Return Time", datafield: "ReturnTime", width: "10%", cellsrenderer: cellsrenderer },
-                    { text: "Duration", datafield: "Duration", width: "6%", cellsrenderer: cellsrenderer },
-                    { text: "Cost", datafield: "Cost", width: "10%", cellsrenderer: cellsrenderer },
-                    { text: "Total", datafield: "TotalEarnings", width: "10%", cellsrenderer: cellsrenderer },
-                    { text: "Payment", datafield: "SessionId", width: "8%", cellsrenderer: cellsrenderer }
-                ]
+                columns: businessColumns
             });
             refresh();
             // Sort by TakeTime descending (newest first)
@@ -340,6 +519,15 @@
 }
 
 <style>
+    @@keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @@keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+
     .reset-btn {
         padding: 4px 8px;
         border: none;
@@ -356,31 +544,60 @@
         color: white;
     }
 
+    .action-btn {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+    }
+
+    .push-btn {
+        background: #DBEAFE;
+        color: #2563EB;
+    }
+
+    .push-btn:hover {
+        background: #2563EB;
+        color: white;
+    }
+
+    .delete-btn {
+        background: #FEE2E2;
+        color: #DC2626;
+    }
+
+    .delete-btn:hover {
+        background: #DC2626;
+        color: white;
+    }
+
     .summary-cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
         margin-bottom: 24px;
     }
 
     .summary-card {
         background: white;
         border-radius: 16px;
-        padding: 20px 24px;
+        padding: 16px 20px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 14px;
     }
 
     .summary-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
+        font-size: 20px;
     }
 
     .summary-icon.warning {
@@ -409,14 +626,14 @@
     }
 
     .summary-content h3 {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: #6B7280;
-        margin: 0 0 4px 0;
+        margin: 0 0 2px 0;
         font-weight: 500;
     }
 
     .summary-content .value {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #111827;
         margin: 0;
@@ -461,6 +678,34 @@
         color: #7C3AED;
     }
 
+    .status-circle {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .status-circle.purple {
+        background: #7C3AED;
+    }
+
+    .status-circle.green {
+        background: #22C55E;
+    }
+
+    .status-circle.gray {
+        background: #9CA3AF;
+    }
+
+    .status-circle.red {
+        background: #EF4444;
+    }
+
     #loadingIndicator {
         position: fixed;
         top: 50%;
@@ -480,9 +725,17 @@
     }
 </style>
 
-<div class="page-header">
-    <h1><i class="fas fa-chart-bar"></i> PowerBank Statistics</h1>
-    <p class="page-subtitle">Track powerbank rentals and returns</p>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+        <h1><i class="fas fa-battery-full"></i> PowerBanks</h1>
+        <p class="page-subtitle">Manage and track all powerbanks</p>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button id="viewToggleBtn" class="btn-acharger btn-secondary-acharger" onclick="toggleView()" style="white-space: nowrap;">
+            <i id="viewToggleIcon" class="fas fa-cogs"></i>
+            <span id="viewToggleText">Technical View</span>
+        </button>
+    </div>
 </div>
 
 <div class="summary-cards">
@@ -506,11 +759,20 @@
     </div>
     <div class="summary-card">
         <div class="summary-icon success">
-            <i class="fas fa-check-circle"></i>
+            <i class="fas fa-charging-station"></i>
         </div>
         <div class="summary-content">
-            <h3>Returned</h3>
-            <p class="value" id="summaryReturned">0</p>
+            <h3>In Stations</h3>
+            <p class="value" id="summaryInStation">0</p>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-icon primary">
+            <i class="fas fa-battery-full"></i>
+        </div>
+        <div class="summary-content">
+            <h3>Total</h3>
+            <p class="value" id="summaryTotal">0</p>
         </div>
     </div>
     <div class="summary-card">
@@ -518,7 +780,7 @@
             <i class="fas fa-clock"></i>
         </div>
         <div class="summary-content">
-            <h3>Current Revenue</h3>
+            <h3>Current</h3>
             <p class="value" id="summaryCurrentRevenue">0.00 EUR</p>
         </div>
     </div>

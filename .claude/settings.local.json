@@ -38,7 +38,15 @@
       "Bash(grep -r DbDevice appsettings*.json)",
       "Bash(find /Users/tomfrank/repository/ShareCharging -type f \\\\\\(-name *jqxgrid* -o -name *details* \\\\\\))",
       "Bash(grep -l \"nested\\\\|detail\\\\|expand\" /Users/tomfrank/repository/ShareCharging/WebServer/Views/**/*.cshtml)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(favicon_new.png.b64:*)",
+      "Bash(~/.dotnet/dotnet build:*)",
+      "Bash(find /Users/tomfrank/repository/ShareCharging/WebServer -name *.log -o -name *nlog*)",
+      "Bash(curl -s http://localhost:5001/Actions/GetTransactions)",
+      "Bash(curl -s http://127.0.0.1:5001/devices/GetSlotInfo?deviceId=4785593372947389187)",
+      "Bash(find /Users/tomfrank/repository/ShareCharging/WebServer -name *.log -o -name *log*.txt)",
+      "Bash(find /Users/tomfrank/repository/ShareCharging/WebServer -name *Migration* -o -name *Migrat*)",
+      "Bash(grep -E \"\\\\.cs$\")"
     ]
   }
 }

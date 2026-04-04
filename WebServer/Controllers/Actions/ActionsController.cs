@@ -4,29 +4,34 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using WebServer.Models.Device;
 using WebServer.Models.Identity;
 using WebServer.Models.Action;
+using WebServer.Models.Finance;
 using WebServer.Workers;
 using WebServer.Data;
 using System;
 
 namespace WebServer.Controllers.Device
 {
-  
+
     public class ActionsController : Controller
     {
         private readonly ILogger<DevicesController> Logger;
         private readonly UserManager<AppUser> userManager;
         private readonly ScanDevices scanDevices;
         private WebServer.Models.Action.ActionContext db;
+        private readonly DeviceContext deviceDb;
 
-        public ActionsController(UserManager<AppUser> _userManager, ScanDevices scanDevices,ILogger<DevicesController> logger, WebServer.Models.Action.ActionContext context)
+        public ActionsController(UserManager<AppUser> _userManager, ScanDevices scanDevices, ILogger<DevicesController> logger,
+            WebServer.Models.Action.ActionContext context, DeviceContext deviceContext)
         {
             userManager = _userManager;
             Logger = logger;
             db = context;
+            deviceDb = deviceContext;
             this.scanDevices = scanDevices;
         }
 
@@ -305,84 +310,266 @@ namespace WebServer.Controllers.Device
 
                 if (!allowAdminAndManager)
                 {
-                    return Json(new List<object>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
+                    return Json(new List<FinanceStationRow>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
                 }
-
-                // Payment action codes
-                const int PaymentCapture = 0x4020;  // 16416 - реально списанные деньги
-                const int PaymentRefund = 0x4040;   // 16448 - возвраты
 
                 var now = DateTime.Now;
                 var startOfMonth = new DateTime(now.Year, now.Month, 1);
                 var startOfYear = new DateTime(now.Year, 1, 1);
 
-                // Get all capture and refund actions
-                var paymentActions = db.Actions
-                    .Where(a => a.ActionCode == PaymentCapture || a.ActionCode == PaymentRefund)
-                    .ToList();
+                // Get all transactions from FinancialTransactions table
+                var transactions = await deviceDb.FinancialTransactions
+                    .Where(t => t.Type == TransactionType.Capture || t.Type == TransactionType.Refund)
+                    .ToListAsync();
+
+                Logger.LogInformation("RefreshFinance: Found {Count} financial transactions", transactions.Count);
 
                 // Group by station
-                var stationIds = paymentActions.Select(a => a.ActionStationId).Distinct().ToList();
+                var stationIds = transactions.Select(t => t.StationId).Distinct().ToList();
 
-                var result = new List<object>();
+                var result = new List<FinanceStationRow>();
 
                 foreach (var stationId in stationIds)
                 {
-                    var stationActions = paymentActions.Where(a => a.ActionStationId == stationId).ToList();
+                    var stationTransactions = transactions.Where(t => t.StationId == stationId).ToList();
 
-                    // Get station name from devices
-                    var device = scanDevices.DevicesData.Devices.FirstOrDefault(d => d.Id == stationId);
-                    var stationName = device?.DeviceName ?? stationId.ToString();
+                    // Get station name (prefer stored name, fallback to device lookup)
+                    var stationName = stationTransactions.FirstOrDefault()?.StationName;
+                    if (string.IsNullOrEmpty(stationName))
+                    {
+                        var device = scanDevices.DevicesData.Devices.FirstOrDefault(d => d.Id == stationId);
+                        stationName = device?.DeviceName ?? stationId.ToString();
+                    }
 
                     // Calculate earnings (captures - refunds)
-                    float monthEarnings = stationActions
-                        .Where(a => a.ActionTime >= startOfMonth)
-                        .Sum(a => a.ActionCode == PaymentCapture ? (a.PaymentAmount ?? 0) : -(a.PaymentAmount ?? 0));
+                    decimal monthEarnings = stationTransactions
+                        .Where(t => t.TransactionTime >= startOfMonth)
+                        .Sum(t => t.SignedAmount);
 
-                    float yearEarnings = stationActions
-                        .Where(a => a.ActionTime >= startOfYear)
-                        .Sum(a => a.ActionCode == PaymentCapture ? (a.PaymentAmount ?? 0) : -(a.PaymentAmount ?? 0));
+                    decimal yearEarnings = stationTransactions
+                        .Where(t => t.TransactionTime >= startOfYear)
+                        .Sum(t => t.SignedAmount);
 
-                    float totalEarnings = stationActions
-                        .Sum(a => a.ActionCode == PaymentCapture ? (a.PaymentAmount ?? 0) : -(a.PaymentAmount ?? 0));
+                    decimal totalEarnings = stationTransactions.Sum(t => t.SignedAmount);
 
-                    // Count transactions
-                    int monthTransactions = stationActions.Count(a => a.ActionTime >= startOfMonth && a.ActionCode == PaymentCapture);
-                    int yearTransactions = stationActions.Count(a => a.ActionTime >= startOfYear && a.ActionCode == PaymentCapture);
-                    int totalTransactions = stationActions.Count(a => a.ActionCode == PaymentCapture);
+                    // Count capture transactions only
+                    int monthTx = stationTransactions.Count(t => t.TransactionTime >= startOfMonth && t.Type == TransactionType.Capture);
+                    int yearTx = stationTransactions.Count(t => t.TransactionTime >= startOfYear && t.Type == TransactionType.Capture);
+                    int totalTx = stationTransactions.Count(t => t.Type == TransactionType.Capture);
 
-                    result.Add(new
+                    result.Add(new FinanceStationRow
                     {
                         StationId = stationId.ToString(),
                         StationName = stationName,
-                        MonthEarnings = monthEarnings,
-                        YearEarnings = yearEarnings,
-                        TotalEarnings = totalEarnings,
-                        MonthTransactions = monthTransactions,
-                        YearTransactions = yearTransactions,
-                        TotalTransactions = totalTransactions
+                        MonthEarnings = (float)monthEarnings,
+                        YearEarnings = (float)yearEarnings,
+                        TotalEarnings = (float)totalEarnings,
+                        MonthTransactions = monthTx,
+                        YearTransactions = yearTx,
+                        TotalTransactions = totalTx
                     });
                 }
 
                 // Add totals row
-                result.Add(new
+                if (result.Count > 0)
                 {
-                    StationId = "",
-                    StationName = "TOTAL",
-                    MonthEarnings = result.Sum(r => ((dynamic)r).MonthEarnings),
-                    YearEarnings = result.Sum(r => ((dynamic)r).YearEarnings),
-                    TotalEarnings = result.Sum(r => ((dynamic)r).TotalEarnings),
-                    MonthTransactions = result.Sum(r => ((dynamic)r).MonthTransactions),
-                    YearTransactions = result.Sum(r => ((dynamic)r).YearTransactions),
-                    TotalTransactions = result.Sum(r => ((dynamic)r).TotalTransactions)
-                });
+                    result.Add(new FinanceStationRow
+                    {
+                        StationId = "",
+                        StationName = "TOTAL",
+                        MonthEarnings = result.Sum(r => r.MonthEarnings),
+                        YearEarnings = result.Sum(r => r.YearEarnings),
+                        TotalEarnings = result.Sum(r => r.TotalEarnings),
+                        MonthTransactions = result.Sum(r => r.MonthTransactions),
+                        YearTransactions = result.Sum(r => r.YearTransactions),
+                        TotalTransactions = result.Sum(r => r.TotalTransactions)
+                    });
+                }
 
                 return Json(result, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, $"{nameof(ActionsController)} -> {nameof(RefreshFinance)} throw Exception");
-                return Json(new List<object>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
+                return Json(new List<FinanceStationRow>(), new JsonSerializerOptions { PropertyNamingPolicy = null });
+            }
+        }
+
+        public class FinanceStationRow
+        {
+            public string StationId { get; set; } = "";
+            public string StationName { get; set; } = "";
+            public float MonthEarnings { get; set; }
+            public float YearEarnings { get; set; }
+            public float TotalEarnings { get; set; }
+            public int MonthTransactions { get; set; }
+            public int YearTransactions { get; set; }
+            public int TotalTransactions { get; set; }
+        }
+
+        /// <summary>
+        /// Add a financial transaction record
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> AddTransaction([FromBody] AddTransactionRequest request)
+        {
+            try
+            {
+                var transaction = new FinancialTransaction
+                {
+                    TransactionTime = DateTime.Now,
+                    Type = request.Type,
+                    Amount = request.Amount,
+                    StationId = request.StationId,
+                    StationName = request.StationName ?? "",
+                    PowerBankId = request.PowerBankId,
+                    UserId = request.UserId ?? "",
+                    CustomerName = request.CustomerName ?? "",
+                    PaymentReference = request.PaymentReference ?? "",
+                    SessionId = request.SessionId ?? "",
+                    Description = request.Description ?? ""
+                };
+
+                deviceDb.FinancialTransactions.Add(transaction);
+                await deviceDb.SaveChangesAsync();
+
+                Logger.LogInformation("Added financial transaction: Type={Type}, Amount={Amount}, Station={Station}",
+                    transaction.Type, transaction.Amount, transaction.StationName);
+
+                return Json(new { success = true, id = transaction.Id });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to add financial transaction");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public class AddTransactionRequest
+        {
+            public TransactionType Type { get; set; }
+            public decimal Amount { get; set; }
+            public ulong StationId { get; set; }
+            public string? StationName { get; set; }
+            public ulong PowerBankId { get; set; }
+            public string? UserId { get; set; }
+            public string? CustomerName { get; set; }
+            public string? PaymentReference { get; set; }
+            public string? SessionId { get; set; }
+            public string? Description { get; set; }
+        }
+
+        /// <summary>
+        /// Delete a financial transaction record
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> DeleteTransaction([FromBody] DeleteTransactionRequest request)
+        {
+            try
+            {
+                var transaction = await deviceDb.FinancialTransactions.FindAsync(request.Id);
+                if (transaction == null)
+                {
+                    return Json(new { success = false, message = "Transaction not found" });
+                }
+
+                deviceDb.FinancialTransactions.Remove(transaction);
+                await deviceDb.SaveChangesAsync();
+
+                var userName = User.Identity?.Name ?? "unknown";
+                Logger.LogInformation("Deleted financial transaction {Id} by {User}: Type={Type}, Amount={Amount}, Station={Station}",
+                    request.Id, userName, transaction.Type, transaction.Amount, transaction.StationName);
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to delete financial transaction {Id}", request.Id);
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public class DeleteTransactionRequest
+        {
+            public long Id { get; set; }
+        }
+
+        /// <summary>
+        /// Get all financial transactions (for detailed view)
+        /// </summary>
+        [HttpGet]
+        [Authorize(Roles = "admin,manager")]
+        public async Task<ActionResult> GetTransactions(int? limit = 100)
+        {
+            try
+            {
+                var transactions = await deviceDb.FinancialTransactions
+                    .OrderByDescending(t => t.TransactionTime)
+                    .Take(limit ?? 100)
+                    .Select(t => new
+                    {
+                        t.Id,
+                        TransactionTime = t.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                        Type = t.Type.ToString(),
+                        t.Amount,
+                        t.StationId,
+                        t.StationName,
+                        t.PowerBankId,
+                        t.UserId,
+                        t.CustomerName,
+                        t.PaymentReference,
+                        t.SessionId,
+                        t.Description
+                    })
+                    .ToListAsync();
+
+                return Json(transactions, new JsonSerializerOptions { PropertyNamingPolicy = null });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to get financial transactions");
+                return Json(new List<object>());
+            }
+        }
+
+        /// <summary>
+        /// Get financial transactions for a specific station (for row details)
+        /// </summary>
+        [HttpGet]
+        [Authorize(Roles = "admin,manager")]
+        public async Task<ActionResult> GetTransactionsByStation(ulong stationId)
+        {
+            try
+            {
+                var transactions = await deviceDb.FinancialTransactions
+                    .Where(t => t.StationId == stationId)
+                    .OrderByDescending(t => t.TransactionTime)
+                    .Take(100)
+                    .Select(t => new
+                    {
+                        t.Id,
+                        TransactionTime = t.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                        Type = t.Type.ToString(),
+                        t.Amount,
+                        SignedAmount = t.Type == TransactionType.Refund ? -t.Amount : t.Amount,
+                        t.PowerBankId,
+                        t.CustomerName,
+                        t.CardInfo,
+                        t.CardExpiry,
+                        t.CardCountry,
+                        t.UserId,
+                        t.SessionId
+                    })
+                    .ToListAsync();
+
+                return Json(transactions, new JsonSerializerOptions { PropertyNamingPolicy = null });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to get transactions for station {StationId}", stationId);
+                return Json(new List<object>());
             }
         }
     }

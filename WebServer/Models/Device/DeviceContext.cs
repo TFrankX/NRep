@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebServer.Models.Settings;
+using WebServer.Models.Finance;
 
 namespace WebServer.Models.Device
 {
@@ -9,6 +10,7 @@ namespace WebServer.Models.Device
         public DbSet<Server> Server { get; set; }
         public DbSet<PowerBank> PowerBank { get; set; }
         public DbSet<AppSetting> AppSettings { get; set; }
+        public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
 
         public DeviceContext(DbContextOptions<DeviceContext> options)
         : base(options)
@@ -27,6 +29,14 @@ namespace WebServer.Models.Device
             modelBuilder.Entity<AppSetting>()
                 .HasIndex(s => new { s.Category, s.Key })
                 .IsUnique();
+
+            // FinancialTransactions: indexes for common queries
+            modelBuilder.Entity<FinancialTransaction>()
+                .HasIndex(t => t.TransactionTime);
+            modelBuilder.Entity<FinancialTransaction>()
+                .HasIndex(t => t.StationId);
+            modelBuilder.Entity<FinancialTransaction>()
+                .HasIndex(t => t.Type);
             //modelBuilder.Entity<StressProfile>().HasIndex(u => new { u.NameSettings, u.NumberOfUsers, u.NumberOfInstrument, u.NumberOfOrdersFromUserPerSec }).IsUnique();
         }
 

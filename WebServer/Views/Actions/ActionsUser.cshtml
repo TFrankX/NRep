@@ -80,6 +80,26 @@
                     "</div>";
             }
 
+            // Payment amount
+            if (column === 'PaymentAmount') {
+                if (value && value > 0) {
+                    return divstartstyle +
+                        "<span style='font-weight: 600; color: #059669;'>" + value.toFixed(2) + " EUR</span>" +
+                        "</div>";
+                }
+                return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
+            }
+
+            // Payment info
+            if (column === 'PaymentInfo') {
+                if (value && value.length > 0) {
+                    return divstartstyle +
+                        "<span style='font-size: 0.75rem; color: #6B7280;'>" + value + "</span>" +
+                        "</div>";
+                }
+                return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
+            }
+
             // Default
             return divstartstyle +
                 "<span style='font-size: 0.85rem;'>" + value + "</span>" +
@@ -192,13 +212,15 @@
                 { name: 'DeviceName', type: 'string' },
                 { name: 'PowerBankName', type: 'string' },
                 { name: 'ActionPowerBankSlot', type: 'string' },
-                { name: 'ActionText', type: 'string' }
+                { name: 'ActionText', type: 'string' },
+                { name: 'PaymentAmount', type: 'float' },
+                { name: 'PaymentInfo', type: 'string' }
             ]
 
         };
 
         // Колонки для скрытия в компактном виде
-        var compactHiddenColumns = ['ActionCode', 'UserId', 'DeviceName', 'PowerBankName', 'ActionPowerBankSlot'];
+        var compactHiddenColumns = ['ActionCode', 'UserId', 'DeviceName', 'PowerBankName', 'ActionPowerBankSlot', 'PaymentAmount', 'PaymentInfo'];
 
         function toggleView() {
             var isCompact = localStorage.getItem('actionsCompactView') === 'true';
@@ -245,13 +267,15 @@
                     height: 720,
                     columnsresize: true,
                     columns: [
-                        { text: "Time", datafield: "ActionTime", width: 160, cellsrenderer: cellsrenderer },
-                        { text: "Action Code", datafield: "ActionCode", width: 100, cellsrenderer: cellsrenderer },
+                        { text: "Time", datafield: "ActionTime", width: 150, cellsrenderer: cellsrenderer },
+                        { text: "Code", datafield: "ActionCode", width: 80, cellsrenderer: cellsrenderer },
                         { text: "User", datafield: "UserId", width: 100, cellsrenderer: cellsrenderer },
-                        { text: "Device", datafield: "DeviceName", width: 140, cellsrenderer: cellsrenderer },
-                        { text: "PowerBank", datafield: "PowerBankName", width: 150, cellsrenderer: cellsrenderer },
-                        { text: "Slot", datafield: "ActionPowerBankSlot", width: 50, cellsrenderer: cellsrenderer },
-                        { text: "Action Text", datafield: "ActionText", minwidth: 400, cellsrenderer: cellsrenderer },
+                        { text: "Device", datafield: "DeviceName", width: 120, cellsrenderer: cellsrenderer },
+                        { text: "PowerBank", datafield: "PowerBankName", width: 120, cellsrenderer: cellsrenderer },
+                        { text: "Slot", datafield: "ActionPowerBankSlot", width: 45, cellsrenderer: cellsrenderer },
+                        { text: "Action Text", datafield: "ActionText", minwidth: 250, cellsrenderer: cellsrenderer },
+                        { text: "Amount", datafield: "PaymentAmount", width: 90, cellsrenderer: cellsrenderer },
+                        { text: "Payment Info", datafield: "PaymentInfo", width: 280, cellsrenderer: cellsrenderer },
                      ]
                 });
             // Инициализация date picker

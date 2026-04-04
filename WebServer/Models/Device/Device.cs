@@ -73,6 +73,7 @@ namespace WebServer.Models.Device
         public DateTime FirstOnlineTime { get; set; }
         public DateTime LastUpdate { get; private set; }
         public string Description { get; set; }
+        public string UserLocation { get; set; } = "";
         public bool UpdateInt { get; set; }
         public bool UpdateExt { get; set; }
         [NotMapped]
@@ -81,6 +82,12 @@ namespace WebServer.Models.Device
         public long LastInventoryTime { get; set; }
         [NotMapped]
         public bool Stored { get; set; }
+        [NotMapped]
+        public bool? PreviousOnlineState { get; set; }  // State loaded from DB, null = unknown (new device)
+        [NotMapped]
+        public int OfflineRetryCount { get; set; }  // Counter for retry attempts before marking offline
+        [NotMapped]
+        public DateTime? RetryScheduledTime { get; set; }  // Time when next retry is scheduled
 
         private ulong GetGUID(string input)
         {

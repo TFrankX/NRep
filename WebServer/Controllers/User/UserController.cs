@@ -70,6 +70,8 @@ namespace WebServer.Controllers.User
         public string TypeOfUse { get; set; } = "";
         public string SupportPhone { get; set; } = "+357 99 123 456";
         public string SupportEmail { get; set; } = "support@a-charger.com";
+        public string Language { get; set; } = "en";
+        public string ZoneColor { get; set; } = "#7C3AED";
 
         public PayInfo()
         {
@@ -355,11 +357,11 @@ namespace WebServer.Controllers.User
                 if ((pbPush.Id > 1000) && (pbPush != null))
                 {
 
-                    //set the key value in Cookie
-                    Set("KeyCharge911", userId, 1500);
+                    //set the key value in Cookie - use customerName to match powerbank UserId
+                    Set("KeyCharge911", customerName, 1500);
 
                     payInfo.Taken = pbPush.Taken ? 1 : 0;
-                    payInfo.UserId = $"{session.CustomerDetails?.Name ?? "Unknown"}";
+                    payInfo.UserId = customerName;
 
                     // Fill PowerBanks list for new UI
                     if (pbPush.Taken)
@@ -570,6 +572,9 @@ namespace WebServer.Controllers.User
                 var maxCharge = 0;
                 PowerBank? pbTake = null;
                 uint maxChargedSlot = 0;
+
+                Logger.LogInformation($"User/Do: Checking {devicePbs.Count} powerbanks for device {device.DeviceName}");
+
                 foreach (PowerBank pb in devicePbs)
                 {
                     TimeSpan? resTimeDiff = (DateTime.Now - pb.ReserveTime);
@@ -577,12 +582,15 @@ namespace WebServer.Controllers.User
                     if (resTimeDiff.HasValue)
                     {
                          resTimeDiffSec = resTimeDiff.Value.TotalSeconds;
-                       
+
                     }
                     else
                     {
                         resTimeDiffSec = 0.0;
                     }
+
+                    Logger.LogInformation($"  PB slot {pb.HostSlot}: Taken={pb.Taken}, Plugged={pb.Plugged}, Reserved={pb.Reserved}, Charge={pb.ChargeLevel}");
+
                     if (!pb.Taken && pb.Plugged && (!pb.Reserved || (resTimeDiffSec>90.0)))
                     {
                         if ((int)pb.ChargeLevel > maxCharge)
@@ -591,7 +599,7 @@ namespace WebServer.Controllers.User
                             maxChargedSlot = pb.HostSlot;
                             pbTake = pb;
                         }
-                       
+
                     }
                     }
 
@@ -619,7 +627,10 @@ namespace WebServer.Controllers.User
 
 
                 if (maxChargedSlot == 0)
+                {
+                    Logger.LogWarning($"User/Do: No available powerbanks found for device {device.DeviceName}");
                     RedirectToAction("User", "User");
+                }
 
 
                 if (device.TypeOfUse == TypeOfUse.SMSTake)
@@ -736,6 +747,7 @@ namespace WebServer.Controllers.User
                         payInfo.Time = payInfo.PowerBanks[0].Time;
                         payInfo.Cost = payInfo.PowerBanks[0].Cost;
                     }
+                    await LoadZoneSettingsAsync(payInfo, device.UserLocation);
                     return View(payInfo);
 
                 };
@@ -743,6 +755,7 @@ namespace WebServer.Controllers.User
             }
 
             payInfo.Cost = 0;
+            await LoadZoneSettingsAsync(payInfo, device?.UserLocation ?? "");
             return View(payInfo);
         }
 
@@ -1147,10 +1160,30 @@ namespace WebServer.Controllers.User
                     payInfo.CanTakeMore = (device2.TypeOfUse == TypeOfUse.FreeMultiTake || device2.TypeOfUse == TypeOfUse.SMSTake)
                                           && userPbs.Count < 4
                                           && availablePbs;
+
+                    // Получаем язык и цвет из зоны станции
+                    await LoadZoneSettingsAsync(payInfo, device2.UserLocation);
                 }
             }
 
             return payInfo;
+        }
+
+        private async Task LoadZoneSettingsAsync(PayInfo payInfo, string userLocation)
+        {
+            if (string.IsNullOrEmpty(userLocation))
+                return;
+
+            var zones = await _appSettingsService.GetZonesAsync();
+            if (int.TryParse(userLocation, out var zoneId))
+            {
+                var zone = zones.FirstOrDefault(z => z.Id == zoneId);
+                if (zone != null)
+                {
+                    payInfo.Language = zone.Language;
+                    payInfo.ZoneColor = zone.Color;
+                }
+            }
         }
 
         public class TakeMoreRequest

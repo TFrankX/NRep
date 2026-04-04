@@ -15757,3 +15757,436 @@
 2026-04-03 02:52:17.3662 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
 2026-04-03 02:52:17.3719 Info Configuration initialized.
 2026-04-03 02:52:17.8150 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-03 03:06:33.4828 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-03 03:06:33.5162 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-03 03:06:33.5162 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-03 03:06:33.5367 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-03 03:06:33.6006 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-03 03:06:33.6062 Info Configuration initialized.
+2026-04-03 03:06:33.9906 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:07:04.2395 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 22:07:04.2770 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 22:07:04.2777 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 22:07:04.3064 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 22:07:04.4086 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:07:04.4149 Info Configuration initialized.
+2026-04-04 22:07:05.0767 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:15:38.1800 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 22:15:38.2238 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 22:15:38.2242 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 22:15:38.2434 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 22:15:38.3374 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:15:38.3429 Info Configuration initialized.
+2026-04-04 22:15:38.7828 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:17:06.6987 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 22:17:06.7658 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 22:17:06.7658 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 22:17:06.7944 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 22:17:06.9272 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:17:06.9343 Info Configuration initialized.
+2026-04-04 22:17:07.3626 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:18:18.2914 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 22:18:18.3247 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 22:18:18.3252 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 22:18:18.3476 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 22:18:18.4297 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:18:18.4353 Info Configuration initialized.
+2026-04-04 22:18:18.8219 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:28:23.6917 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 22:28:23.7228 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 22:28:23.7228 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 22:28:23.7447 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 22:28:23.7918 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:28:23.7966 Info Configuration initialized.
+2026-04-04 22:28:24.1436 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:38:49.0798 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 22:38:49.1123 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 22:38:49.1123 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 22:38:49.1321 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 22:38:49.2350 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:38:49.2414 Info Configuration initialized.
+2026-04-04 22:38:49.7175 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:42:53.2859 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 22:42:53.3200 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 22:42:53.3206 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 22:42:53.3455 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 22:42:53.4475 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:42:53.4531 Info Configuration initialized.
+2026-04-04 22:42:53.9001 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:59:31.3485 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 22:59:31.3919 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 22:59:31.3926 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 22:59:31.4267 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 22:59:31.5199 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 22:59:31.5260 Info Configuration initialized.
+2026-04-04 22:59:32.1360 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:04:16.2504 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:04:16.2830 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:04:16.2830 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:04:16.3029 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:04:16.4050 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:04:16.4112 Info Configuration initialized.
+2026-04-04 23:04:16.8758 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:08:18.7908 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:08:18.8233 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:08:18.8233 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:08:18.8485 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:08:18.9235 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:08:18.9287 Info Configuration initialized.
+2026-04-04 23:08:19.3156 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:13:56.4930 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:13:56.5266 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:13:56.5270 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:13:56.5485 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:13:56.6252 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:13:56.6309 Info Configuration initialized.
+2026-04-04 23:13:56.9960 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:19:32.6111 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:19:32.6689 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:19:32.6694 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:19:32.6948 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:19:32.7732 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:19:32.7784 Info Configuration initialized.
+2026-04-04 23:19:33.2247 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:25:07.0144 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:25:07.0446 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:25:07.0453 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:25:07.0677 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:25:07.1497 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:25:07.1551 Info Configuration initialized.
+2026-04-04 23:25:07.5326 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:27:05.1509 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:27:05.1830 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:27:05.1830 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:27:05.2064 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:27:05.2553 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:27:05.2603 Info Configuration initialized.
+2026-04-04 23:27:05.6281 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:28:40.7814 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:28:40.8125 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:28:40.8125 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:28:40.8339 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:28:40.9352 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:28:40.9416 Info Configuration initialized.
+2026-04-04 23:28:41.3067 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:33:53.3754 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:33:53.4066 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:33:53.4070 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:33:53.4301 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:33:53.5285 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:33:53.5348 Info Configuration initialized.
+2026-04-04 23:33:53.9592 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:37:24.4882 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:37:24.5212 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:37:24.5212 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:37:24.5443 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:37:24.6257 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:37:24.6316 Info Configuration initialized.
+2026-04-04 23:37:25.0766 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:42:42.0831 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:42:42.1155 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:42:42.1160 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:42:42.1394 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:42:42.2165 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:42:42.2226 Info Configuration initialized.
+2026-04-04 23:42:42.5898 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:46:11.0095 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:46:11.0616 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:46:11.0621 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:46:11.0853 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:46:11.1646 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:46:11.1700 Info Configuration initialized.
+2026-04-04 23:46:11.6221 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:49:03.0545 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:49:03.0857 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:49:03.0857 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:49:03.1089 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:49:03.2045 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:49:03.2109 Info Configuration initialized.
+2026-04-04 23:49:03.5898 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:51:50.8643 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-04 23:51:50.8973 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-04 23:51:50.8973 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-04 23:51:50.9212 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-04 23:51:51.0024 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-04 23:51:51.0077 Info Configuration initialized.
+2026-04-04 23:51:51.4443 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:01:50.3191 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 00:01:50.3493 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 00:01:50.3493 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 00:01:50.3730 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 00:01:50.4748 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:01:50.4816 Info Configuration initialized.
+2026-04-05 00:01:50.8779 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:19:28.6879 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 00:19:28.7177 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 00:19:28.7181 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 00:19:28.7380 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 00:19:28.8406 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:19:28.8465 Info Configuration initialized.
+2026-04-05 00:19:29.2484 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:30:58.7457 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 00:30:58.8539 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 00:30:58.8544 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 00:30:58.8816 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 00:30:58.9717 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:30:58.9776 Info Configuration initialized.
+2026-04-05 00:30:59.6430 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:32:56.1891 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 00:32:56.2319 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 00:32:56.2324 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 00:32:56.2612 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 00:32:56.3742 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:32:56.3794 Info Configuration initialized.
+2026-04-05 00:32:56.7457 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:37:54.9836 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 00:37:55.0175 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 00:37:55.0180 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 00:37:55.0389 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 00:37:55.1102 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:37:55.1158 Info Configuration initialized.
+2026-04-05 00:37:55.5494 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:42:09.6658 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 00:42:09.7007 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 00:42:09.7015 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 00:42:09.7262 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 00:42:09.7831 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:42:09.7883 Info Configuration initialized.
+2026-04-05 00:42:10.1983 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:49:40.7560 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 00:49:40.7866 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 00:49:40.7872 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 00:49:40.8107 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 00:49:40.8714 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:49:40.8769 Info Configuration initialized.
+2026-04-05 00:49:41.2490 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:54:27.3075 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 00:54:27.3382 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 00:54:27.3382 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 00:54:27.3609 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 00:54:27.4102 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 00:54:27.4150 Info Configuration initialized.
+2026-04-05 00:54:27.8035 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 01:00:42.8270 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 01:00:42.8593 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 01:00:42.8596 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 01:00:42.8782 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 01:00:42.9574 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 01:00:42.9627 Info Configuration initialized.
+2026-04-05 01:00:43.3518 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 01:04:58.9958 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 01:04:59.0272 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 01:04:59.0279 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 01:04:59.0513 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 01:04:59.1549 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 01:04:59.1601 Info Configuration initialized.
+2026-04-05 01:04:59.5164 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 01:11:47.3126 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 01:11:47.3666 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 01:11:47.3672 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 01:11:47.3953 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 01:11:47.4483 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 01:11:47.4540 Info Configuration initialized.
+2026-04-05 01:11:47.9029 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 01:32:49.9578 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 01:32:49.9907 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 01:32:49.9907 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 01:32:50.0097 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 01:32:50.0904 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 01:32:50.0959 Info Configuration initialized.
+2026-04-05 01:32:50.5272 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 02:07:08.2201 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 02:07:08.2530 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 02:07:08.2530 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 02:07:08.2790 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 02:07:08.3550 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 02:07:08.3605 Info Configuration initialized.
+2026-04-05 02:07:08.8473 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 02:20:20.9263 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 02:20:20.9590 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 02:20:20.9590 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 02:20:20.9792 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 02:20:21.0265 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 02:20:21.0315 Info Configuration initialized.
+2026-04-05 02:20:21.4764 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 02:24:35.7706 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:24:35.7725 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:24:45.8745 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:24:45.8771 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:24:56.0212 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:24:56.0226 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:06.2055 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:06.2075 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:16.4102 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:16.4127 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:26.5814 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:26.5836 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:36.7442 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:36.7475 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:46.8747 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:46.8764 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:57.1005 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:25:57.1017 Warn Exception in NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(): System.BadImageFormatException. Exception: System.BadImageFormatException: Index not found. (0x80131124)
+   at System.RuntimeTypeHandle.ConstructName(QCallTypeHandle handle, TypeNameFormatFlags formatFlags, StringHandleOnStack retString)
+   at System.RuntimeTypeHandle.ConstructName(TypeNameFormatFlags formatFlags)
+   at System.RuntimeType.RuntimeTypeCache.GetName(TypeNameKind kind)
+   at System.RuntimeType.GetCachedName(TypeNameKind kind)
+   at System.Diagnostics.StackTrace.ToString(TraceFormat traceFormat, StringBuilder sb)
+   at System.Exception.get_StackTrace()
+   at System.BadImageFormatException.ToString()
+   at NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(StringBuilder sb, Exception ex)
+2026-04-05 02:26:07.6642 Info Registered target NLog.Targets.FileTarget(Name=errorsfile)
+2026-04-05 02:26:07.6951 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-04-05 02:26:07.6956 Info Registered target NLog.Targets.FileTarget(Name=webserverfile)
+2026-04-05 02:26:07.7175 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.2.4.2092. Product version: 5.2.4+5ed75b125a691ce9f01e64641f1a79f438385847. GlobalAssemblyCache: False
+2026-04-05 02:26:07.7662 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config
+2026-04-05 02:26:07.7713 Info Configuration initialized.
+2026-04-05 02:26:08.1557 Info Validating config: TargetNames=webserverfile, allfile, errorsfile, ConfigItems=62, FilePath=/Users/tomfrank/repository/ShareCharging/WebServer/bin/Debug/net7.0/NLog.config

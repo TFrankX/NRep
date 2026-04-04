@@ -104,6 +104,193 @@ namespace WebServer.Models.Settings
     }
 
     /// <summary>
+    /// View model for scan/polling settings
+    /// </summary>
+    public class ScanSettings
+    {
+        /// <summary>
+        /// Interval between inventory requests to each station (seconds)
+        /// </summary>
+        public int InventoryPeriodSeconds { get; set; } = 300;
+
+        /// <summary>
+        /// Number of retry attempts before marking station offline
+        /// </summary>
+        public int OfflineRetryCount { get; set; } = 3;
+
+        /// <summary>
+        /// Delay between retry attempts (seconds)
+        /// </summary>
+        public int RetryDelaySeconds { get; set; } = 5;
+
+        /// <summary>
+        /// Timeout waiting for station response (seconds)
+        /// </summary>
+        public int ResponseTimeoutSeconds { get; set; } = 10;
+    }
+
+    /// <summary>
+    /// View model for zone settings
+    /// </summary>
+    public class ZoneSettings
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Color { get; set; } = "#7C3AED";
+        public string Language { get; set; } = "en";
+    }
+
+    /// <summary>
+    /// Supported languages for zones
+    /// </summary>
+    public static class SupportedLanguages
+    {
+        public static readonly Dictionary<string, string> All = new()
+        {
+            { "en", "English" },
+            { "ru", "Русский" },
+            { "es", "Español" },
+            { "de", "Deutsch" },
+            { "fr", "Français" },
+            { "el", "Ελληνικά" }
+        };
+    }
+
+    /// <summary>
+    /// User page translations
+    /// </summary>
+    public static class Translations
+    {
+        public static string Get(string lang, string key)
+        {
+            if (Strings.TryGetValue(lang, out var langDict) && langDict.TryGetValue(key, out var value))
+                return value;
+            // Fallback to English
+            if (Strings["en"].TryGetValue(key, out var fallback))
+                return fallback;
+            return key;
+        }
+
+        private static readonly Dictionary<string, Dictionary<string, string>> Strings = new()
+        {
+            { "en", new Dictionary<string, string>
+                {
+                    { "PowerbankActive", "Powerbank Active" },
+                    { "EnjoyYourCharge", "Enjoy your charge!" },
+                    { "PowerbankReturned", "Powerbank Returned!" },
+                    { "ThankYou", "Thank you for using A-Charger" },
+                    { "AllReturned", "All Powerbanks Returned!" },
+                    { "NoPowerbanks", "No Powerbanks Available" },
+                    { "TryAgainLater", "Please try again later or visit another station." },
+                    { "NeedHelp", "Need help?" },
+                    { "PBank", "P-BANK" },
+                    { "Taken", "TAKEN" },
+                    { "Time", "TIME" },
+                    { "Cost", "COST" },
+                    { "Total", "Total:" },
+                    { "TakeAnother", "Take Another Powerbank" },
+                    { "Dispensing", "Dispensing..." }
+                }
+            },
+            { "ru", new Dictionary<string, string>
+                {
+                    { "PowerbankActive", "Повербанк активен" },
+                    { "EnjoyYourCharge", "Приятного пользования!" },
+                    { "PowerbankReturned", "Повербанк возвращён!" },
+                    { "ThankYou", "Спасибо за использование A-Charger" },
+                    { "AllReturned", "Все повербанки возвращены!" },
+                    { "NoPowerbanks", "Нет доступных повербанков" },
+                    { "TryAgainLater", "Пожалуйста, попробуйте позже или посетите другую станцию." },
+                    { "NeedHelp", "Нужна помощь?" },
+                    { "PBank", "П-БАНК" },
+                    { "Taken", "ВЗЯТ" },
+                    { "Time", "ВРЕМЯ" },
+                    { "Cost", "ЦЕНА" },
+                    { "Total", "Итого:" },
+                    { "TakeAnother", "Взять ещё повербанк" },
+                    { "Dispensing", "Выдаём..." }
+                }
+            },
+            { "es", new Dictionary<string, string>
+                {
+                    { "PowerbankActive", "Powerbank Activo" },
+                    { "EnjoyYourCharge", "¡Disfruta de tu carga!" },
+                    { "PowerbankReturned", "¡Powerbank Devuelto!" },
+                    { "ThankYou", "Gracias por usar A-Charger" },
+                    { "AllReturned", "¡Todos los Powerbanks Devueltos!" },
+                    { "NoPowerbanks", "No Hay Powerbanks Disponibles" },
+                    { "TryAgainLater", "Por favor, inténtalo más tarde o visita otra estación." },
+                    { "NeedHelp", "¿Necesitas ayuda?" },
+                    { "PBank", "P-BANK" },
+                    { "Taken", "TOMADO" },
+                    { "Time", "TIEMPO" },
+                    { "Cost", "COSTO" },
+                    { "Total", "Total:" },
+                    { "TakeAnother", "Tomar Otro Powerbank" },
+                    { "Dispensing", "Dispensando..." }
+                }
+            },
+            { "de", new Dictionary<string, string>
+                {
+                    { "PowerbankActive", "Powerbank Aktiv" },
+                    { "EnjoyYourCharge", "Viel Spaß beim Laden!" },
+                    { "PowerbankReturned", "Powerbank Zurückgegeben!" },
+                    { "ThankYou", "Danke für die Nutzung von A-Charger" },
+                    { "AllReturned", "Alle Powerbanks Zurückgegeben!" },
+                    { "NoPowerbanks", "Keine Powerbanks Verfügbar" },
+                    { "TryAgainLater", "Bitte versuchen Sie es später erneut oder besuchen Sie eine andere Station." },
+                    { "NeedHelp", "Brauchen Sie Hilfe?" },
+                    { "PBank", "P-BANK" },
+                    { "Taken", "GENOMMEN" },
+                    { "Time", "ZEIT" },
+                    { "Cost", "KOSTEN" },
+                    { "Total", "Gesamt:" },
+                    { "TakeAnother", "Noch eine Powerbank nehmen" },
+                    { "Dispensing", "Ausgabe..." }
+                }
+            },
+            { "fr", new Dictionary<string, string>
+                {
+                    { "PowerbankActive", "Powerbank Actif" },
+                    { "EnjoyYourCharge", "Bonne recharge !" },
+                    { "PowerbankReturned", "Powerbank Retourné !" },
+                    { "ThankYou", "Merci d'utiliser A-Charger" },
+                    { "AllReturned", "Tous les Powerbanks Retournés !" },
+                    { "NoPowerbanks", "Pas de Powerbanks Disponibles" },
+                    { "TryAgainLater", "Veuillez réessayer plus tard ou visiter une autre station." },
+                    { "NeedHelp", "Besoin d'aide ?" },
+                    { "PBank", "P-BANK" },
+                    { "Taken", "PRIS" },
+                    { "Time", "TEMPS" },
+                    { "Cost", "COÛT" },
+                    { "Total", "Total :" },
+                    { "TakeAnother", "Prendre un Autre Powerbank" },
+                    { "Dispensing", "Distribution..." }
+                }
+            },
+            { "el", new Dictionary<string, string>
+                {
+                    { "PowerbankActive", "Powerbank Ενεργό" },
+                    { "EnjoyYourCharge", "Καλή φόρτιση!" },
+                    { "PowerbankReturned", "Powerbank Επιστράφηκε!" },
+                    { "ThankYou", "Ευχαριστούμε που χρησιμοποιείτε το A-Charger" },
+                    { "AllReturned", "Όλα τα Powerbanks Επιστράφηκαν!" },
+                    { "NoPowerbanks", "Δεν Υπάρχουν Διαθέσιμα Powerbanks" },
+                    { "TryAgainLater", "Παρακαλώ δοκιμάστε αργότερα ή επισκεφθείτε άλλο σταθμό." },
+                    { "NeedHelp", "Χρειάζεστε βοήθεια;" },
+                    { "PBank", "P-BANK" },
+                    { "Taken", "ΛΗΦΘΗΚΕ" },
+                    { "Time", "ΧΡΟΝΟΣ" },
+                    { "Cost", "ΚΟΣΤΟΣ" },
+                    { "Total", "Σύνολο:" },
+                    { "TakeAnother", "Πάρτε Άλλο Powerbank" },
+                    { "Dispensing", "Διανομή..." }
+                }
+            }
+        };
+    }
+
+    /// <summary>
     /// View model for settings page
     /// </summary>
     public class SettingsViewModel
@@ -111,6 +298,8 @@ namespace WebServer.Models.Settings
         public List<PricingPlanSettings> PricingPlans { get; set; } = new();
         public SupportSettings Support { get; set; } = new();
         public List<ServerConfigSettings> Servers { get; set; } = new();
+        public ScanSettings Scan { get; set; } = new();
+        public List<ZoneSettings> Zones { get; set; } = new();
         public string ActiveSection { get; set; } = "pricing";
     }
 }

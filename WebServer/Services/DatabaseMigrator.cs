@@ -14,7 +14,7 @@ namespace WebServer.Services
         private readonly IConfiguration _configuration;
 
         // Current schema version - increment when adding new migrations
-        private const int CURRENT_SCHEMA_VERSION = 5;
+        private const int CURRENT_SCHEMA_VERSION = 10;
 
         public DatabaseMigrator(IServiceProvider serviceProvider, ILogger<DatabaseMigrator> logger, IConfiguration configuration)
         {
@@ -149,6 +149,19 @@ namespace WebServer.Services
 
                 // v5: Fix LastPutTime for old powerbanks
                 await MigratePowerBank_v5_FixLastPutTimeAsync(connection);
+
+                // v6: Seed default scan/polling settings
+                await MigrateAppSettings_v6_SeedScanAsync(connection);
+
+                // v7: Create FinancialTransactions table
+                await MigrateFinancialTransactions_v7_CreateTableAsync(connection);
+                await MigrateFinancialTransactions_v8_AddCardInfoAsync(connection);
+                await MigrateFinancialTransactions_v9_AddCardDetailsAsync(connection);
+
+                // v10: Add UserLocation column to Device
+                await MigrateDevice_v10_AddUserLocationAsync(connection);
+                // v10: Seed default zones
+                await MigrateAppSettings_v10_SeedZonesAsync(connection);
 
                 _logger.LogInformation("Device database migration completed");
             }
@@ -404,6 +417,132 @@ namespace WebServer.Services
             await InsertSettingIfNotExistsAsync(connection, "Support", "Phone", "+357 99 123 456", "string", "Support phone number", 0);
             await InsertSettingIfNotExistsAsync(connection, "Support", "Email", "support@a-charger.com", "string", "Support email", 1);
             await InsertSettingIfNotExistsAsync(connection, "Support", "WorkingHours", "24/7", "string", "Support working hours", 2);
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateAppSettings_v6_SeedScanAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "AppSettings_v6_SeedScan";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            // Default scan/polling settings
+            await InsertSettingIfNotExistsAsync(connection, "Scan", "InventoryPeriodSeconds", "300", "int", "Interval between inventory requests to each station (seconds)", 0);
+            await InsertSettingIfNotExistsAsync(connection, "Scan", "OfflineRetryCount", "3", "int", "Number of retry attempts before marking station offline", 1);
+            await InsertSettingIfNotExistsAsync(connection, "Scan", "RetryDelaySeconds", "5", "int", "Delay between retry attempts (seconds)", 2);
+            await InsertSettingIfNotExistsAsync(connection, "Scan", "ResponseTimeoutSeconds", "10", "int", "Timeout waiting for station response (seconds)", 3);
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateFinancialTransactions_v7_CreateTableAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "FinancialTransactions_v7_CreateTable";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            // Create FinancialTransactions table
+            var createTableSql = @"
+                CREATE TABLE IF NOT EXISTS ""FinancialTransactions"" (
+                    ""Id"" BIGSERIAL PRIMARY KEY,
+                    ""TransactionTime"" timestamp without time zone NOT NULL,
+                    ""Type"" integer NOT NULL,
+                    ""Amount"" decimal(10,2) NOT NULL DEFAULT 0,
+                    ""StationId"" bigint NOT NULL DEFAULT 0,
+                    ""StationName"" text NOT NULL DEFAULT '',
+                    ""PowerBankId"" bigint NOT NULL DEFAULT 0,
+                    ""UserId"" text NOT NULL DEFAULT '',
+                    ""CustomerName"" text NOT NULL DEFAULT '',
+                    ""PaymentReference"" text NOT NULL DEFAULT '',
+                    ""SessionId"" text NOT NULL DEFAULT '',
+                    ""Description"" text NOT NULL DEFAULT ''
+                )";
+
+            await using var createCmd = new NpgsqlCommand(createTableSql, connection);
+            await createCmd.ExecuteNonQueryAsync();
+            _logger.LogInformation("Created table FinancialTransactions");
+
+            // Create indexes
+            var indexSqls = new[]
+            {
+                @"CREATE INDEX IF NOT EXISTS ""IX_FinancialTransactions_TransactionTime"" ON ""FinancialTransactions"" (""TransactionTime"")",
+                @"CREATE INDEX IF NOT EXISTS ""IX_FinancialTransactions_StationId"" ON ""FinancialTransactions"" (""StationId"")",
+                @"CREATE INDEX IF NOT EXISTS ""IX_FinancialTransactions_Type"" ON ""FinancialTransactions"" (""Type"")"
+            };
+
+            foreach (var indexSql in indexSqls)
+            {
+                await using var indexCmd = new NpgsqlCommand(indexSql, connection);
+                await indexCmd.ExecuteNonQueryAsync();
+            }
+            _logger.LogInformation("Created indexes for FinancialTransactions");
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateFinancialTransactions_v8_AddCardInfoAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "FinancialTransactions_v8_AddCardInfo";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            await AddColumnIfNotExistsAsync(connection, "FinancialTransactions", "CardInfo", "text", "''");
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateFinancialTransactions_v9_AddCardDetailsAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "FinancialTransactions_v9_AddCardDetails";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            await AddColumnIfNotExistsAsync(connection, "FinancialTransactions", "CardExpiry", "text", "''");
+            await AddColumnIfNotExistsAsync(connection, "FinancialTransactions", "CardCountry", "text", "''");
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateDevice_v10_AddUserLocationAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "Device_v10_AddUserLocation";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            await AddColumnIfNotExistsAsync(connection, "Device", "UserLocation", "text", "''");
+
+            await RecordMigrationAsync(connection, migrationName);
+        }
+
+        private async Task MigrateAppSettings_v10_SeedZonesAsync(NpgsqlConnection connection)
+        {
+            const string migrationName = "AppSettings_v10_SeedZones";
+
+            if (await IsMigrationAppliedAsync(connection, migrationName))
+                return;
+
+            _logger.LogInformation("Applying migration: {Migration}", migrationName);
+
+            // Create default zone
+            await InsertSettingIfNotExistsAsync(connection, "Zones", "1.Name", "Default", "string", "Zone name", 0);
+            await InsertSettingIfNotExistsAsync(connection, "Zones", "1.Color", "#7C3AED", "string", "Zone color", 1);
+            await InsertSettingIfNotExistsAsync(connection, "Zones", "1.Language", "en", "string", "Zone language", 2);
 
             await RecordMigrationAsync(connection, migrationName);
         }

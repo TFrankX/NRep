@@ -10,6 +10,7 @@ namespace WebServer.Models.Stripe
             //public string? Currency { get; set; }
             public string? SessionId { get; set; }
             public ulong? StationId { get; set; }
+            public string? StationName { get; set; }
             public ulong? PowerBankId { get; set; }
     }
 }
