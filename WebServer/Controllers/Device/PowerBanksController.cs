@@ -38,8 +38,9 @@ namespace WebServer.Controllers.Device
 
         [HttpGet]
         [Authorize]
-        public IActionResult PowerBanks()
+        public IActionResult PowerBanks(string? filter = null)
         {
+            ViewBag.Filter = filter;
             return View();
         }
 
@@ -131,8 +132,9 @@ namespace WebServer.Controllers.Device
 
         [HttpGet]
         [Authorize]
-        public IActionResult Statistics()
+        public IActionResult Statistics(string? filter = null)
         {
+            ViewBag.Filter = filter;
             return View();
         }
 

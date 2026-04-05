@@ -58,6 +58,10 @@
             { text: "Actions", datafield: "Actions", width: "14%", cellsrenderer: cellsrenderer }
         ];
 
+        function goToPowerBank(powerBankId) {
+            window.location.href = '@Url.Action("PowerBanks", "PowerBanks")?filter=' + encodeURIComponent(powerBankId);
+        }
+
         function toggleView() {
             currentView = currentView === 'business' ? 'technical' : 'business';
             var btn = document.getElementById('viewToggleBtn');
@@ -84,9 +88,12 @@
 
             var backcolor = "#FFFFFF";
             var status = jsonmod[row].Status;
+            var isHighlighted = highlightPowerBankId && jsonmod[row].PowerBankIdNum == highlightPowerBankId;
 
             // Color coding by status
-            if (status === "On hands") {
+            if (isHighlighted) {
+                backcolor = "#EDE9FE"; // Purple highlight for selected powerbank
+            } else if (status === "On hands") {
                 backcolor = "#FEF3C7"; // Yellow - taken, station online
             } else if (status === "Returned") {
                 backcolor = "#D1FAE5"; // Green - returned
@@ -100,7 +107,8 @@
                 backcolor = "#F3F4F6"; // Gray - unknown
             }
 
-            var divstartstyle = "<div style='height: 100%; min-height: 40px; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 8px;'>";
+            var borderStyle = isHighlighted ? "border-left: 4px solid #7C3AED;" : "";
+            var divstartstyle = "<div style='height: 100%; min-height: 40px; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 8px; " + borderStyle + "'>";
 
             // Status column with badge
             if (column === 'Status') {
@@ -132,10 +140,13 @@
                     "</div>";
             }
 
-            // PowerBank ID
+            // PowerBank ID - clickable link to PowerBanks page
             if (column === 'PowerBankId') {
+                var pbIdNum = jsonmod[row].PowerBankIdNum;
                 return divstartstyle +
-                    "<span style='font-family: monospace; font-size: 0.8rem; color: #6B7280;'>" + value + "</span>" +
+                    "<a href='javascript:void(0)' onclick=\"goToPowerBank('" + pbIdNum + "')\" " +
+                    "style='font-family: monospace; font-size: 0.8rem; color: #7C3AED; text-decoration: none; cursor: pointer;' " +
+                    "onmouseover=\"this.style.textDecoration='underline'\" onmouseout=\"this.style.textDecoration='none'\">" + value + "</a>" +
                     "</div>";
             }
 
@@ -395,8 +406,13 @@
                         newdata = true;
                         $('#loadingIndicator').hide();
                     }
-                    $("#jqxgrid").jqxGrid('updatebounddata', 'sort');
+                    $("#jqxgrid").jqxGrid('updatebounddata', 'cells');
                     updateSummary(data, response.currentRevenue, response.totalRevenue);
+                    // Apply filter only once after first data load
+                    if (initialFilter && initialFilter.length > 0 && !filterApplied) {
+                        filterApplied = true;
+                        applyPowerBankFilter(initialFilter);
+                    }
                 },
                 error: function() {
                     $('#loadingIndicator').hide();
@@ -419,6 +435,9 @@
         }
 
         var newdata = false;
+        var initialFilter = '@(ViewBag.Filter ?? "")';
+        var filterApplied = false;
+        var highlightPowerBankId = initialFilter; // ID to highlight
         var grid = $("#jqxgrid"),
             intervalId = setInterval(refresh, 5000);
 
@@ -515,6 +534,23 @@
             // Sort by TakeTime descending (newest first)
             $("#jqxgrid").jqxGrid('sortby', 'TakeTime', 'desc');
         });
+
+        function applyPowerBankFilter(filterValue) {
+            console.log('Applying filter for:', filterValue);
+
+            // Find the row index and scroll to it
+            var allData = source.localdata || [];
+            for (var i = 0; i < allData.length; i++) {
+                if (allData[i].PowerBankIdNum == filterValue) {
+                    console.log('Match found at index:', i);
+                    // Scroll to the row - highlighting is done by cellsrenderer
+                    setTimeout(function() {
+                        $("#jqxgrid").jqxGrid('ensurerowvisible', i);
+                    }, 100);
+                    return;
+                }
+            }
+        }
     </script>
 }
 

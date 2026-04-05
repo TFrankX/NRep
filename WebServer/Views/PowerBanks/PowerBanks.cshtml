@@ -431,8 +431,20 @@
             _createWindow();
             $("#jqxWidget").css('display', 'block');
 
-
+            // Apply filter from URL parameter
+            var initialFilter = '@(ViewBag.Filter ?? "")';
+            if (initialFilter && initialFilter.length > 0) {
+                applyPowerBankFilter(initialFilter);
+            }
         });
+
+        function applyPowerBankFilter(filterValue) {
+            var filtergroup = new $.jqx.filter();
+            var filter = filtergroup.createfilter('stringfilter', filterValue, 'contains');
+            filtergroup.addfilter(0, filter);
+            $("#jqxgrid").jqxGrid('addfilter', 'Id_str', filtergroup);
+            $("#jqxgrid").jqxGrid('applyfilters');
+        }
 
 
         function addElement(parentId, elementTag, elementId, html) {

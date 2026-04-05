@@ -93,6 +93,11 @@
             }
         }
 
+        function goToPowerBank(powerBankId, event) {
+            if (event) event.stopPropagation();
+            window.location.href = '@Url.Action("Statistics", "PowerBanks")?filter=' + encodeURIComponent(powerBankId);
+        }
+
         function showToast(type, title, message) {
             // Create toast element if not exists
             var toastContainer = document.getElementById('toastContainer');
@@ -1068,7 +1073,11 @@
                 }
                 if (column === 'PowerBankId') {
                     if (!value) return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                    return divStyle + "<span style='font-family: monospace; font-size: 0.75rem; color: #6B7280;'>" + value + "</span></div>";
+                    var pbIdNum = data.PowerBankIdNum || '';
+                    return divStyle +
+                        "<a href='javascript:void(0)' onclick=\"goToPowerBank('" + pbIdNum + "', event)\" " +
+                        "style='font-family: monospace; font-size: 0.75rem; color: #7C3AED; text-decoration: none; cursor: pointer;' " +
+                        "onmouseover=\"this.style.textDecoration='underline'\" onmouseout=\"this.style.textDecoration='none'\">" + value + "</a></div>";
                 }
                 if (column === 'UserId') {
                     if (!value) return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
