@@ -138,6 +138,8 @@ namespace WebServer.Models.Settings
         public string Name { get; set; } = "";
         public string Color { get; set; } = "#7C3AED";
         public string Language { get; set; } = "en";
+        public string SupportPhone { get; set; } = "";
+        public string SupportEmail { get; set; } = "";
     }
 
     /// <summary>

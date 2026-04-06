@@ -323,7 +323,9 @@ namespace WebServer.Services.Settings
                     Id = zoneId,
                     Name = GetSettingValue(settings, $"{zoneId}.Name", ""),
                     Color = GetSettingValue(settings, $"{zoneId}.Color", "#7C3AED"),
-                    Language = GetSettingValue(settings, $"{zoneId}.Language", "en")
+                    Language = GetSettingValue(settings, $"{zoneId}.Language", "en"),
+                    SupportPhone = GetSettingValue(settings, $"{zoneId}.SupportPhone", ""),
+                    SupportEmail = GetSettingValue(settings, $"{zoneId}.SupportEmail", "")
                 });
             }
 
@@ -335,6 +337,8 @@ namespace WebServer.Services.Settings
             await SetAsync("Zones", $"{zone.Id}.Name", zone.Name, modifiedBy);
             await SetAsync("Zones", $"{zone.Id}.Color", zone.Color, modifiedBy);
             await SetAsync("Zones", $"{zone.Id}.Language", zone.Language, modifiedBy);
+            await SetAsync("Zones", $"{zone.Id}.SupportPhone", zone.SupportPhone ?? "", modifiedBy);
+            await SetAsync("Zones", $"{zone.Id}.SupportEmail", zone.SupportEmail ?? "", modifiedBy);
 
             _logger.LogInformation("Zone {ZoneId} ({Name}) saved by {User}", zone.Id, zone.Name, modifiedBy);
         }
@@ -344,7 +348,7 @@ namespace WebServer.Services.Settings
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<DeviceContext>();
 
-            var keysToDelete = new[] { "Name", "Color", "Language" };
+            var keysToDelete = new[] { "Name", "Color", "Language", "SupportPhone", "SupportEmail" };
 
             foreach (var key in keysToDelete)
             {

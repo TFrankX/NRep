@@ -503,7 +503,7 @@ namespace WebServer.Controllers.Device
                     d.Description,
                     d.Owners,
                     d.SimId,
-                    d.LastOnlineTime,
+                    LastOnlineTime = d.LastOnlineTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                     d.UserLocation,
                     // Add slot charge levels from fresh data
                     SlotInfo = GetSlotInfo(d.DeviceName, allPowerBanks, d.Online)
@@ -576,7 +576,7 @@ namespace WebServer.Controllers.Device
                     string duration = "-";
                     if (hasRentalHistory)
                     {
-                        var durationSpan = pb.Taken ? DateTime.Now - pb.LastGetTime : pb.LastPutTime - pb.LastGetTime;
+                        var durationSpan = pb.Taken ? DateTime.UtcNow - pb.LastGetTime : pb.LastPutTime - pb.LastGetTime;
                         if (durationSpan.TotalMinutes > 0)
                         {
                             duration = $"{(int)durationSpan.TotalHours}h {(int)(durationSpan.TotalMinutes % 60)}m";
@@ -595,8 +595,8 @@ namespace WebServer.Controllers.Device
                         IsOk = pb.IsOk,
                         Taken = pb.Taken,
                         UserId = pb.UserId ?? "",
-                        LastGetTime = pb.LastGetTime,
-                        LastPutTime = pb.LastPutTime,
+                        LastGetTime = pb.LastGetTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                        LastPutTime = pb.LastPutTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                         Duration = duration,
                         Status = status
                     };
@@ -614,8 +614,8 @@ namespace WebServer.Controllers.Device
                         IsOk = true,
                         Taken = false,
                         UserId = "",
-                        LastGetTime = (DateTime?)null,
-                        LastPutTime = (DateTime?)null,
+                        LastGetTime = "",
+                        LastPutTime = "",
                         Duration = "-",
                         Status = "Empty"
                     };

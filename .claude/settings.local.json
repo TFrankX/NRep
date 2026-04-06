@@ -46,7 +46,9 @@
       "Bash(curl -s http://127.0.0.1:5001/devices/GetSlotInfo?deviceId=4785593372947389187)",
       "Bash(find /Users/tomfrank/repository/ShareCharging/WebServer -name *.log -o -name *log*.txt)",
       "Bash(find /Users/tomfrank/repository/ShareCharging/WebServer -name *Migration* -o -name *Migrat*)",
-      "Bash(grep -E \"\\\\.cs$\")"
+      "Bash(grep -E \"\\\\.cs$\")",
+      "Bash(grep -n \"DateTime\\\\.Now.*LastGetTime\\\\|LastGetTime.*DateTime\\\\.Now\" /Users/tomfrank/repository/ShareCharging/WebServer/Controllers/**/*.cs)",
+      "Bash(pkill -f \"dotnet.*WebServer\")"
     ]
   }
 }

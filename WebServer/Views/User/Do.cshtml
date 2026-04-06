@@ -246,9 +246,9 @@
                             @foreach (var pb in Model.PowerBanks)
                             {
                                 var displayName = !string.IsNullOrEmpty(pb.PowerBankName) ? pb.PowerBankName : pb.PowerBankId;
-                                <tr data-pb-id="@pb.PowerBankId">
+                                <tr data-pb-id="@pb.PowerBankId" data-start-utc="@pb.StartTimeUtc">
                                     <td class="pb-id" title="@pb.PowerBankId">@displayName</td>
-                                    <td class="start-time">@pb.StartTime</td>
+                                    <td class="start-time"></td>
                                     <td class="duration">@pb.Time</td>
                                     <td class="cost-value">@pb.Cost.ToString("F2")€</td>
                                 </tr>
@@ -460,6 +460,23 @@
                 clearInterval(pollingInterval);
             }
         }
+
+        // Format start times to local timezone
+        function formatLocalDateTime(utcDateStr) {
+            if (!utcDateStr || utcDateStr === '0001-01-01T00:00:00') return '-';
+            var date = new Date(utcDateStr);
+            if (isNaN(date.getTime()) || date.getFullYear() < 1971) return '-';
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        // Initialize start times on page load
+        document.querySelectorAll('tr[data-start-utc]').forEach(function(row) {
+            var utcTime = row.getAttribute('data-start-utc');
+            var cell = row.querySelector('.start-time');
+            if (cell && utcTime) {
+                cell.textContent = formatLocalDateTime(utcTime);
+            }
+        });
 
         // Start polling if there are active powerbanks
         if (initialCount > 0) {

@@ -282,14 +282,10 @@
                     "</div>";
             }
 
-            // Date columns
+            // Date columns - UTC to local
             if (column === 'LastGetTime' || column === 'LastPutTime' || column === 'ClientTime' || column === 'LastUpdate') {
-                // Check for empty/min date (1970-01-01 or earlier)
-                if (!value) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                var dateVal = new Date(value);
-                var minDate = new Date('1971-01-01');
-                if (dateVal < minDate) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                var formatted = dateVal.toLocaleDateString('ru-RU') + ' ' + dateVal.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                var formatted = formatLocalDateTime(value);
+                if (formatted === '-') return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
                 return divstartstyle +
                     "<span style='font-size: 0.8rem; color: #6B7280;'>" + formatted + "</span>" +
                     "</div>";
@@ -377,11 +373,11 @@
                 { name: 'Charging', type: 'boolean' },
                 { name: 'IsOk', type: 'boolean' },
                 { name: 'ChargeLevel', type: 'number' },
-                { name: 'LastGetTime', type: 'date' },
-                { name: 'LastPutTime', type: 'date' },
-                { name: 'ClientTime', type: 'date' },
+                { name: 'LastGetTime', type: 'string' },
+                { name: 'LastPutTime', type: 'string' },
+                { name: 'ClientTime', type: 'string' },
                 { name: 'Price', type: 'float' },
-                { name: 'LastUpdate', type: 'date' },
+                { name: 'LastUpdate', type: 'string' },
             ]
 
         };

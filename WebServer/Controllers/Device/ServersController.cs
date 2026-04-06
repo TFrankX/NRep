@@ -66,8 +66,8 @@ namespace WebServer.Controllers.Device
                     // Count not authorized devices (for backward compatibility)
                     NotAuthDevicesCount = devices.Count(d => d.HostDeviceId == srv.Id && !d.Online),
                     srv.ReconnectTime,
-                    srv.ConnectTime,
-                    srv.DisconnectTime
+                    ConnectTime = srv.ConnectTime.ToString("o"),
+                    DisconnectTime = srv.DisconnectTime.ToString("o")
                 }).ToList();
 
                 return Json(result, new JsonSerializerOptions { PropertyNamingPolicy = null });

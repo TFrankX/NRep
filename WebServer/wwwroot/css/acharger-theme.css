@@ -1013,3 +1013,26 @@ a:hover {
         transform: rotate(360deg);
     }
 }
+
+/* ============================================
+   MOBILE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 0.5rem 0;
+    }
+
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .page-subtitle {
+        display: none;
+    }
+
+    /* Ensure touch scrolling is smooth inside grids */
+    .jqx-grid-content {
+        -webkit-overflow-scrolling: touch;
+    }
+}

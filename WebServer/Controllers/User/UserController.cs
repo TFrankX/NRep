@@ -52,6 +52,7 @@ namespace WebServer.Controllers.User
         public string PowerBankName { get; set; } = "";
         public string Time { get; set; } = "-";
         public string StartTime { get; set; } = "-";
+        public string StartTimeUtc { get; set; } = "";  // ISO format for JS conversion
         public float Cost { get; set; }
         public ulong StationId { get; set; }
         public bool Returned { get; set; } = false;
@@ -213,11 +214,11 @@ namespace WebServer.Controllers.User
 
         //            if (pb.UserId == cookieValueFromReq)
         //            {
-        //                //float cost = ((DateTime.Now - pb.LastGetTime).Minutes/60) * pb.Price;
+        //                //float cost = ((DateTime.UtcNow - pb.LastGetTime).Minutes/60) * pb.Price;
         //                payInfo.Taken = pb.Taken ? 1 : 0;
         //                payInfo.UserId = cookieValueFromReq;
-        //                payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
-        //                payInfo.Cost = (float)Math.Round(pb.Taken ? ((DateTime.Now - pb.LastGetTime).Minutes * pb.Price / 60F) : pb.Cost, 2);
+        //                payInfo.Time = pb.Taken ? $"{(DateTime.UtcNow - pb.LastGetTime).Hours.ToString()} hr {((DateTime.UtcNow - pb.LastGetTime).Minutes - (DateTime.UtcNow - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
+        //                payInfo.Cost = (float)Math.Round(pb.Taken ? ((DateTime.UtcNow - pb.LastGetTime).Minutes * pb.Price / 60F) : pb.Cost, 2);
         //            }
         //        }
         //    }
@@ -366,7 +367,7 @@ namespace WebServer.Controllers.User
                     // Fill PowerBanks list for new UI
                     if (pbPush.Taken)
                     {
-                        var duration = DateTime.Now - pbPush.LastGetTime;
+                        var duration = DateTime.UtcNow - pbPush.LastGetTime;
                         payInfo.PowerBanks = new List<PowerBankInfo>
                         {
                             new PowerBankInfo
@@ -374,6 +375,7 @@ namespace WebServer.Controllers.User
                                 PowerBankId = pbPush.Id_str,
                                 PowerBankName = pbPush.Name ?? pbPush.Id_str,
                                 StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
+                                StartTimeUtc = pbPush.LastGetTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                                 Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                                 Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken),
                                 StationId = pbPush.HostDeviceId
@@ -398,7 +400,7 @@ namespace WebServer.Controllers.User
             // Fill PowerBanks list for new UI
             if (pbPush.Taken)
             {
-                var duration = DateTime.Now - pbPush.LastGetTime;
+                var duration = DateTime.UtcNow - pbPush.LastGetTime;
                 payInfo.PowerBanks = new List<PowerBankInfo>
                 {
                     new PowerBankInfo
@@ -406,6 +408,7 @@ namespace WebServer.Controllers.User
                         PowerBankId = pbPush.Id_str,
                         PowerBankName = pbPush.Name ?? pbPush.Id_str,
                         StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
+                        StartTimeUtc = pbPush.LastGetTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                         Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                         Cost = _pricingService.CalculateCost(typeOfUse, pbPush.LastGetTime, pbPush.Taken),
                         StationId = pbPush.HostDeviceId
@@ -498,7 +501,7 @@ namespace WebServer.Controllers.User
                     {
                         if ((pb.UserId == cookieValueFromReq) && (pb.Taken))
                         {
-                            var duration = DateTime.Now - pb.LastGetTime;
+                            var duration = DateTime.UtcNow - pb.LastGetTime;
                             payInfo.Taken = 1;
                             payInfo.UserId = cookieValueFromReq;
                             payInfo.StationId = device.Id;
@@ -509,6 +512,7 @@ namespace WebServer.Controllers.User
                                     PowerBankId = pb.Id_str,
                                     PowerBankName = pb.Name ?? pb.Id_str,
                                     StartTime = pb.LastGetTime.ToString("dd.MM HH:mm"),
+                                    StartTimeUtc = pb.LastGetTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                                     Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                                     Cost = _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken),
                                     StationId = pb.HostDeviceId
@@ -534,7 +538,7 @@ namespace WebServer.Controllers.User
             {
                 payInfo.Taken = 0;
                 payInfo.UserId = "Not registred/enabled device";
-                //payInfo.Time = pb.Taken ? $"{(DateTime.Now - pb.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pb.LastGetTime).Minutes - (DateTime.Now - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
+                //payInfo.Time = pb.Taken ? $"{(DateTime.UtcNow - pb.LastGetTime).Hours.ToString()} hr {((DateTime.UtcNow - pb.LastGetTime).Minutes - (DateTime.UtcNow - pb.LastGetTime).Hours * 60).ToString()} min" : "-";
                 payInfo.Time =  "-";
                 payInfo.Cost = 0;
                 return View(payInfo);         
@@ -728,7 +732,7 @@ namespace WebServer.Controllers.User
                         }
 
                         // Для остальных режимов: только один повербанк
-                        var duration = DateTime.Now - pbPush.LastGetTime;
+                        var duration = DateTime.UtcNow - pbPush.LastGetTime;
                         payInfo.Taken = 1;
                         payInfo.UserId = userId;
                         payInfo.StationId = device.Id;
@@ -739,6 +743,7 @@ namespace WebServer.Controllers.User
                                 PowerBankId = pbPush.Id_str,
                                 PowerBankName = pbPush.Name ?? pbPush.Id_str,
                                 StartTime = pbPush.LastGetTime.ToString("dd.MM HH:mm"),
+                                StartTimeUtc = pbPush.LastGetTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                                 Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                                 Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken),
                                 StationId = pbPush.HostDeviceId
@@ -907,7 +912,7 @@ namespace WebServer.Controllers.User
 
                         payInfo.Taken = pbPush.Taken ? 1 : 0;
                         payInfo.UserId = model.PhoneNumber;
-                        payInfo.Time = pbPush.Taken ? $"{(DateTime.Now - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.Now - pbPush.LastGetTime).Minutes - (DateTime.Now - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
+                        payInfo.Time = pbPush.Taken ? $"{(DateTime.UtcNow - pbPush.LastGetTime).Hours.ToString()} hr {((DateTime.UtcNow - pbPush.LastGetTime).Minutes - (DateTime.UtcNow - pbPush.LastGetTime).Hours * 60).ToString()} min" : "-";
                         payInfo.Cost = _pricingService.CalculateCost(device.TypeOfUse, pbPush.LastGetTime, pbPush.Taken);
                         return View("User", payInfo);
                     }
@@ -1124,7 +1129,7 @@ namespace WebServer.Controllers.User
                     var device = scanDevices.DevicesData.Devices.GetById(pb.HostDeviceId);
                     var typeOfUse = device?.TypeOfUse ?? TypeOfUse.PayByCard;
                     var cost = _pricingService.CalculateCost(typeOfUse, pb.LastGetTime, pb.Taken);
-                    var duration = DateTime.Now - pb.LastGetTime;
+                    var duration = DateTime.UtcNow - pb.LastGetTime;
 
                     payInfo.PowerBanks.Add(new PowerBankInfo
                     {
@@ -1132,6 +1137,7 @@ namespace WebServer.Controllers.User
                         PowerBankName = pb.Name ?? pb.Id_str,
                         Time = $"{(int)duration.TotalHours}h {duration.Minutes}m",
                         StartTime = pb.LastGetTime.ToString("dd.MM HH:mm"),
+                        StartTimeUtc = pb.LastGetTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                         Cost = cost,
                         StationId = pb.HostDeviceId
                     });
@@ -1182,6 +1188,11 @@ namespace WebServer.Controllers.User
                 {
                     payInfo.Language = zone.Language;
                     payInfo.ZoneColor = zone.Color;
+                    // Override support info if zone has its own
+                    if (!string.IsNullOrEmpty(zone.SupportPhone))
+                        payInfo.SupportPhone = zone.SupportPhone;
+                    if (!string.IsNullOrEmpty(zone.SupportEmail))
+                        payInfo.SupportEmail = zone.SupportEmail;
                 }
             }
         }
@@ -1224,7 +1235,7 @@ namespace WebServer.Controllers.User
                     var device = scanDevices.DevicesData.Devices.GetById(pb.HostDeviceId);
                     var typeOfUse = device?.TypeOfUse ?? TypeOfUse.PayByCard;
                     var cost = _pricingService.CalculateCost(typeOfUse, pb.LastGetTime, pb.Taken);
-                    var duration = DateTime.Now - pb.LastGetTime;
+                    var duration = DateTime.UtcNow - pb.LastGetTime;
 
                     powerBanks.Add(new
                     {

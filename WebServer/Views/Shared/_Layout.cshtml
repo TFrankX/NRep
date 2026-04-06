@@ -16,7 +16,7 @@
     <script src="~/jqwidgets/jqxcore.js"></script>
     <script src="~/jqwidgets/jqxdata.js"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-    <link rel="stylesheet" href="~/css/acharger-theme.css" />
+    <link rel="stylesheet" href="~/css/acharger-theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
     <link rel="alternate icon" type="image/png" href="~/favicon.png" />
@@ -109,7 +109,7 @@
                                 var userName = User.Identity.Name ?? "U";
                                 var initials = userName.Length > 0 ? userName[0].ToString().ToUpper() : "U";
                             }
-                            <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="javascript:void(0)" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
                                 <div class="user-avatar me-2">@initials</div>
                                 <span>@User.Identity.Name</span>
                             </a>
@@ -161,9 +161,53 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
+        // Global function to format UTC date to local time
+        function formatLocalDateTime(utcDateStr) {
+            if (!utcDateStr || utcDateStr === '0001-01-01T00:00:00') return '-';
+            var date = new Date(utcDateStr);
+            if (isNaN(date.getTime())) return '-';
+            // Check for min date
+            if (date.getFullYear() < 1971) return '-';
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function formatLocalDate(utcDateStr) {
+            if (!utcDateStr || utcDateStr === '0001-01-01T00:00:00') return '-';
+            var date = new Date(utcDateStr);
+            if (isNaN(date.getTime())) return '-';
+            if (date.getFullYear() < 1971) return '-';
+            return date.toLocaleDateString();
+        }
+
+        function formatLocalTime(utcDateStr) {
+            if (!utcDateStr || utcDateStr === '0001-01-01T00:00:00') return '-';
+            var date = new Date(utcDateStr);
+            if (isNaN(date.getTime())) return '-';
+            if (date.getFullYear() < 1971) return '-';
+            return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+    </script>
+    <script>
         // Initialize Bootstrap components after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
+            // User dropdown toggle
+            var userDropdown = document.getElementById('userDropdown');
+            var dropdownMenu = userDropdown ? userDropdown.nextElementSibling : null;
+
+            if (userDropdown && dropdownMenu) {
+                userDropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
 
             // Mobile menu toggle - simple approach
             var toggler = document.querySelector('.navbar-toggler');
@@ -177,6 +221,36 @@
                     console.log('Menu toggled, show:', menu.classList.contains('show'));
                 });
             }
+
+            // Auto-resize jqxGrid to fit available space
+            function resizeGrids() {
+                var navbar = document.querySelector('.navbar-acharger');
+                var pageHeader = document.querySelector('.page-header');
+                var summaryCards = document.querySelector('.summary-cards');
+                var gridContainer = document.querySelector('.grid-container');
+
+                if (gridContainer) {
+                    var navbarHeight = navbar ? navbar.offsetHeight : 60;
+                    var headerHeight = pageHeader ? pageHeader.offsetHeight : 0;
+                    var summaryHeight = summaryCards ? summaryCards.offsetHeight : 0;
+                    var padding = 40; // container padding
+
+                    var availableHeight = window.innerHeight - navbarHeight - headerHeight - summaryHeight - padding;
+                    availableHeight = Math.max(availableHeight, 300); // minimum height
+
+                    // Find jqxGrid inside container
+                    var grid = gridContainer.querySelector('[id*="jqxgrid"], [id*="grid"]');
+                    if (grid && typeof $ !== 'undefined' && $.fn.jqxGrid) {
+                        try {
+                            $(grid).jqxGrid({ height: availableHeight });
+                        } catch(e) {}
+                    }
+                }
+            }
+
+            // Resize on load and window resize
+            setTimeout(resizeGrids, 500);
+            window.addEventListener('resize', resizeGrids);
         });
     </script>
 

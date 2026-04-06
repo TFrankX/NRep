@@ -162,6 +162,16 @@
 
             var nestedAdapter = new $.jqx.dataAdapter(nestedSource);
 
+            var timeRenderer = function(row, column, value) {
+                if (!value) return '<div style="display: flex; align-items: center; height: 100%; padding: 0 8px; color: #9CA3AF;">-</div>';
+                var date = new Date(value);
+                if (isNaN(date.getTime()) || date.getFullYear() < 2000) return '<div style="display: flex; align-items: center; height: 100%; padding: 0 8px; color: #9CA3AF;">-</div>';
+                var formatted = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                return '<div style="display: flex; align-items: center; height: 100%; padding: 0 8px;">' +
+                    '<span style="font-size: 0.8rem; color: #6B7280;">' + formatted + '</span>' +
+                    '</div>';
+            };
+
             var typeRenderer = function(row, column, value) {
                 var bgColor = '#6B7280';
                 var label = value;
@@ -214,7 +224,7 @@
                 rowsheight: 40,
                 columnsresize: true,
                 columns: [
-                    { text: 'Time', datafield: 'TransactionTime', width: '18%' },
+                    { text: 'Time', datafield: 'TransactionTime', width: '18%', cellsrenderer: timeRenderer },
                     { text: 'Type', datafield: 'Type', width: '10%', cellsrenderer: typeRenderer },
                     { text: 'Amount', datafield: 'SignedAmount', width: '14%', cellsrenderer: amountRenderer, cellsalign: 'right' },
                     { text: 'PowerBank', datafield: 'PowerBankId', width: '10%' },

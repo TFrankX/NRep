@@ -548,7 +548,7 @@ namespace WebServer.Workers
                             var pricingPlan = _pricingService.GetPlan(typeOfUse);
 
                             powbank.Cost = _pricingService.CalculateCost(typeOfUse, powbank.LastGetTime, powbank.Taken);
-                            if ((DateTime.Now - powbank.LastGetTime).Days >= pricingPlan.MaxDaysBeforeCapture)
+                            if ((DateTime.UtcNow - powbank.LastGetTime).Days >= pricingPlan.MaxDaysBeforeCapture)
                             {
 
                                 var stripeCapture = new StripeCapture
@@ -1047,7 +1047,7 @@ namespace WebServer.Workers
                 {
                     Device device = new Device(dev, ((Server)(sender)).Id, true);
                     device.HostDeviceId = ((Server)(sender)).Id;
-                    device.LastOnlineTime = DateTime.Now;
+                    device.LastOnlineTime = DateTime.UtcNow;
                     device.Owners = "";
                     device.Stored = false;
                     device.SimId = data.RlIccid;
@@ -1058,7 +1058,7 @@ namespace WebServer.Workers
                 }
                 else
                 {
-                    existingDevice.LastOnlineTime = DateTime.Now;
+                    existingDevice.LastOnlineTime = DateTime.UtcNow;
                     // Log connect only if state changed from previous known state
                     if (existingDevice.Online == false)
                     {
@@ -1139,7 +1139,7 @@ namespace WebServer.Workers
                 //{
                 //    Device device = new Device(dev, ((Server)(sender)).Id, true);
                 //    device.HostDeviceId = ((Server)(sender)).Id;
-                //    device.LastOnlineTime = DateTime.Now;
+                //    device.LastOnlineTime = DateTime.UtcNow;
                 //    device.Owners = "";
                 //    device.Stored = false;
                 //    DevicesData.Devices.Add(device);
@@ -1201,7 +1201,7 @@ namespace WebServer.Workers
             }
             if (device.Online == false) device.PreviousOnlineState = null;
             device.Online = true;
-            device.LastOnlineTime = DateTime.Now;
+            device.LastOnlineTime = DateTime.UtcNow;
 
             lock (_powerBanksLock)
             {
@@ -1237,7 +1237,7 @@ namespace WebServer.Workers
                     pb.Charging = data.RlLimited > 0 ? true : false;
                     pb.ChargeLevel = (PowerBankChargeLevel)data.RlQoe;
                     pb.IsOk = data.RlCode == 0 ? true : false;
-                    pb.LastPutTime = DateTime.Now;
+                    pb.LastPutTime = DateTime.UtcNow;
                     // Стоимость начисляем только если есть SessionId (оплата через Stripe)
                     pb.Cost = !string.IsNullOrEmpty(pb.SessionId) && pb.SessionId != "\"\""
                         ? _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, pb.Taken)
@@ -1354,7 +1354,7 @@ namespace WebServer.Workers
             }
             device.Online = true;
             device.PreviousOnlineState = null;
-            device.LastOnlineTime = DateTime.Now;
+            device.LastOnlineTime = DateTime.UtcNow;
             device.Stored = false;
         }
         
@@ -1404,7 +1404,7 @@ namespace WebServer.Workers
                         // Powerbank был plugged в этом устройстве, но его нет в inventory - значит взяли
                         devicePowerbank.Stored = false;
                         devicePowerbank.Plugged = false;
-                        devicePowerbank.LastGetTime = DateTime.Now;
+                        devicePowerbank.LastGetTime = DateTime.UtcNow;
                         devicePowerbank.Taken = true;
                         var userId = string.IsNullOrEmpty(devicePowerbank.UserId) ? "unknown" : devicePowerbank.UserId;
                         actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, devicePowerbank.Id, devicePowerbank.HostSlot, "");
@@ -1433,7 +1433,7 @@ namespace WebServer.Workers
                             // Проверяем: был ли powerbank взят пользователем (offline return)?
                             var wasTaken = pb.Taken;
                             var returnUserId = string.IsNullOrEmpty(pb.UserId) ? "" : pb.UserId;
-                            var timeSinceTaken = DateTime.Now - pb.LastGetTime;
+                            var timeSinceTaken = DateTime.UtcNow - pb.LastGetTime;
 
                             // Если powerbank был взят (Taken=true) и теперь в inventory - это ВОЗВРАТ (offline return)
                             // Но игнорируем "возврат" если прошло меньше 2 секунд - это ложное срабатывание при выдаче
@@ -1443,7 +1443,7 @@ namespace WebServer.Workers
                                 pb.Cost = !string.IsNullOrEmpty(pb.SessionId) && pb.SessionId != "\"\""
                                     ? _pricingService.CalculateCost(device.TypeOfUse, pb.LastGetTime, true)
                                     : 0;
-                                pb.LastPutTime = DateTime.Now;
+                                pb.LastPutTime = DateTime.UtcNow;
 
                                 // Обрабатываем Stripe платёж если есть SessionId
                                 if (!string.IsNullOrEmpty(pb.SessionId) && pb.SessionId != "\"\"")
@@ -1537,13 +1537,13 @@ namespace WebServer.Workers
             }
             device.Online = true;
             device.PreviousOnlineState = null;
-            device.LastOnlineTime = DateTime.Now;
+            device.LastOnlineTime = DateTime.UtcNow;
             device.Stored = false;
         }
 
         private void Srv_EvConnected(object sender)
         {
-            ((Server)sender).ConnectTime = DateTime.Now;
+            ((Server)sender).ConnectTime = DateTime.UtcNow;
             ((Server)sender).Connected = true;
             Logger.LogInformation($"Connected to Server:{((Server)sender).Host}:{((Server)sender).Port}\n");
             //((Server)sender).SubSniffer();
@@ -1756,7 +1756,7 @@ namespace WebServer.Workers
                         actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, powerBankPush.Id, powerBankPush.HostSlot, "");
                         powerBankPush.Plugged = false;
                         server.CmdPushPowerBank(powerBankPush.HostSlot, powerBankPush.HostDeviceName);
-                        powerBankPush.LastGetTime = DateTime.Now;
+                        powerBankPush.LastGetTime = DateTime.UtcNow;
                         if (allowAdminAndManager)
                         {
                             powerBankPush.Price = 0;
@@ -1810,7 +1810,7 @@ namespace WebServer.Workers
                         actionProcess.ActionSave((int)ActionsDescription.PowerBankTake, userId, device.HostDeviceId, device.Id, powerBank.Id, powerBank.HostSlot, "");
                         powerBank.Plugged = false;
                         server.CmdPushPowerBank(numberPB, deviceName);
-                        powerBank.LastGetTime = DateTime.Now;
+                        powerBank.LastGetTime = DateTime.UtcNow;
                         if (allowAdminAndManager)
                         {
                             powerBank.Price = 0;
@@ -1854,8 +1854,8 @@ namespace WebServer.Workers
         private void Srv_EvDisconnected(object sender)
         {
             var server = (Server)sender;
-            server.DisconnectTime = DateTime.Now;
-            server.ConnectTime = DateTime.Now;
+            server.DisconnectTime = DateTime.UtcNow;
+            server.ConnectTime = DateTime.UtcNow;
             server.Connected = false;
             Logger.LogInformation($"Disconnected from Server:{server.Host}:{server.Port}\n");
             server.Stored = false;
@@ -1867,7 +1867,7 @@ namespace WebServer.Workers
         private void Srv_EvConnectError(object sender, string error)
         {
             ((Server)sender).Error = error;
-            ((Server)sender).ConnectTime = DateTime.Now;
+            ((Server)sender).ConnectTime = DateTime.UtcNow;
             ((Server)sender).Stored = false;
             Logger.LogInformation($"Error in connect to {((Server)sender).Host}:{((Server)sender).Port} : {error}\n");
         }

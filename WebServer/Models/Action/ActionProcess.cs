@@ -21,7 +21,7 @@ namespace WebServer.Models.Action
             {
                 try
                 {
-                    var action = new WebServer.Models.Action.Action(DateTime.Now, actionCode, userID, actionServerId, actionStationId, actionPowerBankId, actionPowerBankSlot, "");
+                    var action = new WebServer.Models.Action.Action(DateTime.UtcNow, actionCode, userID, actionServerId, actionStationId, actionPowerBankId, actionPowerBankSlot, "");
 
                     dbActions.Actions.Add(action);
                     dbActions.SaveChanges();
@@ -42,7 +42,7 @@ namespace WebServer.Models.Action
                 try
                 {
                     var action = new WebServer.Models.Action.Action(
-                        DateTime.Now,
+                        DateTime.UtcNow,
                         actionCode,
                         userID,
                         0,  // serverId

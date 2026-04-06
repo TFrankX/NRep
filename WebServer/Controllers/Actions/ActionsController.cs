@@ -182,7 +182,25 @@ namespace WebServer.Controllers.Device
                                 : actLine.ActionStationId.ToString();
                             db.FillText(actLine);
                         }
-                        return Json(actionsTable, new JsonSerializerOptions { PropertyNamingPolicy = null });
+                        // Format ActionTime with Z suffix for proper JS parsing
+                        var result = actionsTable.Select(a => new {
+                            ActionTime = a.ActionTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                            a.ActionCode,
+                            a.UserId,
+                            a.ActionServerId,
+                            a.ActionServerId_Str,
+                            a.ActionStationId,
+                            a.ActionStationId_Str,
+                            a.DeviceName,
+                            a.ActionPowerBankId,
+                            a.ActionPowerBankId_Str,
+                            a.PowerBankName,
+                            a.ActionPowerBankSlot,
+                            a.ActionText,
+                            a.PaymentAmount,
+                            a.PaymentInfo
+                        }).ToList();
+                        return Json(result, new JsonSerializerOptions { PropertyNamingPolicy = null });
                     }
                     else
                     {
@@ -201,8 +219,25 @@ namespace WebServer.Controllers.Device
                                 : actLine.ActionStationId.ToString();
                             db.FillText(actLine);
                         }
-
-                        return Json(actionsTable, new JsonSerializerOptions { PropertyNamingPolicy = null });
+                        // Format ActionTime with Z suffix for proper JS parsing
+                        var result = actionsTable.Select(a => new {
+                            ActionTime = a.ActionTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                            a.ActionCode,
+                            a.UserId,
+                            a.ActionServerId,
+                            a.ActionServerId_Str,
+                            a.ActionStationId,
+                            a.ActionStationId_Str,
+                            a.DeviceName,
+                            a.ActionPowerBankId,
+                            a.ActionPowerBankId_Str,
+                            a.PowerBankName,
+                            a.ActionPowerBankSlot,
+                            a.ActionText,
+                            a.PaymentAmount,
+                            a.PaymentInfo
+                        }).ToList();
+                        return Json(result, new JsonSerializerOptions { PropertyNamingPolicy = null });
                     }
 
                 }
@@ -281,7 +316,25 @@ namespace WebServer.Controllers.Device
                     db.FillText(actLine);
                 }
 
-                return Json(actionsTable, new JsonSerializerOptions { PropertyNamingPolicy = null });
+                // Format ActionTime with Z suffix for proper JS parsing
+                var result = actionsTable.Select(a => new {
+                    ActionTime = a.ActionTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    a.ActionCode,
+                    a.UserId,
+                    a.ActionServerId,
+                    a.ActionServerId_Str,
+                    a.ActionStationId,
+                    a.ActionStationId_Str,
+                    a.DeviceName,
+                    a.ActionPowerBankId,
+                    a.ActionPowerBankId_Str,
+                    a.PowerBankName,
+                    a.ActionPowerBankSlot,
+                    a.ActionText,
+                    a.PaymentAmount,
+                    a.PaymentInfo
+                }).ToList();
+                return Json(result, new JsonSerializerOptions { PropertyNamingPolicy = null });
             }
             catch (Exception ex)
             {
@@ -418,7 +471,7 @@ namespace WebServer.Controllers.Device
             {
                 var transaction = new FinancialTransaction
                 {
-                    TransactionTime = DateTime.Now,
+                    TransactionTime = DateTime.UtcNow,
                     Type = request.Type,
                     Amount = request.Amount,
                     StationId = request.StationId,
@@ -511,7 +564,7 @@ namespace WebServer.Controllers.Device
                     .Select(t => new
                     {
                         t.Id,
-                        TransactionTime = t.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                        TransactionTime = t.TransactionTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                         Type = t.Type.ToString(),
                         t.Amount,
                         t.StationId,
@@ -550,7 +603,7 @@ namespace WebServer.Controllers.Device
                     .Select(t => new
                     {
                         t.Id,
-                        TransactionTime = t.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                        TransactionTime = t.TransactionTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                         Type = t.Type.ToString(),
                         t.Amount,
                         SignedAmount = t.Type == TransactionType.Refund ? -t.Amount : t.Amount,

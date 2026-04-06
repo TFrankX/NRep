@@ -198,7 +198,7 @@ namespace WebServer.Controllers.Device
                     .Select(pb => {
                         var device = devices.FirstOrDefault(d => d.DeviceName == pb.HostDeviceName);
                         var typeOfUse = device?.TypeOfUse ?? TypeOfUse.PayByCard;
-                        var duration = pb.Taken ? DateTime.Now - pb.LastGetTime : pb.LastPutTime - pb.LastGetTime;
+                        var duration = pb.Taken ? DateTime.UtcNow - pb.LastGetTime : pb.LastPutTime - pb.LastGetTime;
 
                         // Рассчитываем/показываем стоимость аренды
                         float currentCost = 0;
@@ -257,8 +257,8 @@ namespace WebServer.Controllers.Device
                             Slot = pb.HostSlot,
                             UserId = pb.UserId ?? "",
                             Status = status,
-                            TakeTime = hasRentalHistory ? pb.LastGetTime : (DateTime?)null,
-                            ReturnTime = hasRentalHistory && !pb.Taken ? pb.LastPutTime : (DateTime?)null,
+                            TakeTime = hasRentalHistory ? pb.LastGetTime.ToString("yyyy-MM-ddTHH:mm:ssZ") : "",
+                            ReturnTime = hasRentalHistory && !pb.Taken ? pb.LastPutTime.ToString("yyyy-MM-ddTHH:mm:ssZ") : "",
                             Duration = hasRentalHistory && duration.TotalMinutes > 0 ? $"{(int)duration.TotalHours}h {(int)(duration.TotalMinutes % 60)}m" : "-",
                             Cost = currentCost,
                             TotalEarnings = pb.TotalEarnings,
@@ -270,9 +270,9 @@ namespace WebServer.Controllers.Device
                             Locked = pb.Locked,
                             Charging = pb.Charging,
                             IsOk = pb.IsOk,
-                            LastGetTime = pb.LastGetTime,
-                            LastPutTime = pb.LastPutTime,
-                            LastUpdate = pb.LastUpdate,
+                            LastGetTime = pb.LastGetTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                            LastPutTime = pb.LastPutTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                            LastUpdate = pb.LastUpdate.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                             CanDelete = status.Contains("Offline") || status == "On hands"
                         };
                     })

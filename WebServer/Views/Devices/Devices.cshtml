@@ -740,10 +740,8 @@
                     "</div>";
 
             } else if (column === 'LastOnlineTime') {
-                if (!value) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                var date = new Date(value);
-                if (date.getFullYear() < 2000) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                var formatted = formatLocalDateTime(value);
+                if (formatted === '-') return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
                 return divstartstyle +
                     "<span style='font-size: 0.8rem; color: #6B7280;'>" + formatted + "</span>" +
                     "</div>";
@@ -1007,7 +1005,7 @@
                 { name: 'Description', type: 'string' },
                 { name: 'Owners', type: 'string' },
                 { name: 'SimId', type: 'string' },
-                { name: 'LastOnlineTime', type: 'date' },
+                { name: 'LastOnlineTime', type: 'string' },
                 { name: 'UserLocation', type: 'string' },
             ]
 
@@ -1031,8 +1029,8 @@
                     { name: 'Charging', type: 'boolean' },
                     { name: 'IsOk', type: 'boolean' },
                     { name: 'ChargeLevel', type: 'number' },
-                    { name: 'LastGetTime', type: 'date' },
-                    { name: 'LastPutTime', type: 'date' },
+                    { name: 'LastGetTime', type: 'string' },
+                    { name: 'LastPutTime', type: 'string' },
                     { name: 'Duration', type: 'string' }
                 ],
                 localdata: slotData
@@ -1100,17 +1098,15 @@
                         "<span style='font-size: 0.7rem; color: " + color + ";'>" + level + "%</span></div></div>";
                 }
                 if (column === 'LastGetTime') {
-                    if (!value || data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                    var date = new Date(value);
-                    if (date.getFullYear() < 2000) return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                    var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                    if (data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    var formatted = formatLocalDateTime(value);
+                    if (formatted === '-') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
                     return divStyle + "<span style='font-size: 0.75rem;'><i class='fas fa-sign-out-alt me-1' style='color: #F59E0B;'></i>" + formatted + "</span></div>";
                 }
                 if (column === 'LastPutTime') {
-                    if (!value || data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                    var date = new Date(value);
-                    if (date.getFullYear() < 2000) return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                    var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                    if (data.Status === 'Empty') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
+                    var formatted = formatLocalDateTime(value);
+                    if (formatted === '-') return divStyle + "<span style='color: #9CA3AF;'>-</span></div>";
                     return divStyle + "<span style='font-size: 0.75rem;'><i class='fas fa-sign-in-alt me-1' style='color: #10B981;'></i>" + formatted + "</span></div>";
                 }
                 if (column === 'Duration') {

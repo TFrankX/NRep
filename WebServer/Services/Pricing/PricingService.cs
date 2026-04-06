@@ -130,7 +130,7 @@ namespace WebServer.Services.Pricing
             }
 
             var plan = GetPlan(typeOfUse);
-            var duration = DateTime.Now - rentalStartTime;
+            var duration = DateTime.UtcNow - rentalStartTime;
 
             // If returned within 1 minute, no charge (grace period)
             if (duration.TotalMinutes < 1)

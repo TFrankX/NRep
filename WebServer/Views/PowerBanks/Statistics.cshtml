@@ -58,10 +58,6 @@
             { text: "Actions", datafield: "Actions", width: "14%", cellsrenderer: cellsrenderer }
         ];
 
-        function goToPowerBank(powerBankId) {
-            window.location.href = '@Url.Action("PowerBanks", "PowerBanks")?filter=' + encodeURIComponent(powerBankId);
-        }
-
         function toggleView() {
             currentView = currentView === 'business' ? 'technical' : 'business';
             var btn = document.getElementById('viewToggleBtn');
@@ -142,11 +138,8 @@
 
             // PowerBank ID - clickable link to PowerBanks page
             if (column === 'PowerBankId') {
-                var pbIdNum = jsonmod[row].PowerBankIdNum;
                 return divstartstyle +
-                    "<a href='javascript:void(0)' onclick=\"goToPowerBank('" + pbIdNum + "')\" " +
-                    "style='font-family: monospace; font-size: 0.8rem; color: #7C3AED; text-decoration: none; cursor: pointer;' " +
-                    "onmouseover=\"this.style.textDecoration='underline'\" onmouseout=\"this.style.textDecoration='none'\">" + value + "</a>" +
+                    "<span style='font-family: monospace; font-size: 0.8rem;'>" + value + "</span>" +
                     "</div>";
             }
 
@@ -174,37 +167,28 @@
                     "</div>";
             }
 
-            // Take time
+            // Take time - UTC to local
             if (column === 'TakeTime') {
-                if (!value || value === "0001-01-01T00:00:00") {
-                    return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                }
-                var date = new Date(value);
-                var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                var formatted = formatLocalDateTime(value);
+                if (formatted === '-') return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
                 return divstartstyle +
                     "<span style='font-size: 0.85rem;'><i class='fas fa-sign-out-alt me-1' style='color: #F59E0B;'></i>" + formatted + "</span>" +
                     "</div>";
             }
 
-            // Return time
+            // Return time - UTC to local
             if (column === 'ReturnTime') {
-                if (!value || value === null) {
-                    return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                }
-                var date = new Date(value);
-                var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                var formatted = formatLocalDateTime(value);
+                if (formatted === '-') return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
                 return divstartstyle +
                     "<span style='font-size: 0.85rem;'><i class='fas fa-sign-in-alt me-1' style='color: #10B981;'></i>" + formatted + "</span>" +
                     "</div>";
             }
 
-            // Last Get/Put times for technical view
+            // Last Get/Put times for technical view - UTC to local
             if (column === 'LastGetTime' || column === 'LastPutTime') {
-                if (!value || value === "0001-01-01T00:00:00") {
-                    return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                }
-                var date = new Date(value);
-                var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                var formatted = formatLocalDateTime(value);
+                if (formatted === '-') return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
                 var iconClass = column === 'LastGetTime' ? 'fa-sign-out-alt' : 'fa-sign-in-alt';
                 var iconColor = column === 'LastGetTime' ? '#F59E0B' : '#10B981';
                 return divstartstyle +
@@ -451,8 +435,8 @@
                 { name: 'Slot', type: 'number' },
                 { name: 'UserId', type: 'string' },
                 { name: 'Status', type: 'string' },
-                { name: 'TakeTime', type: 'date' },
-                { name: 'ReturnTime', type: 'date' },
+                { name: 'TakeTime', type: 'string' },
+                { name: 'ReturnTime', type: 'string' },
                 { name: 'Duration', type: 'string' },
                 { name: 'Cost', type: 'float' },
                 { name: 'TotalEarnings', type: 'float' },
@@ -463,9 +447,9 @@
                 { name: 'Locked', type: 'boolean' },
                 { name: 'Charging', type: 'boolean' },
                 { name: 'IsOk', type: 'boolean' },
-                { name: 'LastGetTime', type: 'date' },
-                { name: 'LastPutTime', type: 'date' },
-                { name: 'LastUpdate', type: 'date' },
+                { name: 'LastGetTime', type: 'string' },
+                { name: 'LastPutTime', type: 'string' },
+                { name: 'LastUpdate', type: 'string' },
                 { name: 'CanDelete', type: 'boolean' }
             ]
         };

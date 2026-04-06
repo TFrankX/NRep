@@ -45,7 +45,7 @@ namespace WebServer.Services.Stripe
 
         public static float CostCalculate(bool pbTaken, DateTime pbLastGetTime, float pbPrice)
         {
-            var diff = DateTime.Now - pbLastGetTime;
+            var diff = DateTime.UtcNow - pbLastGetTime;
 
             var calculateCost = 2 + Math.Round(diff.Hours * pbPrice / 6);
 
@@ -400,7 +400,7 @@ namespace WebServer.Services.Stripe
 
                 var transaction = new FinancialTransaction
                 {
-                    TransactionTime = DateTime.Now,
+                    TransactionTime = DateTime.UtcNow,
                     Type = type,
                     Amount = amount,
                     StationId = stationId,

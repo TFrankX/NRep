@@ -550,7 +550,9 @@
                 Id: zoneId,
                 Name: $(`#zone${zoneId}_name`).val(),
                 Color: $(`#zone${zoneId}_color`).val(),
-                Language: $(`#zone${zoneId}_language`).val()
+                Language: $(`#zone${zoneId}_language`).val(),
+                SupportPhone: $(`#zone${zoneId}_phone`).val(),
+                SupportEmail: $(`#zone${zoneId}_email`).val()
             };
 
             if (!zone.Name) {
@@ -647,7 +649,9 @@
                 Id: 0,  // Server will assign ID
                 Name: $('#new_zone_name').val(),
                 Color: $('#new_zone_color').val(),
-                Language: $('#new_zone_language').val()
+                Language: $('#new_zone_language').val(),
+                SupportPhone: $('#new_zone_phone').val(),
+                SupportEmail: $('#new_zone_email').val()
             };
 
             if (!zone.Name) {
@@ -1427,10 +1431,6 @@
                 <i class="fas fa-tags"></i>
                 <span>Pricing Plans</span>
             </a>
-            <a href="#" class="settings-nav-item @(Model.ActiveSection == "support" ? "active" : "")" data-section="support">
-                <i class="fas fa-headset"></i>
-                <span>Support</span>
-            </a>
             <a href="#" class="settings-nav-item @(Model.ActiveSection == "notifications" ? "active" : "")" data-section="notifications">
                 <i class="fas fa-bell"></i>
                 <span>Notifications</span>
@@ -1562,43 +1562,6 @@
                         }
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- Support Section -->
-        <div id="section-support" class="settings-section" style="@(Model.ActiveSection == "support" ? "display: block;" : "")">
-            <div class="section-header">
-                <h2>Support Contacts</h2>
-                <p>Configure support phone and email displayed to customers.</p>
-            </div>
-
-            <div class="system-card" style="max-width: 500px;">
-                <div class="system-card-header">
-                    <i class="fas fa-headset"></i>
-                    <div>
-                        <h4>Customer Support</h4>
-                        <p>Contact information for customers</p>
-                    </div>
-                </div>
-                <div class="system-card-body">
-                    <div class="setting-row">
-                        <span class="setting-label">Phone Number</span>
-                        <input type="tel" class="setting-input wide" id="support_phone" value="@Model.Support.Phone" placeholder="+357 99 123 456">
-                    </div>
-                    <div class="setting-row">
-                        <span class="setting-label">Email</span>
-                        <input type="email" class="setting-input wide" id="support_email" value="@Model.Support.Email" placeholder="support@example.com">
-                    </div>
-                    <div class="setting-row">
-                        <span class="setting-label">Working Hours</span>
-                        <input type="text" class="setting-input wide" id="support_hours" value="@Model.Support.WorkingHours" placeholder="24/7">
-                    </div>
-                </div>
-                <div class="system-card-footer">
-                    <button type="button" class="btn-save-plan" id="save_support" onclick="saveSupportSettings()">
-                        <i class="fas fa-save"></i> Save Changes
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -1986,6 +1949,14 @@
                                                     }
                                                 </select>
                                             </div>
+                                            <div class="detail-group">
+                                                <label><i class="fas fa-phone me-1"></i>Support Phone</label>
+                                                <input type="text" id="zone@(zone.Id)_phone" value="@zone.SupportPhone" placeholder="+357 99 123 456">
+                                            </div>
+                                            <div class="detail-group">
+                                                <label><i class="fas fa-envelope me-1"></i>Support Email</label>
+                                                <input type="email" id="zone@(zone.Id)_email" value="@zone.SupportEmail" placeholder="support@example.com">
+                                            </div>
                                         </div>
                                         <div class="details-actions">
                                             <button type="button" class="btn-save" onclick="saveZone(@zone.Id)">
@@ -2031,6 +2002,14 @@
                                         <option value="@lang.Key">@lang.Value</option>
                                     }
                                 </select>
+                            </div>
+                            <div class="detail-group">
+                                <label><i class="fas fa-phone me-1"></i>Support Phone</label>
+                                <input type="text" id="new_zone_phone" placeholder="+357 99 123 456">
+                            </div>
+                            <div class="detail-group">
+                                <label><i class="fas fa-envelope me-1"></i>Support Email</label>
+                                <input type="email" id="new_zone_email" placeholder="support@example.com">
                             </div>
                         </div>
                         <div class="add-server-actions" style="margin-top: 15px; display: flex; gap: 10px;">

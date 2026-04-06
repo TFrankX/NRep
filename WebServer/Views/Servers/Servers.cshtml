@@ -257,7 +257,7 @@
                 if (!value) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
                 var date = new Date(value);
                 if (date.getFullYear() < 2000) return divstartstyle + "<span style='color: #9CA3AF;'>-</span></div>";
-                var formatted = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                var formatted = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 return divstartstyle +
                     "<span style='font-size: 0.8rem; color: #6B7280;'>" + formatted + "</span>" +
                     "</div>";
@@ -336,8 +336,8 @@
                 { name: 'OnlineDevicesCount', type: 'number' },
                 { name: 'NotAuthDevicesCount', type: 'number' },
                 { name: 'ReconnectTime', type: 'number' },
-                { name: 'ConnectTime', type: 'date' },
-                { name: 'DisconnectTime', type: 'date' },
+                { name: 'ConnectTime', type: 'string' },
+                { name: 'DisconnectTime', type: 'string' },
             ]
 
         };

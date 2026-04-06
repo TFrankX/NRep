@@ -45,24 +45,11 @@
 
             var divstartstyle = "<div style='height: 100%; min-height: 36px; width: 100%; background: " + backcolor + "; display: flex; align-items: center; padding: 0 8px;'>";
 
-            // Date/time column
+            // Date/time column - convert UTC to local time
             if (column === 'ActionTime') {
-                function checkZero(data) {
-                    if (data < 10) {
-                        data = "0" + data;
-                    }
-                    return data;
-                }
-                var year = value.getFullYear();
-                var month = checkZero(value.getMonth() + 1);
-                var day = checkZero(value.getDate());
-                var hour = checkZero(value.getHours());
-                var min = checkZero(value.getMinutes());
-                var sec = checkZero(value.getSeconds());
-                var svalue = year + '/' + month + '/' + day + " " + hour + ":" + min + ":" + sec;
-
+                var localTime = formatLocalDateTime(value);
                 return divstartstyle +
-                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + svalue + "</span>" +
+                    "<span style='font-size: 0.8rem; color: #6B7280;'>" + localTime + "</span>" +
                     "</div>";
             }
 
@@ -232,7 +219,7 @@
         {
             datatype: "json",
             datafields: [
-                { name: 'ActionTime', type: 'date' },
+                { name: 'ActionTime', type: 'string' },
                 { name: 'ActionCode', type: 'numeric' },
                 { name: 'UserId', type: 'string' },
                 { name: 'DeviceName', type: 'string' },
